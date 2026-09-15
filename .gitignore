@@ -1,0 +1,9 @@
+node_modules/
+
+# Eval output (Tier 3 behavioral runs)
+evals/results/
+
+# Testzilla reports written into a reviewed repo
+.testzilla/
+
+.DS_Store
