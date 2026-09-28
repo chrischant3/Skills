@@ -1,0 +1,190 @@
+{
+  "document": {
+    "title": "Clinic Booking Portal: Requirements v0.3",
+    "source_file": "clinic-booking-v0.3.docx",
+    "analysed_on": "2026-09-28",
+    "scope_note": "All sections read. Emphasis on security, performance and data handling."
+  },
+  "functions": [
+    {"id": "F-01", "name": "Book an appointment", "visibility": "evident", "source_ref": "2 Booking ¶3"},
+    {"id": "F-02", "name": "Sign in", "visibility": "evident", "source_ref": "4 Security ¶11"},
+    {"id": "F-03", "name": "Record security events", "visibility": "hidden", "source_ref": "4 Security ¶12"}
+  ],
+  "requirements": [
+    {
+      "id": "R-001",
+      "text": "Patients can book an appointment with any available clinician.",
+      "source_ref": "2 Booking ¶3",
+      "kind": "function",
+      "category": "functional",
+      "applies_to": ["F-01"],
+      "priority": "must",
+      "origin": "stated",
+      "measurable": true
+    },
+    {
+      "id": "R-002",
+      "text": "The booking page must be fast.",
+      "source_ref": "5 Performance ¶15",
+      "kind": "attribute",
+      "category": "performance",
+      "applies_to": ["F-01"],
+      "priority": "unconfirmed",
+      "origin": "stated",
+      "measurable": false,
+      "measure": {
+        "scale": "Seconds from 'Confirm' to confirmation shown",
+        "meter": "Load test at the peak profile, p95 and max",
+        "benchmark": "Unknown",
+        "constraint": "Unknown (see Q-01)",
+        "target": "Unknown (see Q-01)"
+      },
+      "ambiguities": [
+        {
+          "phrase": "fast",
+          "readings": ["page render time", "time to confirmed booking", "time under Monday 8am peak"],
+          "heuristic": "Comparative word (ER1 ch 2)"
+        }
+      ],
+      "question_ids": ["Q-01"]
+    },
+    {
+      "id": "R-003",
+      "text": "Accounts are locked after five failed sign-in attempts.",
+      "source_ref": "4 Security ¶11",
+      "kind": "constraint",
+      "category": "security",
+      "applies_to": ["F-02"],
+      "priority": "must",
+      "origin": "stated",
+      "measurable": true,
+      "ambiguities": [
+        {
+          "phrase": "five failed sign-in attempts",
+          "readings": ["five in a row", "five in any period", "five within an hour"],
+          "heuristic": "Mary had a little lamb (ER1 ch 9)"
+        }
+      ],
+      "question_ids": ["Q-02"]
+    },
+    {
+      "id": "R-004",
+      "text": "Patient records are kept in line with data protection law.",
+      "source_ref": "6 Data ¶18",
+      "kind": "imposition",
+      "category": "data",
+      "applies_to": ["product-wide"],
+      "priority": "must",
+      "origin": "stated",
+      "measurable": false,
+      "question_ids": ["Q-03"],
+      "basis": ["EXT: UK GDPR Art 5(1)(e) storage limitation"]
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q-01",
+      "question": "What response time for confirming a booking is acceptable at the Monday 8am peak, for 95% of bookings and for the slowest one?",
+      "why": "R-002 cannot be tested as written; percentile alone hides the tail (ER2 ch 21).",
+      "ask": "Product owner",
+      "level": "branch",
+      "blocks": ["R-002", "S-003"]
+    },
+    {
+      "id": "Q-02",
+      "question": "Over what period are failed attempts counted, and how is a locked account unlocked?",
+      "why": "Lockout window and recovery path decide the boundary examples.",
+      "ask": "Security lead",
+      "level": "twig",
+      "blocks": ["R-003"]
+    },
+    {
+      "id": "Q-03",
+      "question": "How long must each kind of patient record be kept, and what happens at the end of that period?",
+      "why": "Retention is an imposition; its source and period decide the deletion scenarios.",
+      "ask": "Data protection officer",
+      "level": "root",
+      "blocks": ["R-004"]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "S-001",
+      "title": "Booking - patient books an available slot",
+      "req_ids": ["R-001"],
+      "category": "functional",
+      "format": "gherkin",
+      "range": "normal",
+      "status": "ready",
+      "given": ["Dr Patel has a free slot at 10:00 on 3 March"],
+      "when": "the patient books that slot",
+      "then": ["the booking is confirmed", "the slot is no longer shown as free"],
+      "layer": "pre-release",
+      "risk": "medium",
+      "basis": ["LIB: DISC ch 3"]
+    },
+    {
+      "id": "S-002",
+      "title": "Sign-in - fifth consecutive failure locks the account",
+      "req_ids": ["R-003"],
+      "category": "security",
+      "format": "gherkin",
+      "range": "abnormal-unreasonable",
+      "status": "provisional",
+      "assumptions": [{"text": "Attempts are counted consecutively with no time window", "question_id": "Q-02"}],
+      "given": ["an account with four consecutive failed sign-ins"],
+      "when": "a fifth sign-in with the wrong password is attempted",
+      "then": ["the account is locked", "a security event records the time and account"],
+      "layer": "pre-release",
+      "risk": "high",
+      "basis": ["LIB: ER2 ch 22 22.2.1", "EXT: OWASP ASVS Authentication"]
+    },
+    {
+      "id": "S-003",
+      "title": "Booking - confirmation time at Monday peak",
+      "req_ids": ["R-002"],
+      "category": "performance",
+      "format": "measurement",
+      "range": "normal",
+      "status": "provisional",
+      "assumptions": [{"text": "Peak is 400 concurrent patients; target p95 < 2 s, max < 10 s", "question_id": "Q-01"}],
+      "measurement": {
+        "metric": "Seconds from Confirm to confirmation shown",
+        "load_profile": "400 concurrent users, 70% browse / 30% book, 15 min ramp, 1 h steady",
+        "environment": "Pre-production sized like production, with a year of booking data",
+        "threshold": "p95 < 2 s AND max < 10 s",
+        "warning": "p95 > 1.6 s",
+        "oracle": "Load-tool percentiles; build fails if p95 regresses more than 2% on the previous run"
+      },
+      "layer": "pipeline",
+      "risk": "high",
+      "basis": ["LIB: LBR ch 9", "LIB: ER2 ch 21", "LIB: DOH ch 10"]
+    },
+    {
+      "id": "S-004",
+      "title": "Data - records past retention are removed",
+      "req_ids": ["R-004"],
+      "category": "data",
+      "format": "charter",
+      "range": "normal",
+      "status": "provisional",
+      "assumptions": [{"text": "A retention period exists per record type", "question_id": "Q-03"}],
+      "items": [
+        "Explore records either side of the retention boundary to discover whether deletion happens on time and completely",
+        "Check backups, logs, search indexes and exports for residual copies"
+      ],
+      "layer": "pre-release",
+      "risk": "high",
+      "basis": ["EXT: UK GDPR Art 5(1)(e)", "LIB: CET Versatile Data"]
+    }
+  ],
+  "gaps": [
+    {
+      "category": "security",
+      "missing": "No requirement on who may see another patient's appointments (authorisation).",
+      "why_it_matters": "Loser groups: people who must be kept out need requirements too (ER1 ch 7).",
+      "basis": ["LIB: ER1 7.1.5", "EXT: OWASP ASVS Authorization"],
+      "question_id": "Q-03"
+    }
+  ]
+}

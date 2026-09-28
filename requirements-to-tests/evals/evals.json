@@ -1,0 +1,17 @@
+{
+  "skill_name": "requirements-to-tests",
+  "evals": [
+    {"id": 1, "name": "clinic-portal-docx",
+     "prompt": "The client just sent over the spec for their patient portal: evals/files/myclinic-portal-spec-v0.3.docx. Can you pull out the requirements and draft test scenarios? I'm mostly worried about the security and data side of things - it's health data.",
+     "expected_output": "Report + xlsx; vague SEC-1/SEC-3/PERF-1/DATA-2 flagged unmeasurable with questions; SEC-4 admin-sees-all and A-1 no-audit assumption challenged; authorisation/erasure/retention gaps; lockout boundary scenarios; provisional scenarios with assumptions.",
+     "files": ["evals/files/myclinic-portal-spec-v0.3.docx"]},
+    {"id": 2, "name": "payouts-api-pdf",
+     "prompt": "here's the NFR doc for our payouts API (evals/files/payouts-api-nfrs-draft2.pdf). what's actually testable in here and what isn't? draft me the performance + security test scenarios, and anything on data you think we need",
+     "expected_output": "NFR-P1 p95 flagged for missing tail/conditions; P3 needs peak (5x) profile; P4 vague; A2 as RTO/RPO drill; S2 rate-limit boundary; D4 idempotency scenarios; masking-in-logs checks; PCI as imposition.",
+     "files": ["evals/files/payouts-api-nfrs-draft2.pdf"]},
+    {"id": 3, "name": "crm-migration-xlsx",
+     "prompt": "We've got a workshop with the client on Thursday about their CRM migration. Their requirements register is at evals/files/crm-migration-requirements-register.xlsx. Identify the requirements, tell me what's missing, give me the questions I should ask in the workshop, and draft test scenarios.",
+     "expected_output": "MIG-02 'no data loss' made measurable via reconciliation; DAT-02 6-year boundary scenarios; consent migration; region access scenarios; PER-01 needs baseline; gaps on rollback, retention of legacy, erasure; root-first question list.",
+     "files": ["evals/files/crm-migration-requirements-register.xlsx"]}
+  ]
+}
