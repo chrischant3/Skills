@@ -1,6 +1,6 @@
 # analysis.json schema
 
-`scripts/build_outputs.py` validates this before writing anything. `example-analysis.json` in this folder is a complete valid example; copy its shape.
+Load this when the build reports an error you can't fix from the summary in `SKILL.md`, or when you need a field's exact allowed values. `scripts/build_outputs.py` validates this before writing anything. `example-analysis.json` in this folder is a complete valid example; copy its shape.
 
 ```
 document      {title, source_file, analysed_on (YYYY-MM-DD), scope_note?}
@@ -35,7 +35,7 @@ gaps[]        {category, missing, why_it_matters, basis [], question_id?}
 
 ## Conventions
 - `source_ref` is the locator in square brackets from `source.md` (e.g. `p12`, `3.1 Audit ¶14`, `NFRs!R7`). If the document has its own requirement IDs, put them first: `NFR-12 (NFRs!R7)`.
-- `basis` entries start with `LIB:` (abbreviation from `sources.md` + chapter) or `EXT:` (standard + section/topic).
+- `basis` entries start with `BOOK:` (a published book: abbreviation from `sources.md` + chapter) or `EXT:` (standard + section/topic).
 - Gaps are not requirements. Never add a requirement with `origin: stated` that the document doesn't contain.
 - IDs are unique across functions, requirements, questions and scenarios.
 

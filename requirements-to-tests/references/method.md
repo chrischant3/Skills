@@ -1,6 +1,6 @@
 # Method: classifying requirements, finding ambiguity, making them measurable
 
-Source abbreviations are defined in `sources.md`. `LIB` = the user's library, `EXT` = external standard.
+Load this when a classification, ambiguity or measurability call is not obvious from the summary in `SKILL.md`. Source abbreviations are defined in `sources.md`: `BOOK` = a published book on requirements or testing, `EXT` = an external standard.
 
 ## Contents
 1. Classify: functions, attributes, constraints, preferences, expectations
@@ -39,7 +39,7 @@ Gause & Weinberg never use the phrase. Their scheme maps onto it like this:
 - **Many "security" and "data" items are really functions.** Examples are "log unauthorised attempts", "notify security", "delete data after 30 days" and "export my data". Run the "The product should…" test before labelling anything non-functional. A hidden function still gets scenarios like any other function. In the analysis these are `kind: function` with `category: security` or `category: data`.
 - **The split that decides testability is constraint versus preference**, not functional versus non-functional. A constraint gets a pass/fail oracle. A preference gets a measurement and a report.
 
-Set `category` for every requirement (`functional`, `security`, `performance`, `data`, `reliability`, `usability`, …) so the user's focus areas can be filtered. Set `kind` separately using the table above.
+Set `category` for every requirement (`functional`, `security`, `performance`, `data`, `reliability`, `usability`, …) so the focus areas (security, performance, data) can be filtered. Set `kind` separately using the table above.
 
 ## 3. Ambiguity heuristics
 

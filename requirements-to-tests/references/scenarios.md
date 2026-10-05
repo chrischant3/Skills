@@ -1,5 +1,7 @@
 # Drafting test scenarios from requirements
 
+Load this when drafting scenarios for security, performance or data requirements, or when it is unclear which format, range or depth a scenario needs. `SKILL.md` step 7 is enough for straightforward functional scenarios.
+
 ## Contents
 1. The "What if…" pass (ER2 ch 22)
 2. Examples and counter-examples (DISC, FIFTY)
@@ -92,7 +94,7 @@ BRIEF: **B**usiness language · **R**eal data only where it reveals intent · **
 
 ## 7. Provisional scenarios
 
-The user asked for scenarios drafted now, with assumptions flagged. Where the document leaves Y (the expected outcome) or the threshold open:
+The skill drafts scenarios now rather than waiting for answers, with assumptions flagged. Where the document leaves Y (the expected outcome) or the threshold open:
 
 - set `status: provisional`
 - list each assumption in `assumptions[]`, linked to the question that would settle it

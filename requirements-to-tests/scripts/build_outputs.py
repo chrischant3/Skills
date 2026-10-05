@@ -37,7 +37,7 @@ LAYERS = {"pre-release", "pipeline", "production"}
 RISKS = {"high", "medium", "low"}
 LEVELS = {"root", "branch", "twig"}
 
-# Report order: the user's focus areas first, functional last.
+# Report order: the skill's focus areas first, functional last.
 CATEGORY_ORDER = ["security", "performance", "data", "reliability", "operability", "usability",
                   "compatibility", "maintainability", "portability", "safety", "other", "functional"]
 LEVEL_ORDER = {"root": 0, "branch": 1, "twig": 2}
@@ -161,7 +161,7 @@ def _lint_scenario(warn, s: dict) -> None:
     elif fmt in {"checklist", "charter"} and not s.get("items"):
         warn(f"{sid}: {fmt} has no items")
     if not s.get("basis"):
-        warn(f"{sid}: no basis given (cite a LIB or EXT source)")
+        warn(f"{sid}: no basis given (cite a BOOK or EXT source)")
 
 
 # ---------- rendering ----------
@@ -276,7 +276,7 @@ def render_report(analysis: dict, issues: list[dict]) -> str:
     out += [f"- {w}" for w in warnings] or ["None."]
 
     bases = sorted({b for item in reqs + scen + gaps for b in item.get("basis", [])})
-    out += ["", "## Sources cited", "", "LIB = the user's library; EXT = external standard.", ""]
+    out += ["", "## Sources cited", "", "BOOK = published book on requirements or testing; EXT = external standard.", ""]
     out += [f"- {b}" for b in bases]
     return "\n".join(out) + "\n"
 

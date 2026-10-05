@@ -58,7 +58,7 @@ def common(text, sheets, outputs, ids):
     q = len(re.findall(r"\?\s*(\||$)", text, re.M))
     checks.append(("At least 8 stakeholder questions", q >= 8, f"{q} question marks at cell/line end"))
     lib = has(text, r"Weinberg|Gause|Exploring Requirements|\bER[12]\b|Adzic|Cockburn|Clokie|DevOps Handbook|Kelly")
-    checks.append(("Cites the user's library as a basis", bool(lib), lib or "none"))
+    checks.append(("Cites the requirements/testing books as a basis", bool(lib), lib or "none"))
     return checks
 
 
