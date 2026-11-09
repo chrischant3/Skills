@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Remove every person identifier from Jira and source control JSON before any analysis.
 
+Runs before any analysis script, classification input or output. With MCP fetching, the
+model has seen the raw data once, during the fetch step; with the REST fallback it never
+sees names at all.
+
 Usage: anonymise.py <raw_dir> <clean_dir>
 
 Person detection is structural, not a flat key list:
@@ -393,7 +397,7 @@ def _write(path: Path, doc) -> None:
 def main(argv=None) -> int:
     args = sys.argv[1:] if argv is None else argv
     if len(args) != 2:
-        print(__doc__.splitlines()[2], file=sys.stderr)
+        print(next(line for line in __doc__.splitlines() if line.startswith("Usage:")), file=sys.stderr)
         return 2
     n = anonymise_dir(args[0], args[1])
     print(f"Anonymised {n} files -> {args[1]}")

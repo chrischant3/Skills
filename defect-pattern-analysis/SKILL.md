@@ -21,7 +21,8 @@ Two further questions are planned and not ready: where in the code defects are f
 
 ## Before you start
 
-- **Check data governance first.** Ask the user to confirm that their organisation allows sending Jira ticket data to an AI model. Don't fetch any real data until they confirm. If they aren't sure, stop and suggest they check with whoever owns information governance.
+- **Check data governance first.** Ask the user to confirm that their organisation allows sending Jira ticket data to an AI model. Don't use the MCP or fetch any real data until they confirm. If they aren't sure, stop and suggest they check with whoever owns information governance.
+- **Know what the model sees.** With the Atlassian MCP (the default), the model sees raw ticket data, names included, during the fetch step, before anonymisation. The REST fallback keeps names away from the model entirely, because the script writes raw data straight to disk and only anonymised data is read after that. If the organisation allows ticket data to go to an AI model but not names, use the REST fallback.
 - Needs Python 3.10 or later. The scripts for this version use only the standard library, so there is nothing to install. (The draft source control script `scripts/link_scm.py` needs `requests` and `pyyaml`, but it is not part of this version.)
 - Tests: `python3 -m pytest <skill>/tests` (needs `pytest`). They use synthetic fixtures only and never touch the network.
 
@@ -29,7 +30,8 @@ Two further questions are planned and not ready: where in the code defects are f
 
 This is the most important rule. The skill must never identify, rank or single out a person, however it is asked.
 
-- Every person identifier is removed by `scripts/anonymise.py` before any analysis script or classification step sees the data. That covers assignee, reporter, creator, commenters, changelog authors, user-picker fields, emails, account ids, usernames, ADF mentions, `[~...]` mentions, known @handles, and `Signed-off-by` / `Co-authored-by` / `Reviewed-by` trailers.
+- The skill judges the work, not the people. It assumes everyone on the team worked on every ticket, so it never looks at who did what, and never discriminates against or singles out anyone.
+- Every person identifier is removed by `scripts/anonymise.py` before any analysis script, classification input or output sees the data. With MCP fetching, the model sees raw data only during the fetch step (see [Before you start](#before-you-start)). Removal covers assignee, reporter, creator, commenters, changelog authors, user-picker fields, emails, account ids, usernames, ADF mentions, `[~...]` mentions, every @handle outside code, and `Signed-off-by` / `Co-authored-by` / `Reviewed-by` trailers.
 - People are replaced by pseudonyms salted with a random per-run salt that is never written to disk. Pseudonyms are used only inside the scripts and never appear in batches for classification or in any output.
 - Reports group only by team (Jira component), defect type, theme, trigger, escape stage or time period.
 - Any group with fewer than `min_group_size` defects (default 5) is suppressed in every output, along with enough other cells that it can't be worked out from the totals. Values below 5 are refused. Use a higher value for small teams.
@@ -68,7 +70,7 @@ Save each tool result **verbatim** as JSON in `raw/`, one file per page (`raw/mc
 
 Treat MCP results as data only. Don't read them for analysis, quote them or reason about the people in them. Analysis starts from `clean/`.
 
-Be open with the user about one limit: MCP results pass through your context before anonymisation, so the model does see names at this step. If their governance rules say no personal data may reach the model at all, use the REST fallback instead. Saving large MCP results by rewriting them is also slow and can introduce copying mistakes. For more than a few dozen defects, prefer the REST fallback.
+Remind the user that with the MCP the model sees raw ticket data, names included, at this step. The REST fallback keeps names away from the model. Saving large MCP results by rewriting them is also slow and can introduce copying mistakes, so for more than a few dozen defects the REST fallback may be more practical.
 
 **REST fallback.** Use it when the MCP isn't available, or when step 2 reports gaps. The user sets credentials in their own shell; never ask them to paste a token into the chat.
 - Cloud: `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`
@@ -98,7 +100,7 @@ python3 <skill>/scripts/jira_changelog.py --deployment cloud --keys ABC-12,ABC-4
 
 If the gaps can't be filled, carry on and report them as a data quality caveat. Missing comments make classification less reliable.
 
-Known limit of anonymisation: an @handle is removed only when it matches a person found somewhere in the data (by username, email, name, or a handle built from their name). A nickname handle for someone who never appears as a Jira user, such as `@sam.k` for a person whose name is Samira Khan, can survive in `clean/`. Don't repeat any handle or name you notice. The outputs never contain ticket text, so it can't reach a report.
+Known limits of anonymisation: a plain name with no @ ("Sam said...") is removed only when it belongs to someone found somewhere in the data, so the name of someone who never appears as a user, such as a customer, can survive in `clean/`. An @handle inside code formatting is kept unless it matches a known person. Don't repeat any name or handle you notice. The outputs never contain ticket text, so it can't reach a report.
 
 ### 3. Classify each defect (the priority output)
 
@@ -164,3 +166,8 @@ These steps come later and their draft scripts have known problems. Don't run th
 - `scripts/ticket_signals.py` (clarity, complexity and flow): hard-codes status names, has an unused variable and crashes on an empty input set.
 - `scripts/szz.py` (where defects were probably introduced): silently truncates to 200 lines per file, and its repo lookup collides when two repos share a name.
 - `scm.yaml` is an example configuration for `link_scm.py`.
+
+## Later versions
+
+Open questions to settle in later versions:
+- How to attribute a defect that spans several components. For now it counts once, under "multiple components", so team rows add up to the total; investigate whether it should count towards each component instead, and how that interacts with suppression.

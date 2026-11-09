@@ -43,3 +43,19 @@ def test_skill_md_uses_no_em_dashes():
 def test_evals_cover_the_per_person_refusal():
     evals = json.loads((ROOT / "evals/evals.json").read_text())["evals"]
     assert any("assignee" in e["prompt"] and "refusal" in e["expected_output"] for e in evals)
+
+
+def test_skill_says_what_the_model_sees_with_mcp_and_with_rest():
+    assert "the model sees raw ticket data, names included, during the fetch step" in SKILL
+    assert "The REST fallback keeps names away from the model entirely" in SKILL
+
+
+def test_skill_states_the_work_not_people_stance():
+    section = SKILL.split("## No individual blame", 1)[1].split("## Inputs", 1)[0]
+    assert "judges the work, not the people" in section
+    assert "everyone on the team worked on" in section
+
+
+def test_skill_lists_component_attribution_as_an_open_question():
+    later = SKILL.split("## Later versions", 1)[1]
+    assert "several components" in later

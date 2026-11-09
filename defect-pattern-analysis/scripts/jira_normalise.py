@@ -7,7 +7,8 @@ Raw files come from two places:
 - scripts/jira_changelog.py, the REST fallback, which writes one file per issue.
 
 This module never removes people; anonymise.py calls it before scrubbing, so nothing
-here reaches analysis code or Claude.
+here reaches analysis code, classification input or any output. (With MCP fetching, the
+model has already seen the raw data once, during the fetch step.)
 """
 
 import json

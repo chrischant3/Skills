@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Read anonymised data from clean/, refusing anything anonymise.py didn't write.
 
-Every analysis script loads issues through here, so raw data can't reach analysis code
-or Claude by mistake (P1).
+Every analysis script loads issues through here, so raw data can't reach analysis code,
+classification input or any output by mistake (P1). With MCP fetching, the model sees
+raw data only during the fetch step, before this point.
 """
 
 import json

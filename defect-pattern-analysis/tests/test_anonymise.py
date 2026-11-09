@@ -1,5 +1,9 @@
 """Behaviour tests for scripts/anonymise.py (P1 to P3, F2, known problems 1 and 2).
 
+P1 here means no identifier survives into clean/, so none reaches analysis code,
+classification input or output. (With MCP fetching the model sees raw data only during
+the fetch step, which these tests can't cover.)
+
 Highest risk first: a person identifiable after anonymisation. Then pseudonym and salt
 handling, then damage to non-person data.
 """
