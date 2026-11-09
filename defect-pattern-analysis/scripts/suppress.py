@@ -70,9 +70,13 @@ class Publication:
     def __init__(self, records, combos, min_group_size):
         self.min_group_size = validate_min_group_size(min_group_size)
         self.combos = {frozenset(c) for c in combos}
+        # Always work through groupings in the same order. Set order changes from run to run
+        # (string hashing is randomised), and the order lines are checked in decides which
+        # extra cells secondary suppression hides, so outputs would otherwise differ.
+        self._ordered_combos = sorted(self.combos, key=lambda c: (len(c), sorted(c)))
         self.cells: dict[frozenset, int] = Counter()
         self._by_combo: dict[frozenset, list] = defaultdict(list)
-        for combo in self.combos:
+        for combo in self._ordered_combos:
             for record in records:
                 self.cells[frozenset((d, _label(record.get(d))) for d in combo)] += 1
         for key in self.cells:
@@ -83,8 +87,8 @@ class Publication:
 
     def _build_lines(self):
         lines = []
-        for parent_combo in self.combos:
-            for child_combo in self.combos:
+        for parent_combo in self._ordered_combos:
+            for child_combo in self._ordered_combos:
                 if len(child_combo) == len(parent_combo) + 1 and parent_combo < child_combo:
                     for parent in self._by_combo[parent_combo]:
                         children = [c for c in self._by_combo[child_combo] if parent <= c]
