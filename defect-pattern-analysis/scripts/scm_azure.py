@@ -5,6 +5,7 @@ Raw files, written by the REST fallback here or saved by Claude from an Azure De
   azure-prs-<anything>.json                              pull requests (a list page, or one)
   azure-pr-<repository id>-<pr id>-commits[-N].json      one page of a pull request's commits
   azure-pr-<repository id>-<pr id>-changes[-N].json      one page of its last iteration's changes
+  azure-pr-<repository id>-<pr id>-commits-full-<sha>.json  one commit in full, when the list cut its message short
 
 The repository id is the GUID in each pull request's repository.id. Any of these may be
 an MCP text block holding the JSON; anonymise.py decodes those. Status may be the word
@@ -13,7 +14,9 @@ completed pull requests count, and closedDate is when they merged.
 
 The REST fallback pages everything: pull requests by $top and $skip, commits by
 continuation token (x-ms-continuationtoken), and the last iteration's changes by
-nextSkip. It retries HTTP 429 after Retry-After. It needs AZDO_PAT, a personal access
+nextSkip. Commit lists cut long messages short and set commentTruncated, so a key near
+the end would be missed; for those commits it also fetches the full commit. It retries
+HTTP 429 after Retry-After. It needs AZDO_PAT, a personal access
 token with Code (Read), sent as a Basic auth header and never written or logged.
 
 Names: a repo is shown as <project>/<repo> in every output. The org is never part of a
@@ -204,6 +207,12 @@ class AzureDevOpsAdapter(SourceControlAdapter):
                 for n, body in enumerate(client.token_pages(f"{base}/pullRequests/{pid}/commits"), start=1):
                     _write(out_dir / f"azure-pr-{rid}-{pid}-commits-{n}.json", body)
                     written += 1
+                    for commit in _items(body):
+                        if isinstance(commit, dict) and commit.get("commentTruncated") and commit.get("commitId"):
+                            sha = str(commit["commitId"])
+                            full, _ = client.get(f"{base}/commits/{urllib.parse.quote(sha, safe='')}")
+                            _write(out_dir / f"azure-pr-{rid}-{pid}-commits-full-{sha}.json", full)
+                            written += 1
                 iterations, _ = client.get(f"{base}/pullRequests/{pid}/iterations")
                 last = max((int(i["id"]) for i in _items(iterations) if isinstance(i, dict) and "id" in i), default=None)
                 if last is not None:
@@ -238,7 +247,12 @@ class AzureDevOpsAdapter(SourceControlAdapter):
             if pr.get("status") not in COMPLETED or not _belongs_to(pr, repo):
                 continue
             pr_commits = [*(c for c in pr.get("commits") or [] if isinstance(c, dict)), *commits.get(key, [])]
-            unique = {c.get("commitId"): c for c in pr_commits if c.get("commitId")}
+            unique = {}
+            for c in pr_commits:
+                sha = c.get("commitId")
+                # A full commit beats one whose message was cut short, whichever file came first.
+                if sha and (sha not in unique or unique[sha].get("commentTruncated")):
+                    unique[sha] = c
             embedded = [_path(c) for c in pr.get("changes") or []]
             out.append(Change(
                 repo=name, kind="pull_request", id=str(pr["pullRequestId"]), merged_at=pr.get("closedDate"),

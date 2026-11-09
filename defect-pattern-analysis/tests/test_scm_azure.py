@@ -167,6 +167,68 @@ def test_names_match_without_regard_to_case(tmp_path):
     assert len(found) == 4
 
 
+# --- truncated commit messages -----------------------------------------------------------------
+# Azure DevOps cuts long commit messages short in commit lists and flags them with
+# commentTruncated. A key near the end of a long message is only found in the full commit.
+
+SHA_202 = "2021111111111111111111111111111111111111"
+COMMIT_PATH = f"/example-org/Accounts/_apis/git/repositories/accounts-api/commits/{SHA_202}"
+FULL_MESSAGE = "Drop address from log line\n\n" + "Context. " * 40 + "\nRefs ABC-102"
+FULL_FILE = f"azure-pr-11111111-2222-4333-8444-555555555555-202-commits-full-{SHA_202}.json"
+
+
+def truncated_fixture():
+    """The recorded fixture, with PR 202's only commit message cut short and its full commit recorded."""
+    fixture = load_fixture("recorded/azure_rest.json")
+    route = next(r for r in fixture["routes"] if r["path"].endswith("/pullRequests/202/commits"))
+    commit = route["responses"][0]["body"]["value"][0]
+    commit.update(comment=FULL_MESSAGE[:100], commentTruncated=True)
+    full = {**{k: v for k, v in commit.items() if k != "commentTruncated"}, "comment": FULL_MESSAGE}
+    fixture["routes"].append({"method": "GET", "path": COMMIT_PATH, "match": {},
+                              "responses": [{"status": 200, "headers": {}, "body": full}]})
+    return fixture
+
+
+def test_a_truncated_commit_message_is_fetched_in_full(tmp_path):
+    summary, transport, _ = fetch(tmp_path, truncated_fixture())
+    assert [path for _, path, _, _ in transport.requests if "/commits/" in path] == [COMMIT_PATH]
+    assert summary["files_written"] == 15
+    assert json.loads((tmp_path / "raw" / FULL_FILE).read_text())["comment"] == FULL_MESSAGE
+
+
+def test_untruncated_commit_messages_are_not_fetched_again(tmp_path):
+    _, transport, _ = fetch(tmp_path)
+    assert not [path for _, path, _, _ in transport.requests if "/commits/" in path]
+
+
+def test_the_full_message_replaces_the_truncated_one(tmp_path):
+    fetch(tmp_path, truncated_fixture())
+    found, _ = changes_from(tmp_path / "raw", tmp_path)
+    pr = next(c for c in found if c.id == "202")
+    assert [c["message"] for c in pr.commits] == [FULL_MESSAGE]
+
+
+def test_a_full_commit_saved_from_an_mcp_replaces_the_truncated_one_whatever_the_order(tmp_path):
+    raw = mcp_raw(tmp_path)
+    page = raw / "azure-pr-11111111-2222-4333-8444-555555555555-202-commits-1.json"
+    (raw / FULL_FILE).write_text(json.dumps({"commitId": SHA_202, "comment": FULL_MESSAGE}))
+    doc = json.loads(page.read_text())
+    commits = json.loads(doc["content"][0]["text"])
+    commits[0].update(comment=FULL_MESSAGE[:100], commentTruncated=True)
+    doc["content"][0]["text"] = json.dumps(commits)
+    # Saved after the full commit, so a later-wins merge would keep the cut-short message.
+    page.unlink()
+    (raw / "azure-pr-11111111-2222-4333-8444-555555555555-202-commits-zz.json").write_text(json.dumps(doc))
+    found, _ = changes_from(raw, tmp_path)
+    assert [c["message"] for c in next(c for c in found if c.id == "202").commits] == [FULL_MESSAGE]
+
+
+def test_a_key_at_the_end_of_a_long_commit_message_links_the_defect(tmp_path):
+    fetch(tmp_path, truncated_fixture())
+    links = run(tmp_path, tmp_path / "raw")
+    assert "202" in [c["id"] for c in links["defects"]["ABC-102"]["changes"] if c["repo"] == NAME]
+
+
 # --- people ------------------------------------------------------------------------------------
 
 def run(tmp_path, raw, cfg=CONFIG):

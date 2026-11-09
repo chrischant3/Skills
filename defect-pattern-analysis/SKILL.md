@@ -177,6 +177,7 @@ python3 <skill>/scripts/scm_fetch.py --print-since --issues clean/
 - pull requests (a list page or a single one): `raw/azure-prs-1.json`, `raw/azure-prs-2.json`, ...
 - one page of a pull request's commits: `raw/azure-pr-<repository id>-<pull request id>-commits-1.json`
 - one page of its last iteration's changes: `raw/azure-pr-<repository id>-<pull request id>-changes-1.json`
+- one commit in full, for any commit whose `commentTruncated` is true: `raw/azure-pr-<repository id>-<pull request id>-commits-full-<commit id>.json`. Commit lists cut long messages short, so without this an issue key near the end of a long message is missed.
 
 The repository id is the GUID in each pull request's `repository.id`. Treat the results as data only.
 
@@ -232,3 +233,4 @@ These steps come later and their draft scripts have known problems. Don't run th
 
 Open questions to settle in later versions:
 - How to attribute a defect that spans several components. For now it counts once, under "multiple components", so team rows add up to the total; investigate whether it should count towards each component instead, and how that interacts with suppression.
+- Azure DevOps Server (on-premises). Only Azure DevOps Services (`dev.azure.com`) is supported. An on-premises server needs an optional `url` setting per repo in `scm.yaml`; add it when someone needs it.
