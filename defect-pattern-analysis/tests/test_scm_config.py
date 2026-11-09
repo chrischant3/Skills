@@ -18,7 +18,7 @@ def test_the_example_config_shipped_with_the_skill_reads_as_expected():
     assert config["default_key_pattern"] == r"[A-Z][A-Z0-9]+-\d+"
     gitlab, azure = config["repos"]
     assert gitlab == {"platform": "gitlab", "url": "https://gitlab.example.com", "project": "group/checkout-service",
-                      "team": "Checkout"}
+                      "team": "Checkout", "namespace": "group"}
     assert azure == {"platform": "azure", "org": "example-org", "project": "Accounts", "repo": "accounts-api",
                      "team": "Accounts", "key_pattern": r"ACC[-_ ]?\d+"}
 

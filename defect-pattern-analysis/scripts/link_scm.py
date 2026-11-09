@@ -74,7 +74,7 @@ def link(config: dict, clean_dir, since: str | None = None) -> dict:
             skipped.append({"repo": _label(repo), "platform": platform, "reason": "not ready yet"})
             continue
         adapter = scm_adapter.adapter_for(platform)
-        name = adapter.repo_name(repo)
+        name = adapter.repo_name(repo, documents)
         if name in coverage:
             raise ValueError(f"two repos have the same name {name!r}; each repo must be listed once")
         matcher = scm_keys.KeyMatcher(repo.get("key_pattern") or config.get("default_key_pattern"), projects)

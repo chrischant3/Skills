@@ -17,7 +17,8 @@ import link_scm
 import scm_config
 from conftest import FIXTURES, ROOT, all_text_under, load_fixture, person_identifiers
 
-GITLAB = {"platform": "gitlab", "url": "https://gitlab.example.com", "project": "group/checkout-service", "team": "Checkout"}
+GITLAB = {"platform": "gitlab", "url": "https://gitlab.example.com", "project": "group/checkout-service", "team": "Checkout",
+          "namespace": "group"}
 
 
 def config(*repos, default_key_pattern=None):
@@ -32,7 +33,7 @@ def make_run(tmp_path, edit=None):
         (raw / name.split("/")[1]).write_text(json.dumps(load_fixture(name)))
     if edit:
         edit(raw)
-    anonymise.anonymise_dir(raw, tmp_path / "clean")
+    anonymise.anonymise_dir(raw, tmp_path / "clean", scm_config=config())
     return tmp_path / "clean"
 
 
@@ -177,7 +178,7 @@ def test_coverage_outputs_hold_no_ticket_keys_or_people(tmp_path, people):
 def test_the_command_line_writes_links_to_work_and_coverage_to_out(tmp_path):
     clean = make_run(tmp_path)
     (tmp_path / "scm.yaml").write_text("repos:\n  - platform: gitlab\n    url: https://gitlab.example.com\n"
-                                      "    project: group/checkout-service\n    team: Checkout\n")
+                                      "    project: group/checkout-service\n    team: Checkout\n    namespace: group\n")
     code = link_scm.main(["--config", str(tmp_path / "scm.yaml"), "--issues", str(clean),
                           "--work", str(tmp_path / "work/scm_links.json"), "--out", str(tmp_path / "out")])
     assert code == 0
@@ -188,7 +189,7 @@ def test_the_command_line_writes_links_to_work_and_coverage_to_out(tmp_path):
 def test_the_command_line_refuses_a_threshold_below_five(tmp_path, capsys):
     clean = make_run(tmp_path)
     (tmp_path / "scm.yaml").write_text("repos:\n  - platform: gitlab\n    url: https://gitlab.example.com\n"
-                                      "    project: group/checkout-service\n")
+                                      "    project: group/checkout-service\n    namespace: group\n")
     code = link_scm.main(["--config", str(tmp_path / "scm.yaml"), "--issues", str(clean), "--work",
                           str(tmp_path / "work/l.json"), "--out", str(tmp_path / "out"), "--min-group-size", "4"])
     assert code == 2 and "at least 5" in capsys.readouterr().err and not (tmp_path / "out").exists()

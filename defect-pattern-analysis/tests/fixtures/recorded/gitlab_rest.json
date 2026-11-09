@@ -7,6 +7,35 @@
  "routes": [
   {
    "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "id": 4321,
+      "name": "checkout-service",
+      "path": "checkout-service",
+      "path_with_namespace": "group/checkout-service",
+      "name_with_namespace": "group / checkout-service",
+      "web_url": "https://gitlab.example.com/group/checkout-service",
+      "http_url_to_repo": "https://gitlab.example.com/group/checkout-service.git",
+      "ssh_url_to_repo": "git@gitlab.example.com:group/checkout-service.git",
+      "namespace": {
+       "id": 4322,
+       "name": "group",
+       "path": "group",
+       "kind": "group",
+       "full_path": "group",
+       "web_url": "https://gitlab.example.com/group"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
    "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests",
    "match": {
     "page": "1",

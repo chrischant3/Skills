@@ -2,6 +2,7 @@
 """GitLab adapter: merged merge requests, with every commit and changed file.
 
 Raw files, written by the REST fallback here or saved by Claude from a GitLab MCP:
+  gitlab-project-<anything>.json                the project (optional; says what kind of namespace it is in)
   gitlab-mrs-<anything>.json                    merge requests (a list page, or one MR)
   gitlab-mr-<project_id>-<iid>-commits[-N].json one page of an MR's commits
   gitlab-mr-<project_id>-<iid>-diffs[-N].json   one page of an MR's diffs (paths are used)
@@ -9,6 +10,13 @@ Raw files, written by the REST fallback here or saved by Claude from a GitLab MC
 Any of these may be an MCP text block holding the JSON; anonymise.py decodes those. The
 REST fallback pages everything (merge requests, commits and diffs) by X-Next-Page,
 retries HTTP 429 after Retry-After, and writes diffs without their bodies.
+
+Personal namespaces: a repo's path starts with its namespace, which for a repo in a
+person's own namespace is their username. A repo counts as personal if GitLab says its
+namespace kind is "user", or scm.yaml says namespace: user, or neither says it is a
+group (the safe default, since MCP results often don't carry the namespace). The owner
+is then removed by anonymise.py and shown as [person] in every name, e.g.
+[person]/checkout-tool.
 
 The REST fallback needs GITLAB_TOKEN (a personal or project access token with read_api).
 The token is sent as a header and never written.
@@ -25,6 +33,9 @@ from scm_adapter import Change, SourceControlAdapter
 
 PAGE_SIZE = 100
 MR_FILE = re.compile(r"gitlab-mrs-[\w.-]*\.json")
+PROJECT_FILE = re.compile(r"gitlab-project-[\w.-]*\.json")
+NAMESPACE_KINDS = ("group", "user")
+OWNER_PLACEHOLDER = "[person]"
 PART_FILE = re.compile(r"gitlab-mr-(\d+)-(\d+)-(commits|diffs)(?:-[\w.-]+)?\.json")
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
@@ -48,8 +59,12 @@ class GitLabClient:
         self._sleep = sleep
         self._max_retries = max_retries
 
+    def get(self, path, params=None):
+        """GET one resource and return its parsed JSON."""
+        return self._get(path, params or {})[0]
+
     def _get(self, path, params):
-        url = f"{self.base_url}/api/v4{path}?{urllib.parse.urlencode(params)}"
+        url = f"{self.base_url}/api/v4{path}" + (f"?{urllib.parse.urlencode(params)}" if params else "")
         headers = {"PRIVATE-TOKEN": self._token, "Accept": "application/json"}
         for _ in range(self._max_retries + 1):
             status, resp_headers, raw = self._transport("GET", url, headers, None, 60)
@@ -117,14 +132,51 @@ def _dedupe(values):
     return out
 
 
+def _redacted(project: str) -> str:
+    """The project path with its namespace owner replaced, e.g. [person]/checkout-tool."""
+    rest = project.strip("/").split("/", 1)
+    return f"{OWNER_PLACEHOLDER}/{rest[1]}" if len(rest) == 2 else OWNER_PLACEHOLDER
+
+
+def _namespace_kinds(repo: dict, documents: dict) -> set[str]:
+    """Namespace kinds GitLab reported for repo in any project document (raw or clean)."""
+    names = {repo["project"].strip("/").lower(), _redacted(repo["project"]).lower()}
+    kinds = set()
+    for name, doc in documents.items():
+        if PROJECT_FILE.fullmatch(name):
+            for item in _items(doc):
+                if isinstance(item, dict) and str(item.get("path_with_namespace", "")).lower() in names:
+                    namespace = item.get("namespace")
+                    if isinstance(namespace, dict) and namespace.get("kind"):
+                        kinds.add(str(namespace["kind"]))
+    return kinds
+
+
+def is_personal(repo: dict, documents: dict) -> bool:
+    """True unless GitLab or scm.yaml says the repo is in a group, and neither says it is a user's."""
+    kinds = _namespace_kinds(repo, documents) | ({repo["namespace"]} if repo.get("namespace") else set())
+    return "user" in kinds or "group" not in kinds
+
+
 class GitLabAdapter(SourceControlAdapter):
     """Source control adapter for GitLab (gitlab.com or self-managed)."""
 
     platform = "gitlab"
     required_fields = ("url", "project")
+    optional_fields = ("namespace",)
 
-    def repo_name(self, repo: dict) -> str:
-        return repo["project"]
+    def check_field(self, key: str, value) -> None:
+        if key == "namespace" and value not in NAMESPACE_KINDS:
+            raise ValueError(f"namespace must be group or user, got {value!r}")
+
+    def owns_file(self, name: str) -> bool:
+        return name.startswith("gitlab-") and name.endswith(".json")
+
+    def personal_owner(self, repo: dict, documents: dict) -> str | None:
+        return repo["project"].strip("/").split("/")[0] if is_personal(repo, documents) else None
+
+    def repo_name(self, repo: dict, documents: dict) -> str:
+        return _redacted(repo["project"]) if is_personal(repo, documents) else repo["project"].strip("/")
 
     def client_from_env(self, repo: dict, environ) -> GitLabClient:
         """Build a client from GITLAB_TOKEN. Raises KeyError naming the variable if it is missing."""
@@ -138,9 +190,12 @@ class GitLabAdapter(SourceControlAdapter):
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         project = "/projects/" + urllib.parse.quote(repo["project"], safe="")
+        meta = client.get(project)
+        meta_doc = {f"gitlab-project-{meta.get('id', 'repo')}.json": meta}
+        _write(out_dir / next(iter(meta_doc)), meta)
         listing = {"state": "merged", "updated_after": f"{since}T00:00:00Z", "order_by": "updated_at",
                    "sort": "asc", "scope": "all"}
-        changes = written = 0
+        changes, written = 0, 1
         for page in client.pages(f"{project}/merge_requests", listing):
             for mr in page:
                 if not _on_or_after(mr.get("merged_at"), since):
@@ -155,7 +210,7 @@ class GitLabAdapter(SourceControlAdapter):
                         _write(out_dir / f"gitlab-mr-{pid}-{iid}-{kind}-{n}.json", items)
                         written += 1
                 changes += 1
-        return {"repo": self.repo_name(repo), "changes": changes, "files_written": written}
+        return {"repo": self.repo_name(repo, meta_doc), "changes": changes, "files_written": written}
 
     def changes(self, documents: dict, repo: dict) -> list[Change]:
         mrs, commits, files = {}, {}, {}
@@ -175,18 +230,20 @@ class GitLabAdapter(SourceControlAdapter):
                 for mr in _items(doc):
                     if isinstance(mr, dict) and "iid" in mr and "project_id" in mr:
                         mrs.setdefault((int(mr["project_id"]), int(mr["iid"])), mr)
-        wanted = repo["project"].strip("/").lower()
+        # In clean/, a personal repo's paths already read [person]/name.
+        wanted = {repo["project"].strip("/").lower(), _redacted(repo["project"]).lower()}
+        name = self.repo_name(repo, documents)
         out = []
         for key, mr in sorted(mrs.items(), key=lambda kv: kv[0]):
             path = _mr_path(mr)
-            if path is None or path.lower() != wanted:
+            if path is None or path.lower() not in wanted:
                 continue
             mr_commits = [*(mr.get("commits") or []), *commits.get(key, [])]
             unique = {c.get("id"): c for c in mr_commits if isinstance(c, dict) and c.get("id")}
             embedded = [d.get("new_path") or d.get("old_path") for d in [*(mr.get("diffs") or []), *(mr.get("changes") or [])]
                         if isinstance(d, dict)]
             out.append(Change(
-                repo=self.repo_name(repo), kind="merge_request", id=str(mr["iid"]), merged_at=mr.get("merged_at"),
+                repo=name, kind="merge_request", id=str(mr["iid"]), merged_at=mr.get("merged_at"),
                 title=mr.get("title") or "", description=mr.get("description") or "",
                 source_branch=mr.get("source_branch") or "",
                 commits=[{"id": sha, "message": c.get("message") or c.get("title") or ""} for sha, c in unique.items()],

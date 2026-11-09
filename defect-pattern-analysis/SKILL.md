@@ -32,7 +32,7 @@ If the team uses GitLab, it can also link each defect to the merge requests that
 This is the most important rule. The skill must never identify, rank or single out a person, however it is asked.
 
 - The skill judges the work, not the people. It assumes everyone on the team worked on every ticket, so it never looks at who did what, and never discriminates against or singles out anyone.
-- Every person identifier is removed by `scripts/anonymise.py` before any analysis script, classification input or output sees the data. With MCP fetching, the model sees raw data only during the fetch step (see [Before you start](#before-you-start)). Removal covers assignee, reporter, creator, commenters, changelog authors, user-picker fields, emails, account ids, usernames, ADF mentions, `[~...]` mentions, every @handle outside code, and `Signed-off-by` / `Co-authored-by` / `Reviewed-by` and similar trailers. For source control it also covers merge request authors, assignees, reviewers and mergers, commit authors and committers, and parsed commit trailers. Diff text is dropped; only file paths are kept.
+- Every person identifier is removed by `scripts/anonymise.py` before any analysis script, classification input or output sees the data. With MCP fetching, the model sees raw data only during the fetch step (see [Before you start](#before-you-start)). Removal covers assignee, reporter, creator, commenters, changelog authors, user-picker fields, emails, account ids, usernames, ADF mentions, `[~...]` mentions, every @handle outside code, and `Signed-off-by` / `Co-authored-by` / `Reviewed-by` and similar trailers. For source control it also covers merge request authors, assignees, reviewers and mergers, commit authors and committers, parsed commit trailers, and the owner of any repo in a personal namespace. Diff text is dropped; only file paths are kept.
 - Every person, whether in a field such as assignee or mentioned in text, is replaced by the same plain `[person]` placeholder. Nothing counts distinct people, so there is no salt, hash or pseudonym: two people can't be told apart, and nothing can be reversed or joined across runs.
 - Reports group only by team (Jira component), repo, defect type, theme, trigger, escape stage or time period.
 - Any group with fewer than `min_group_size` defects (default 5) is suppressed in every output, along with enough other cells that it can't be worked out from the totals. Values below 5 are refused. Use a higher value for small teams.
@@ -150,7 +150,9 @@ This writes `out/aggregate.json`, one CSV per table and `out/tables.md`. The tab
 
 Skip this step if the user has no GitLab repos to link. It needs `clean/` from step 2.
 
-Copy `<skill>/scm.yaml` into the run folder and edit it. Each GitLab repo needs `platform: gitlab`, `url` and `project` (the group and project path), and can set `team` and `key_pattern`, a regular expression for the team's way of writing issue keys. Without one, the standard Jira key format is used. Use single quotes around patterns. Keys are normalised, so `ABC_123`, `abc 123` and `ABC-123` all count as `ABC-123` when the pattern allows them. Azure DevOps entries are accepted but skipped for now.
+Copy `<skill>/scm.yaml` into the run folder and edit it. Each GitLab repo needs `platform: gitlab`, `url` and `project` (the group and project path), and can set `team`, `namespace` and `key_pattern`, a regular expression for the team's way of writing issue keys. Without one, the standard Jira key format is used. Use single quotes around patterns. Keys are normalised, so `ABC_123`, `abc 123` and `ABC-123` all count as `ABC-123` when the pattern allows them. Azure DevOps entries are accepted but skipped for now.
+
+A repo in someone's own namespace has their username in its path, so it never appears in any output: the owner is removed in `clean/` and the repo is shown as `[person]/checkout-tool` in `work/` and `out/`. A repo is treated as personal when GitLab says its namespace is a user's, when `scm.yaml` says `namespace: user`, or when neither says it is a group, which is the safe default because MCP results often don't say. So mark each group repo `namespace: group`, or its group name is hidden too. If GitLab says a namespace belongs to a user, that wins over `namespace: group`.
 
 `scm.yaml` uses a strict part of YAML, read without any extra library: top-level `key: value` settings, one `repos:` list whose items start `- platform: ...` with each further setting on its own line, lined up under the first, comments, and plain, whole-number, `'single-quoted'` or `"double-quoted"` values. Put regular expressions in single quotes. Anything else is refused with the file name and line number rather than misread: tabs, anchors and aliases, tags, flow collections (`[...]` or `{...}`), multi-line strings, duplicate keys, unknown settings, settings with no value, and plain values YAML would read as something other than text (such as `yes`, `null` or `1.5`; quote them). If the scripts report a line, fix that line and run again.
 
@@ -161,6 +163,7 @@ python3 <skill>/scripts/scm_fetch.py --print-since --issues clean/
 ```
 
 **GitLab MCP first.** If a GitLab MCP is available, for each repo list the merged merge requests updated on or after that date, then each one's commits and diffs, paging every list until it runs out. Save each tool result **verbatim** in `raw/`, named like this so the pieces can be put back together:
+- the project, if the MCP can fetch it (it says whether the namespace is a group or a user's): `raw/gitlab-project-1.json`
 - merge requests (a list page or a single one): `raw/gitlab-mrs-1.json`, `raw/gitlab-mrs-2.json`, ...
 - one page of a merge request's commits: `raw/gitlab-mr-<project_id>-<iid>-commits-1.json`
 - one page of its diffs: `raw/gitlab-mr-<project_id>-<iid>-diffs-1.json`
@@ -173,18 +176,16 @@ python3 <skill>/scripts/scm_fetch.py --print-since --issues clean/
 python3 <skill>/scripts/scm_fetch.py --config scm.yaml --issues clean/ --out raw/
 ```
 
-It writes the same files the MCP route does, pages merge requests, commits and diffs, retries when GitLab rate-limits (HTTP 429, waiting for `Retry-After`), and leaves diff text out.
+It writes the same files the MCP route does, including the project, pages merge requests, commits and diffs, retries when GitLab rate-limits (HTTP 429, waiting for `Retry-After`), and leaves diff text out.
 
-Either way, run step 2 again so the source control data is anonymised along with the Jira data, then link:
+Either way, run step 2 again with `--scm-config scm.yaml`, so the source control data is anonymised along with the Jira data (it refuses source control data without the config), then link:
 
 ```bash
-python3 <skill>/scripts/anonymise.py raw/ clean/
+python3 <skill>/scripts/anonymise.py raw/ clean/ --scm-config scm.yaml
 python3 <skill>/scripts/link_scm.py --config scm.yaml --issues clean/ --work work/scm_links.json --out out/
 ```
 
 Keys are matched in merge request titles, descriptions, source branch names and commit messages, and only keys of defects in the run count. `work/scm_links.json` lists, for each linked defect, its repos, merge requests, commits and files changed. It holds ticket keys, so it is working data, never something to quote. `out/scm_coverage.md` (with `.json` and `.csv`) gives each repo's changes scanned, changes linked and defects linked, with small groups suppressed. A defect linked from several repos counts once, under "multiple repos".
-
-Known limit: a repo in someone's personal namespace has their username in its path, and that path appears in the outputs. Link only group or team repos.
 
 ### 6. Write the report
 

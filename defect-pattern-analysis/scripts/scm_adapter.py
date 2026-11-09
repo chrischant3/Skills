@@ -69,9 +69,24 @@ class SourceControlAdapter(ABC):
     def check_field(self, key: str, value) -> None:
         """Raise ValueError if value isn't allowed for the optional field key."""
 
+    def owns_file(self, name: str) -> bool:
+        """True if a raw or clean file name is one of this platform's source control files."""
+        return False
+
+    def personal_owner(self, repo: dict, documents: dict) -> str | None:
+        """The username a repo's path holds if it lives in a person's own namespace, else None.
+
+        anonymise.py removes it everywhere, and repo_name() shows it as [person].
+        """
+        return None
+
     @abstractmethod
-    def repo_name(self, repo: dict) -> str:
-        """A stable, readable name for a configured repo, used in every output."""
+    def repo_name(self, repo: dict, documents: dict) -> str:
+        """A stable, readable name for a configured repo, used in every output.
+
+        Never holds a username: a repo in a personal namespace is shown as [person]/name.
+        documents (file name -> parsed JSON) may tell the adapter what kind of namespace it is.
+        """
 
     @abstractmethod
     def client_from_env(self, repo: dict, environ):
@@ -128,6 +143,22 @@ def required_fields(platform: str) -> tuple[str, ...]:
     if platform in PLANNED:
         return PLANNED[platform]
     return adapter_for(platform).required_fields
+
+
+def is_source_control_file(name: str) -> bool:
+    """True if name is a source control file that any ready adapter reads."""
+    return any(adapter_for(p).owns_file(name) for p in ADAPTER_MODULES)
+
+
+def personal_owners(config: dict, documents: dict) -> list[str]:
+    """Usernames held in the paths of configured repos that live in personal namespaces."""
+    owners = []
+    for repo in config["repos"]:
+        if is_ready(repo["platform"]):
+            owner = adapter_for(repo["platform"]).personal_owner(repo, documents)
+            if owner:
+                owners.append(owner)
+    return owners
 
 
 def optional_fields(platform: str) -> tuple[str, ...]:

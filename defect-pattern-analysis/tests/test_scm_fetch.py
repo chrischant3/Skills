@@ -37,7 +37,7 @@ def test_ready_repos_are_fetched_and_planned_ones_skipped(tmp_path):
     client = scm_gitlab.GitLabClient(fixture["base_url"], "t", transport=Recorded(fixture), sleep=lambda s: None)
     results = scm_fetch.fetch_all(scm_config.load_config(tmp_path / "scm.yaml"), "2026-01-01",
                                   tmp_path / "raw", client_for=lambda repo: client)
-    assert results == [{"repo": "group/checkout-service", "changes": 4, "files_written": 15},
+    assert results == [{"repo": "group/checkout-service", "changes": 4, "files_written": 16},
                        {"repo": "accounts-api", "skipped": "azure isn't ready yet"}]
 
 

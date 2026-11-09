@@ -19,7 +19,9 @@ import scm_adapter
 import scm_gitlab
 from conftest import FIXTURES, all_text_under, load_fixture, person_identifiers
 
-REPO = {"platform": "gitlab", "url": "https://gitlab.example.com", "project": "group/checkout-service", "team": "Checkout"}
+REPO = {"platform": "gitlab", "url": "https://gitlab.example.com", "project": "group/checkout-service", "team": "Checkout",
+        "namespace": "group"}
+CONFIG = {"repos": [REPO]}
 SINCE = "2026-01-01"
 TOKEN = "glpat-secret-test-token"
 
@@ -53,7 +55,7 @@ def fetch(tmp_path, fixture=None, **client_kwargs):
 
 
 def changes_from(raw, tmp_path):
-    anonymise.anonymise_dir(raw, tmp_path / "clean")
+    anonymise.anonymise_dir(raw, tmp_path / "clean", scm_config=CONFIG)
     docs = clean_data.load_clean_documents(tmp_path / "clean")
     found = scm_gitlab.ADAPTER.changes(docs, REPO)
     return [c for c in found if (c.merged_at or "")[:10] >= SINCE], tmp_path / "clean"
@@ -69,7 +71,7 @@ def mcp_raw(tmp_path):
 
 def test_every_page_of_merge_requests_commits_and_diffs_is_fetched(tmp_path):
     summary, transport, _ = fetch(tmp_path)
-    assert summary == {"repo": "group/checkout-service", "changes": 4, "files_written": 15}
+    assert summary == {"repo": "group/checkout-service", "changes": 4, "files_written": 16}
     pages = {(path.rsplit("/", 1)[-1], q["page"]) for _, path, q, _ in transport.requests if "/merge_requests/" in path}
     assert {("commits", "2"), ("diffs", "2")} <= pages
     names = sorted(p.name for p in (tmp_path / "raw").iterdir())
@@ -94,14 +96,14 @@ def test_rate_limits_wait_for_retry_after_then_retry(tmp_path):
 
 
 def test_persistent_rate_limiting_gives_up_with_a_clear_error(tmp_path):
-    fixture = {"routes": [{"method": "GET", "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests",
+    fixture = {"routes": [{"method": "GET", "path": "/api/v4/projects/group%2Fcheckout-service",
                            "match": {}, "responses": [{"status": 429, "headers": {}, "body": {}}]}]}
     with pytest.raises(RuntimeError, match="rate limit"):
         fetch(tmp_path, fixture, max_retries=2)
 
 
 def test_an_http_error_names_the_status_but_never_the_token(tmp_path):
-    fixture = {"routes": [{"method": "GET", "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests",
+    fixture = {"routes": [{"method": "GET", "path": "/api/v4/projects/group%2Fcheckout-service",
                            "match": {}, "responses": [{"status": 401, "body": {"message": "401 Unauthorized"}}]}]}
     with pytest.raises(RuntimeError) as err:
         fetch(tmp_path, fixture)
@@ -142,7 +144,7 @@ def test_a_change_holds_every_commit_and_file_from_every_page(tmp_path):
 
 
 def test_changes_from_another_repo_are_ignored(tmp_path):
-    anonymise.anonymise_dir(mcp_raw(tmp_path), tmp_path / "clean")
+    anonymise.anonymise_dir(mcp_raw(tmp_path), tmp_path / "clean", scm_config=CONFIG)
     docs = clean_data.load_clean_documents(tmp_path / "clean")
     assert scm_gitlab.ADAPTER.changes(docs, {**REPO, "project": "group/other-service"}) == []
 

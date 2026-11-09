@@ -81,3 +81,12 @@ def test_skill_documents_the_yaml_subset_scm_yaml_may_use():
     subset = step.split("`scm.yaml` uses a strict part of YAML", 1)[1].split("\n\n", 1)[0]
     for word in ["single quotes", "tabs", "anchors", "flow", "multi-line", "duplicate", "line number"]:
         assert word in subset, word
+
+
+def test_skill_explains_how_personal_namespaces_are_kept_out_of_outputs():
+    step = SKILL.split("### 5.", 1)[1].split("### 6.", 1)[0]
+    assert "namespace: group" in step and "namespace: user" in step
+    assert "[person]/checkout-tool" in step
+    assert "treated as personal" in step
+    assert "--scm-config scm.yaml" in step
+    assert "Link only group or team repos" not in step

@@ -5,7 +5,10 @@ Runs before any analysis script, classification input or output. With MCP fetchi
 model has seen the raw data once, during the fetch step; with the REST fallback it never
 sees names at all.
 
-Usage: anonymise.py <raw_dir> <clean_dir>
+Usage: anonymise.py <raw_dir> <clean_dir> [--scm-config scm.yaml]
+
+--scm-config is required when raw/ holds source control data, so that repos in a
+person's own namespace (such as a GitLab user namespace) lose the username in their path.
 
 Person detection is structural, not a flat key list:
 - Jira user objects (Cloud: accountId; Data Center: name, key and emailAddress), GitLab
@@ -35,12 +38,15 @@ placeholder. Nothing counts distinct people, so there is no salt, hash or pseudo
 two people can't be told apart, and nothing can be reversed or joined across runs.
 """
 
+import argparse
 import json
 import re
 import sys
 from pathlib import Path
 
 import jira_normalise
+import scm_adapter
+import scm_config
 
 PLACEHOLDER = "[person]"
 TRAILER_PLACEHOLDER = "[trailer removed]"
@@ -54,9 +60,10 @@ ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
 # users, Azure DevOps identities and git author/committer objects.
 PERSON_MARKER_KEYS = {"accountId", "emailAddress", "email", "uniqueName", "username", "displayName"}
 # Values that identify a person, learnt so they can be removed from free text too.
-PERSON_ID_KEYS = ("accountId", "key", "username", "uniqueName", "name", "emailAddress", "email", "displayName", "id")
+PERSON_ID_KEYS = ("accountId", "key", "username", "uniqueName", "name", "emailAddress", "email", "displayName", "id",
+                  "path", "full_path")
 # Non-identifying facts on a person object that analysis may need.
-PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date"}
+PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date", "kind"}
 # Flat string fields that hold a person in GitLab and git exports.
 PERSON_STRING_KEYS = {"author_name", "author_email", "committer_name", "committer_email",
                       "authorName", "authorEmail", "committerName", "committerEmail"}
@@ -107,8 +114,11 @@ def _already_clean(value: str) -> bool:
 
 
 def is_person(obj) -> bool:
-    """True if obj is a structural person record (user, identity or git signature)."""
-    return isinstance(obj, dict) and any(k in obj for k in PERSON_MARKER_KEYS)
+    """True if obj is a structural person record (user, identity, git signature or user namespace)."""
+    if not isinstance(obj, dict):
+        return False
+    user_namespace = obj.get("kind") == "user" and ("path" in obj or "full_path" in obj)
+    return user_namespace or any(k in obj for k in PERSON_MARKER_KEYS)
 
 
 def _person_values(obj: dict) -> list[str]:
@@ -170,6 +180,14 @@ class Anonymiser:
                     self._protect(label)
         for value in obj.values():
             self._walk(value)
+
+    def add_identifiers(self, values) -> None:
+        """Treat each value (such as the owner of a personal repo) as a person to remove, however short."""
+        for v in (str(v) for v in values if str(v).strip() and not _already_clean(str(v))):
+            self._identifiers.add(v.lower())
+            self._literals.add(v)
+            self._handles.add(v.lower())
+        self._patterns = None
 
     def _learn_changelog_item(self, item: dict) -> None:
         field = str(item.get("fieldId") or item.get("field") or "").lower()
@@ -365,7 +383,7 @@ def is_marked(doc) -> bool:
     return isinstance(doc, dict) and isinstance(doc.get(MARKER_KEY), dict) and doc[MARKER_KEY].get("by") == MARKER["by"]
 
 
-def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None) -> int:
+def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None, scm_config: dict | None = None) -> int:
     """Anonymise every *.json file in in_dir into out_dir. Returns the number of files written.
 
     Jira issues, in any shape jira_normalise understands (MCP results or REST files), are
@@ -373,6 +391,12 @@ def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None) -> int:
     reporting coverage and gaps. Any other JSON (such as source control exports) keeps
     its file name. Every input is read before any is written, so a person named in one
     file is removed from all of them. Nothing else is written.
+
+    Args:
+        scm_config: scm.yaml as scm_config.load_config() returns it. Required when in_dir
+            holds source control files, so the owners of repos in personal namespaces are removed.
+    Raises:
+        ValueError: if in_dir holds source control files and scm_config is None.
     """
     in_dir, out_dir = Path(in_dir), Path(out_dir)
     if in_dir.resolve() == out_dir.resolve():
@@ -384,7 +408,13 @@ def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None) -> int:
             manifest = doc
         else:
             docs.append((path, doc))
+    scm_files = [path.name for path, _ in docs if scm_adapter.is_source_control_file(path.name)]
+    if scm_files and scm_config is None:
+        raise ValueError(f"{in_dir} holds source control data ({', '.join(scm_files[:3])}, ...); pass its scm.yaml "
+                         "with --scm-config so repos in personal namespaces lose the username")
     anonymiser = anonymiser or Anonymiser()
+    if scm_files:
+        anonymiser.add_identifiers(scm_adapter.personal_owners(scm_config, {p.name: d for p, d in docs}))
     anonymiser.learn([doc for _, doc in docs])
 
     jira_issues, others = [], []
@@ -417,12 +447,18 @@ def _write(path: Path, doc) -> None:
 
 
 def main(argv=None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if len(args) != 2:
-        print(next(line for line in __doc__.splitlines() if line.startswith("Usage:")), file=sys.stderr)
+    ap = argparse.ArgumentParser(description="Remove every person identifier before analysis.")
+    ap.add_argument("raw_dir")
+    ap.add_argument("clean_dir")
+    ap.add_argument("--scm-config", help="scm.yaml; required when raw/ holds source control data")
+    a = ap.parse_args(argv)
+    try:
+        config = scm_config.load_config(a.scm_config) if a.scm_config else None
+        n = anonymise_dir(a.raw_dir, a.clean_dir, scm_config=config)
+    except ValueError as err:
+        print(f"error: {err}", file=sys.stderr)
         return 2
-    n = anonymise_dir(args[0], args[1])
-    print(f"Anonymised {n} files -> {args[1]}")
+    print(f"Anonymised {n} files -> {a.clean_dir}")
     return 0
 
 

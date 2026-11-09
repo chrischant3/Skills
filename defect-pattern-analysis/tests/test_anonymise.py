@@ -34,7 +34,7 @@ def run_dir(tmp_path: Path, docs: dict[str, object]) -> Path:
     raw.mkdir(parents=True)
     for name, doc in docs.items():
         (raw / name).write_text(json.dumps(doc), encoding="utf-8")
-    anonymise.anonymise_dir(raw, clean)
+    anonymise.anonymise_dir(raw, clean, scm_config={"repos": []})
     return clean
 
 

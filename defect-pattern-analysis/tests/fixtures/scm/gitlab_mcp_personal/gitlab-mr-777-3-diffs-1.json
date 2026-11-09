@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"old_path\": \"tool/address.py\", \"new_path\": \"tool/address.py\", \"a_mode\": \"100644\", \"b_mode\": \"100644\", \"diff\": \"@@ +1 @@\\n+# guard\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}]"
+  }
+ ]
+}
