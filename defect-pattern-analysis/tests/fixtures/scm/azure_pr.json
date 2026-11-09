@@ -1,0 +1,53 @@
+{
+  "pullRequestId": 77,
+  "title": "ACC_123 handle gateway timeout",
+  "description": "Retries with backoff. @<00000000-0000-4000-8000-000000000003> please review.",
+  "sourceRefName": "refs/heads/bugfix/ACC_123-timeout",
+  "status": "completed",
+  "closedDate": "2026-04-12T08:00:00Z",
+  "createdBy": {
+    "displayName": "Oluwaseun Mockley",
+    "uniqueName": "o.mockley@example.com",
+    "id": "00000000-0000-4000-8000-000000000004",
+    "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=0"
+  },
+  "closedBy": {
+    "displayName": "Dana Sampleton",
+    "uniqueName": "dana.sampleton@example.com",
+    "id": "00000000-0000-4000-8000-000000000005",
+    "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=0"
+  },
+  "reviewers": [
+    {
+      "displayName": "Grace Placeholder",
+      "uniqueName": "grace.placeholder@example.net",
+      "id": "00000000-0000-4000-8000-000000000003",
+      "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=0",
+      "vote": 10
+    }
+  ],
+  "commits": [
+    {
+      "commitId": "b2c3d4e5f60718293a4b5c6d7e8f901234567890",
+      "comment": "Retry on timeout\n\nReviewed-by: Grace Placeholder <grace.placeholder@example.net>",
+      "author": {
+        "name": "Oluwaseun Mockley",
+        "email": "o.mockley@example.com",
+        "date": "2026-04-11T10:00:00Z"
+      },
+      "committer": {
+        "name": "Dana Sampleton",
+        "email": "dana.sampleton@example.com",
+        "date": "2026-04-11T10:05:00Z"
+      }
+    }
+  ],
+  "changes": [
+    {
+      "item": {
+        "path": "/src/Accounts/TimeoutPolicy.cs"
+      },
+      "changeType": "edit"
+    }
+  ]
+}
