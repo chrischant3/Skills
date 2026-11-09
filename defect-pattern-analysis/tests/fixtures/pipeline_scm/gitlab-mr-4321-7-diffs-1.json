@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"old_path\": \"src/checkout/address.py\", \"new_path\": \"src/checkout/address.py\", \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}, {\"old_path\": \"tests/checkout/test_address.py\", \"new_path\": \"tests/checkout/test_address.py\", \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}, {\"old_path\": \"src/payments/card.py\", \"new_path\": \"src/payments/card.py\", \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}]"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"commitId\": \"306aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"author\": {\"name\": \"Tomasz Fakename\", \"email\": \"t.fakename@example.org\", \"date\": \"2026-03-01T10:00:00Z\"}, \"committer\": {\"name\": \"Tomasz Fakename\", \"email\": \"t.fakename@example.org\", \"date\": \"2026-03-01T10:00:00Z\"}, \"comment\": \"Work for ABC-521\\n\\nSigned-off-by: Tomasz Fakename <t.fakename@example.org>\"}]"
+  }
+ ]
+}

@@ -19,9 +19,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
 # platform name -> module that defines ADAPTER, an instance of a SourceControlAdapter subclass.
-ADAPTER_MODULES = {"gitlab": "scm_gitlab"}
+ADAPTER_MODULES = {"gitlab": "scm_gitlab", "azure": "scm_azure"}
 # Platforms whose config shape is accepted but whose adapter isn't built yet: platform -> required fields.
-PLANNED = {"azure": ("org", "project", "repo")}
+PLANNED: dict[str, tuple[str, ...]] = {}
 
 
 @dataclass

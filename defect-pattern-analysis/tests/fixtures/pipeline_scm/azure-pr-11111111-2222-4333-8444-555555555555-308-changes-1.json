@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"changeEntries\": [{\"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"path\": \"/src/Accounts/Address/AddressMapper.cs\"}, \"changeType\": \"edit\"}, {\"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"path\": \"/README.md\"}, \"changeType\": \"edit\"}]}"
+  }
+ ]
+}

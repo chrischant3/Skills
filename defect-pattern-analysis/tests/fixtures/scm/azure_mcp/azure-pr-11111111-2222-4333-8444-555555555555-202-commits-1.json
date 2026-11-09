@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"commitId\": \"2021111111111111111111111111111111111111\", \"author\": {\"name\": \"Dana Sampleton\", \"email\": \"dana.sampleton@example.com\", \"date\": \"2026-03-09T10:00:00Z\"}, \"committer\": {\"name\": \"Dana Sampleton\", \"email\": \"dana.sampleton@example.com\", \"date\": \"2026-03-09T10:00:00Z\"}, \"comment\": \"Drop address from log line\", \"url\": \"https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2021111111111111111111111111111111111111\"}]"
+  }
+ ]
+}

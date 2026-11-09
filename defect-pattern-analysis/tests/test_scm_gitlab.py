@@ -167,8 +167,3 @@ def test_the_adapter_is_registered_for_its_platform():
     assert scm_adapter.adapter_for("gitlab") is scm_gitlab.ADAPTER
     assert scm_gitlab.ADAPTER.required_fields == ("url", "project")
 
-
-def test_azure_devops_is_known_but_not_ready():
-    assert not scm_adapter.is_ready("azure")
-    with pytest.raises(NotImplementedError, match="isn't ready"):
-        scm_adapter.adapter_for("azure")

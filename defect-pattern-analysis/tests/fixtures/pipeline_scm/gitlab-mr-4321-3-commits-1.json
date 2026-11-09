@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"4321003000000000000000000000000000000000\", \"short_id\": \"43210030\", \"title\": \"Work for ABC-502\", \"message\": \"Work for ABC-502\\n\\nCo-authored-by: Tomasz Fakename <t.fakename@example.org>\", \"author_name\": \"Oluwaseun Mockley\", \"author_email\": \"o.mockley@example.com\", \"committer_name\": \"Oluwaseun Mockley\", \"committer_email\": \"o.mockley@example.com\", \"trailers\": {}}]"
+  }
+ ]
+}

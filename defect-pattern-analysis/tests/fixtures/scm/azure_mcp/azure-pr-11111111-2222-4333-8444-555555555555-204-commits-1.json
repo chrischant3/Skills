@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"commitId\": \"2041111111111111111111111111111111111111\", \"author\": {\"name\": \"Priya Testwell\", \"email\": \"priya.testwell@example.com\", \"date\": \"2026-04-19T10:00:00Z\"}, \"committer\": {\"name\": \"Priya Testwell\", \"email\": \"priya.testwell@example.com\", \"date\": \"2026-04-19T10:00:00Z\"}, \"comment\": \"ABC-102 shorten idle window\\n\\nReviewed-by: Grace Placeholder <grace.placeholder@example.net>\", \"url\": \"https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2041111111111111111111111111111111111111\"}]"
+  }
+ ]
+}

@@ -12,9 +12,9 @@ person's own namespace (such as a GitLab user namespace) lose the username in th
 
 Person detection is structural, not a flat key list:
 - Jira user objects (Cloud: accountId; Data Center: name, key and emailAddress), GitLab
-  users (username), Azure DevOps identities (uniqueName, displayName) and git
-  name/email pairs are replaced by {"person": "[person]"}. Status, issue type, component and
-  other named Jira entities are never treated as people.
+  users (username), Azure DevOps identities (uniqueName, displayName, descriptor or
+  imageUrl) and git name/email pairs are replaced by {"person": "[person]"}. Status,
+  issue type, component and other named Jira entities are never treated as people.
 - MCP results that hold JSON as text are decoded first, so the people inside them are
   learnt and removed like any others.
 - GitLab parsed commit trailers lose every value, and diff bodies are dropped (only
@@ -22,8 +22,9 @@ Person detection is structural, not a flat key list:
   user ids, are never removed from text, so issue keys and counts survive.
 - Changelog items for person fields (assignee, reporter, creator, or any item whose
   value is a known person) keep their shape but lose the person.
-- In free text: commit trailers, Jira [~...] mentions, ADF mention nodes and email
-  addresses are always removed. Display names, name parts, usernames and account ids
+- In free text: commit trailers, Jira [~...] mentions, ADF mention nodes, Azure DevOps
+  @<GUID> mentions and email addresses are always removed. Display names, name parts,
+  usernames (including the account part of DOMAIN\\account), descriptors and account ids
   are removed when they belong to a person found anywhere in the input.
 - Every @handle in prose is removed, whether or not the person appears elsewhere in
   the input. Code is protected: handles inside fenced blocks, inline code, Jira
@@ -57,11 +58,13 @@ INGEST_REPORT = "_ingest.json"
 ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
 
 # Any of these keys marks a dict as a person: Jira Cloud and Data Center users, GitLab
-# users, Azure DevOps identities and git author/committer objects.
-PERSON_MARKER_KEYS = {"accountId", "emailAddress", "email", "uniqueName", "username", "displayName"}
+# users, Azure DevOps identities (which may carry only an id, descriptor and imageUrl)
+# and git author/committer objects.
+PERSON_MARKER_KEYS = {"accountId", "emailAddress", "email", "uniqueName", "username", "displayName", "descriptor",
+                      "imageUrl"}
 # Values that identify a person, learnt so they can be removed from free text too.
 PERSON_ID_KEYS = ("accountId", "key", "username", "uniqueName", "name", "emailAddress", "email", "displayName", "id",
-                  "path", "full_path")
+                  "path", "full_path", "descriptor")
 # Non-identifying facts on a person object that analysis may need.
 PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date", "kind"}
 # Flat string fields that hold a person in GitLab and git exports.
@@ -93,6 +96,8 @@ FILE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp", "pd
 
 TRAILER = re.compile(r"(?im)^[ \t]*(signed-off-by|co-authored-by|co-developed-by|reviewed-by|acked-by|tested-by|"
                      r"reported-by|approved-by|helped-by|suggested-by):.*$")
+# Azure DevOps writes an @mention as @<identity GUID>; a GUID is never code, so it always goes.
+AZURE_MENTION = re.compile(r"@<[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}>")
 JIRA_MENTION = re.compile(r"\[~accountid:[^\]]*\]|\[~[^\]\s][^\]]*\]", re.IGNORECASE)
 EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.([A-Za-z]{2,24})(?![\w-])")
 HANDLE = re.compile(r"(?<![\w@./])@([A-Za-z0-9_](?:[A-Za-z0-9_.\-]*[A-Za-z0-9_])?)")
@@ -209,6 +214,8 @@ class Anonymiser:
         values = [v for v in values if v.strip() and not _already_clean(v)]
         if not values:
             return
+        # A domain account such as EXAMPLE\rquill is also written as plain rquill.
+        values += [v.rsplit("\\", 1)[1] for v in values if "\\" in v and v.rsplit("\\", 1)[1]]
         for v in values:
             self._identifiers.add(v.lower())
             # A bare number (such as a GitLab user id) means nothing in prose, and removing it
@@ -282,6 +289,7 @@ class Anonymiser:
         literals, name_parts = self._compiled()
         text = TRAILER.sub(TRAILER_PLACEHOLDER, text)
         text = JIRA_MENTION.sub(PLACEHOLDER, text)
+        text = AZURE_MENTION.sub(f"@<{PLACEHOLDER}>", text)
         text = EMAIL.sub(lambda m: m.group(0) if m.group(1).lower() in FILE_EXTENSIONS else PLACEHOLDER, text)
         text = self._scrub_handles(text, in_code)
         if literals:

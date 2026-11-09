@@ -31,10 +31,10 @@ def test_skill_never_lowers_the_group_threshold():
 
 
 def test_draft_scripts_with_known_problems_are_marked_not_ready():
-    not_ready = SKILL.split("## Not ready yet", 1)[1]
+    not_ready = SKILL.split("## Not ready yet", 1)[1].split("## Later versions", 1)[0]
     for name in ["ticket_signals.py", "szz.py"]:
         assert f"scripts/{name}" in not_ready
-    assert "Azure DevOps" in not_ready
+    assert "Azure DevOps" not in not_ready and "hotspots" not in not_ready.lower()
 
 
 def test_gitlab_linking_runs_after_anonymisation_and_before_the_report():
@@ -90,3 +90,31 @@ def test_skill_explains_how_personal_namespaces_are_kept_out_of_outputs():
     assert "treated as personal" in step
     assert "--scm-config scm.yaml" in step
     assert "Link only group or team repos" not in step
+
+
+def step5():
+    return SKILL.split("### 5.", 1)[1].split("### 6.", 1)[0]
+
+
+def test_azure_devops_linking_is_documented_with_its_files_and_token():
+    step = step5()
+    assert "Azure DevOps" in step and "platform: azure" in step
+    for name in ["raw/azure-prs-1.json", "-commits-1.json", "-changes-1.json", "AZDO_PAT", "last iteration"]:
+        assert name in step, name
+
+
+def test_skill_says_the_azure_devops_org_never_reaches_an_output():
+    assert "the org never appears" in step5()
+
+
+def test_hotspots_run_after_linking_and_explain_the_counting_rule():
+    step = step5()
+    assert step.index("scripts/link_scm.py") < step.index("scripts/hotspots.py")
+    assert "counts defects, not files or commits" in step and "--depth" in step
+
+
+def test_the_report_has_a_hotspot_section_after_the_recurring_types():
+    report = SKILL.split("### 6.", 1)[1]
+    assert report.index("**Recurring defect types and themes**") < report.index("**Where fixes land**") < \
+        report.index("**Caveats**")
+    assert "hotspots.md" in report

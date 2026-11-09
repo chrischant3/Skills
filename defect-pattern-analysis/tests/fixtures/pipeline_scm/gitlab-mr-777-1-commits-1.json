@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"7770010000000000000000000000000000000000\", \"short_id\": \"77700100\", \"title\": \"Work for ABC-511\", \"message\": \"Work for ABC-511\\n\\nCo-authored-by: Dana Sampleton <dana.sampleton@example.com>\", \"author_name\": \"Robin Quill\", \"author_email\": \"robin.quill@example.com\", \"committer_name\": \"Robin Quill\", \"committer_email\": \"robin.quill@example.com\", \"trailers\": {}}]"
+  }
+ ]
+}

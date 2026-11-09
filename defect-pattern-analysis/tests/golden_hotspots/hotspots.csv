@@ -1,0 +1,7 @@
+repo,platform,directory,defects
+group/checkout-service,gitlab,src/checkout,9
+Accounts/accounts-api,azure,src/Accounts,8
+group/checkout-service,gitlab,tests/checkout,8
+Accounts/accounts-api,azure,tests/Accounts.Tests,6
+[person]/checkout-tool,gitlab,notes/[person],5
+"4 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",,,

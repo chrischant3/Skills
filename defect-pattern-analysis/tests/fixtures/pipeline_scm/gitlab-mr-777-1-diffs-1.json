@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"old_path\": \"notes/robin.q/defect-11.md\", \"new_path\": \"notes/robin.q/defect-11.md\", \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}, {\"old_path\": \"notes/robin.q/followup-11.md\", \"new_path\": \"notes/robin.q/followup-11.md\", \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}]"
+  }
+ ]
+}

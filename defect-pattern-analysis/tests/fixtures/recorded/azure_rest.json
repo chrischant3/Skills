@@ -1,0 +1,1127 @@
+{
+ "note": "Synthetic Azure DevOps REST responses. None of these people are real.",
+ "org": "example-org",
+ "project": "Accounts",
+ "repo": "accounts-api",
+ "repository_id": "11111111-2222-4333-8444-555555555555",
+ "since": "2026-01-01",
+ "routes": [
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/201/commits",
+   "match": {
+    "continuationToken": "tok-201-1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "commitId": "2013333333333333333333333333333333333333",
+        "author": {
+         "name": "Oluwaseun Mockley",
+         "email": "o.mockley@example.com",
+         "date": "2026-04-06T09:00:00Z"
+        },
+        "committer": {
+         "name": "Oluwaseun Mockley",
+         "email": "o.mockley@example.com",
+         "date": "2026-04-06T09:00:00Z"
+        },
+        "comment": "Test the timeout path\n\nSigned-off-by: Oluwaseun Mockley <o.mockley@example.com>",
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2013333333333333333333333333333333333333"
+       }
+      ],
+      "count": 1
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullrequests",
+   "match": {
+    "$skip": "0",
+    "searchCriteria.status": "completed"
+   },
+   "responses": [
+    {
+     "status": 429,
+     "headers": {
+      "Retry-After": "4"
+     },
+     "body": {
+      "message": "TF400733: rate limited"
+     }
+    },
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "repository": {
+         "id": "11111111-2222-4333-8444-555555555555",
+         "name": "accounts-api",
+         "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555",
+         "project": {
+          "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "name": "Accounts",
+          "state": "wellFormed",
+          "visibility": "private"
+         }
+        },
+        "pullRequestId": 204,
+        "codeReviewId": 204,
+        "status": "completed",
+        "createdBy": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "creationDate": "2026-04-20T08:00:00Z",
+        "closedDate": "2026-04-20T16:00:00Z",
+        "closedBy": {
+         "displayName": "Grace Placeholder",
+         "uniqueName": "grace.placeholder@example.net",
+         "id": "00000000-0000-4000-8000-000000000003",
+         "descriptor": "aad.R3JhY2VQbGFjZWhvbGRlclN5bg",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000003",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000003",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.R3JhY2VQbGFjZWhvbGRlclN5bg"
+          }
+         }
+        },
+        "title": "Shorten idle session window",
+        "description": "Fixes ABC-101 follow-up. cc @<00000000-0000-4000-8000-000000000001> and @tomasz.f",
+        "sourceRefName": "refs/heads/feature/idle-window",
+        "targetRefName": "refs/heads/main",
+        "mergeStatus": "succeeded",
+        "isDraft": false,
+        "mergeId": "00000204-0000-4000-8000-000000000000",
+        "lastMergeSourceCommit": {
+         "commitId": "204a204a204a204a204a204a204a204a",
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/x"
+        },
+        "lastMergeCommit": {
+         "commitId": "204c204c204c204c204c204c204c204c",
+         "author": {
+          "name": "Oluwaseun Mockley",
+          "email": "o.mockley@example.com",
+          "date": "2026-04-20T16:00:00Z"
+         },
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/y"
+        },
+        "reviewers": [
+         {
+          "displayName": "Grace Placeholder",
+          "uniqueName": "grace.placeholder@example.net",
+          "id": "00000000-0000-4000-8000-000000000003",
+          "descriptor": "aad.R3JhY2VQbGFjZWhvbGRlclN5bg",
+          "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000003",
+          "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000003",
+          "_links": {
+           "avatar": {
+            "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.R3JhY2VQbGFjZWhvbGRlclN5bg"
+           }
+          },
+          "reviewerUrl": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/0/reviewers/00000000-0000-4000-8000-000000000003",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "isRequired": false
+         }
+        ],
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/204",
+        "completionOptions": {
+         "mergeCommitMessage": "Merged PR 204: Shorten idle session window",
+         "deleteSourceBranch": true
+        },
+        "supportsIterations": true,
+        "autoCompleteSetBy": {
+         "id": "00000000-0000-4000-8000-000000000002",
+         "descriptor": "aad.VG9tYXN6RmFrZW5hbWVTeW50aA",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000002",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000002",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.VG9tYXN6RmFrZW5hbWVTeW50aA"
+          }
+         }
+        }
+       },
+       {
+        "repository": {
+         "id": "11111111-2222-4333-8444-555555555555",
+         "name": "accounts-api",
+         "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555",
+         "project": {
+          "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "name": "Accounts",
+          "state": "wellFormed",
+          "visibility": "private"
+         }
+        },
+        "pullRequestId": 203,
+        "codeReviewId": 203,
+        "status": "completed",
+        "createdBy": {
+         "displayName": "Oluwaseun Mockley",
+         "uniqueName": "o.mockley@example.com",
+         "id": "00000000-0000-4000-8000-000000000004",
+         "descriptor": "aad.T2x1d2FzZXVuTW9ja2xleVN5bg",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000004",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000004",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.T2x1d2FzZXVuTW9ja2xleVN5bg"
+          }
+         }
+        },
+        "creationDate": "2026-03-20T08:00:00Z",
+        "closedDate": "2026-03-20T12:00:00Z",
+        "closedBy": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "title": "Bump build agent image",
+        "description": "Routine upgrade, no ticket. Thanks Dana Sampleton.",
+        "sourceRefName": "refs/heads/chore/agent-image",
+        "targetRefName": "refs/heads/main",
+        "mergeStatus": "succeeded",
+        "isDraft": false,
+        "mergeId": "00000203-0000-4000-8000-000000000000",
+        "lastMergeSourceCommit": {
+         "commitId": "203a203a203a203a203a203a203a203a",
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/x"
+        },
+        "lastMergeCommit": {
+         "commitId": "203c203c203c203c203c203c203c203c",
+         "author": {
+          "name": "Oluwaseun Mockley",
+          "email": "o.mockley@example.com",
+          "date": "2026-03-20T12:00:00Z"
+         },
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/y"
+        },
+        "reviewers": [
+         {
+          "displayName": "Priya Testwell",
+          "uniqueName": "priya.testwell@example.com",
+          "id": "00000000-0000-4000-8000-000000000001",
+          "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+          "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+          "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+          "_links": {
+           "avatar": {
+            "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+           }
+          },
+          "reviewerUrl": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/0/reviewers/00000000-0000-4000-8000-000000000001",
+          "vote": 5,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "isRequired": false
+         }
+        ],
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/203",
+        "completionOptions": {
+         "mergeCommitMessage": "Merged PR 203: Bump build agent image",
+         "deleteSourceBranch": true
+        },
+        "supportsIterations": true
+       }
+      ],
+      "count": 2
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullrequests",
+   "match": {
+    "$skip": "2",
+    "searchCriteria.status": "completed"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "repository": {
+         "id": "11111111-2222-4333-8444-555555555555",
+         "name": "accounts-api",
+         "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555",
+         "project": {
+          "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "name": "Accounts",
+          "state": "wellFormed",
+          "visibility": "private"
+         }
+        },
+        "pullRequestId": 202,
+        "codeReviewId": 202,
+        "status": "completed",
+        "createdBy": {
+         "displayName": "Dana Sampleton",
+         "uniqueName": "EXAMPLE\\dsampleton",
+         "id": "00000000-0000-4000-8000-000000000005",
+         "descriptor": "win.RGFuYVNhbXBsZXRvblN5bnRo",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000005",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000005",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/win.RGFuYVNhbXBsZXRvblN5bnRo"
+          }
+         }
+        },
+        "creationDate": "2026-03-10T08:00:00Z",
+        "closedDate": "2026-03-10T11:00:00Z",
+        "closedBy": {
+         "displayName": "Oluwaseun Mockley",
+         "uniqueName": "o.mockley@example.com",
+         "id": "00000000-0000-4000-8000-000000000004",
+         "descriptor": "aad.T2x1d2FzZXVuTW9ja2xleVN5bg",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000004",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000004",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.T2x1d2FzZXVuTW9ja2xleVN5bg"
+          }
+         }
+        },
+        "title": "Tidy address logging",
+        "description": "Logs less personal data. Ask EXAMPLE\\dsampleton or dsampleton for context.",
+        "sourceRefName": "refs/heads/bugfix/abc_101-null-address",
+        "targetRefName": "refs/heads/main",
+        "mergeStatus": "succeeded",
+        "isDraft": false,
+        "mergeId": "00000202-0000-4000-8000-000000000000",
+        "lastMergeSourceCommit": {
+         "commitId": "202a202a202a202a202a202a202a202a",
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/x"
+        },
+        "lastMergeCommit": {
+         "commitId": "202c202c202c202c202c202c202c202c",
+         "author": {
+          "name": "Oluwaseun Mockley",
+          "email": "o.mockley@example.com",
+          "date": "2026-03-10T11:00:00Z"
+         },
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/y"
+        },
+        "reviewers": [
+         {
+          "displayName": "Oluwaseun Mockley",
+          "uniqueName": "o.mockley@example.com",
+          "id": "00000000-0000-4000-8000-000000000004",
+          "descriptor": "aad.T2x1d2FzZXVuTW9ja2xleVN5bg",
+          "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000004",
+          "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000004",
+          "_links": {
+           "avatar": {
+            "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.T2x1d2FzZXVuTW9ja2xleVN5bg"
+           }
+          },
+          "reviewerUrl": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/0/reviewers/00000000-0000-4000-8000-000000000004",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "isRequired": false,
+          "votedFor": [
+           {
+            "displayName": "[Accounts]\\Accounts Team",
+            "uniqueName": "vstfs:///Classification/TeamProject/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+            "id": "99999999-0000-4000-8000-000000000099",
+            "isContainer": true,
+            "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=99999999-0000-4000-8000-000000000099"
+           }
+          ]
+         },
+         {
+          "displayName": "[Accounts]\\Accounts Team",
+          "uniqueName": "vstfs:///Classification/TeamProject/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "id": "99999999-0000-4000-8000-000000000099",
+          "isContainer": true,
+          "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=99999999-0000-4000-8000-000000000099",
+          "reviewerUrl": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/0/reviewers/99999999-0000-4000-8000-000000000099",
+          "vote": 0,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "isRequired": false
+         }
+        ],
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/202",
+        "completionOptions": {
+         "mergeCommitMessage": "Merged PR 202: Tidy address logging",
+         "deleteSourceBranch": true
+        },
+        "supportsIterations": true
+       },
+       {
+        "repository": {
+         "id": "11111111-2222-4333-8444-555555555555",
+         "name": "accounts-api",
+         "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555",
+         "project": {
+          "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "name": "Accounts",
+          "state": "wellFormed",
+          "visibility": "private"
+         }
+        },
+        "pullRequestId": 201,
+        "codeReviewId": 201,
+        "status": "completed",
+        "createdBy": {
+         "displayName": "Oluwaseun Mockley",
+         "uniqueName": "o.mockley@example.com",
+         "id": "00000000-0000-4000-8000-000000000004",
+         "descriptor": "aad.T2x1d2FzZXVuTW9ja2xleVN5bg",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000004",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000004",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.T2x1d2FzZXVuTW9ja2xleVN5bg"
+          }
+         }
+        },
+        "creationDate": "2026-04-06T08:00:00Z",
+        "closedDate": "2026-04-06T15:30:00Z",
+        "closedBy": {
+         "displayName": "Dana Sampleton",
+         "uniqueName": "EXAMPLE\\dsampleton",
+         "id": "00000000-0000-4000-8000-000000000005",
+         "descriptor": "win.RGFuYVNhbXBsZXRvblN5bnRo",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000005",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000005",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/win.RGFuYVNhbXBsZXRvblN5bnRo"
+          }
+         }
+        },
+        "title": "ABC-102 fix session timeout",
+        "description": "Retries with backoff.\n\nReviewed by @<00000000-0000-4000-8000-000000000004>",
+        "sourceRefName": "refs/heads/fix/session-timeout",
+        "targetRefName": "refs/heads/main",
+        "mergeStatus": "succeeded",
+        "isDraft": false,
+        "mergeId": "00000201-0000-4000-8000-000000000000",
+        "lastMergeSourceCommit": {
+         "commitId": "201a201a201a201a201a201a201a201a",
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/x"
+        },
+        "lastMergeCommit": {
+         "commitId": "201c201c201c201c201c201c201c201c",
+         "author": {
+          "name": "Oluwaseun Mockley",
+          "email": "o.mockley@example.com",
+          "date": "2026-04-06T15:30:00Z"
+         },
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/y"
+        },
+        "reviewers": [
+         {
+          "displayName": "Grace Placeholder",
+          "uniqueName": "grace.placeholder@example.net",
+          "id": "00000000-0000-4000-8000-000000000003",
+          "descriptor": "aad.R3JhY2VQbGFjZWhvbGRlclN5bg",
+          "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000003",
+          "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000003",
+          "_links": {
+           "avatar": {
+            "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.R3JhY2VQbGFjZWhvbGRlclN5bg"
+           }
+          },
+          "reviewerUrl": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/0/reviewers/00000000-0000-4000-8000-000000000003",
+          "vote": 10,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "isRequired": false
+         },
+         {
+          "displayName": "Dana Sampleton",
+          "uniqueName": "EXAMPLE\\dsampleton",
+          "id": "00000000-0000-4000-8000-000000000005",
+          "descriptor": "win.RGFuYVNhbXBsZXRvblN5bnRo",
+          "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000005",
+          "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000005",
+          "_links": {
+           "avatar": {
+            "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/win.RGFuYVNhbXBsZXRvblN5bnRo"
+           }
+          },
+          "reviewerUrl": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/0/reviewers/00000000-0000-4000-8000-000000000005",
+          "vote": -5,
+          "hasDeclined": false,
+          "isFlagged": false,
+          "isRequired": false
+         }
+        ],
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/201",
+        "completionOptions": {
+         "mergeCommitMessage": "Merged PR 201: ABC-102 fix session timeout",
+         "deleteSourceBranch": true
+        },
+        "supportsIterations": true,
+        "autoCompleteSetBy": {
+         "id": "00000000-0000-4000-8000-000000000002",
+         "descriptor": "aad.VG9tYXN6RmFrZW5hbWVTeW50aA",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000002",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000002",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.VG9tYXN6RmFrZW5hbWVTeW50aA"
+          }
+         }
+        }
+       }
+      ],
+      "count": 2
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullrequests",
+   "match": {
+    "$skip": "4",
+    "searchCriteria.status": "completed"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "repository": {
+         "id": "11111111-2222-4333-8444-555555555555",
+         "name": "accounts-api",
+         "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555",
+         "project": {
+          "id": "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+          "name": "Accounts",
+          "state": "wellFormed",
+          "visibility": "private"
+         }
+        },
+        "pullRequestId": 199,
+        "codeReviewId": 199,
+        "status": "completed",
+        "createdBy": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "creationDate": "2025-12-01T08:00:00Z",
+        "closedDate": "2025-12-01T09:00:00Z",
+        "closedBy": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "title": "ABC-102 early spike",
+        "description": "Before the window.",
+        "sourceRefName": "refs/heads/spike/ABC-102",
+        "targetRefName": "refs/heads/main",
+        "mergeStatus": "succeeded",
+        "isDraft": false,
+        "mergeId": "00000199-0000-4000-8000-000000000000",
+        "lastMergeSourceCommit": {
+         "commitId": "199a199a199a199a199a199a199a199a",
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/x"
+        },
+        "lastMergeCommit": {
+         "commitId": "199c199c199c199c199c199c199c199c",
+         "author": {
+          "name": "Oluwaseun Mockley",
+          "email": "o.mockley@example.com",
+          "date": "2025-12-01T09:00:00Z"
+         },
+         "url": "https://dev.azure.com/example-org/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/y"
+        },
+        "reviewers": [],
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/pullRequests/199",
+        "completionOptions": {
+         "mergeCommitMessage": "Merged PR 199: ABC-102 early spike",
+         "deleteSourceBranch": true
+        },
+        "supportsIterations": true
+       }
+      ],
+      "count": 1
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/201/commits",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "x-ms-continuationtoken": "tok-201-1"
+     },
+     "body": {
+      "value": [
+       {
+        "commitId": "2011111111111111111111111111111111111111",
+        "author": {
+         "name": "Oluwaseun Mockley",
+         "email": "o.mockley@example.com",
+         "date": "2026-04-05T10:00:00Z"
+        },
+        "committer": {
+         "name": "Dana Sampleton",
+         "email": "dana.sampleton@example.com",
+         "date": "2026-04-05T10:05:00Z"
+        },
+        "comment": "Add retry policy\n\nCo-authored-by: Grace Placeholder <grace.placeholder@example.net>",
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2011111111111111111111111111111111111111"
+       },
+       {
+        "commitId": "2012222222222222222222222222222222222222",
+        "author": {
+         "name": "Oluwaseun Mockley",
+         "email": "o.mockley@example.com",
+         "date": "2026-04-05T11:00:00Z"
+        },
+        "committer": {
+         "name": "Oluwaseun Mockley",
+         "email": "o.mockley@example.com",
+         "date": "2026-04-05T11:00:00Z"
+        },
+        "comment": "Wire policy into session store",
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2012222222222222222222222222222222222222"
+       }
+      ],
+      "count": 2
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/201/iterations",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "id": 1,
+        "description": "Update 1",
+        "author": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "createdDate": "2026-03-01T00:00:00Z",
+        "updatedDate": "2026-03-01T00:00:00Z",
+        "sourceRefCommit": {
+         "commitId": "20112011201120112011201120112011"
+        }
+       },
+       {
+        "id": 2,
+        "description": "Update 2",
+        "author": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "createdDate": "2026-03-01T00:00:00Z",
+        "updatedDate": "2026-03-01T00:00:00Z",
+        "sourceRefCommit": {
+         "commitId": "20122012201220122012201220122012"
+        }
+       }
+      ],
+      "count": 2
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/201/iterations/2/changes",
+   "match": {
+    "$skip": "0"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "changeEntries": [
+       {
+        "changeTrackingId": 38,
+        "changeId": 38,
+        "item": {
+         "objectId": "ffffffffffffffffffffffffffffffffffffffff",
+         "originalObjectId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+         "path": "/src/Accounts/Session/TimeoutPolicy.cs"
+        },
+        "changeType": "add"
+       },
+       {
+        "changeTrackingId": 37,
+        "changeId": 37,
+        "item": {
+         "objectId": "ffffffffffffffffffffffffffffffffffffffff",
+         "originalObjectId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+         "path": "/src/Accounts/Session/SessionStore.cs"
+        },
+        "changeType": "edit"
+       }
+      ],
+      "nextSkip": 2,
+      "nextTop": 2
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/201/iterations/2/changes",
+   "match": {
+    "$skip": "2"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "changeEntries": [
+       {
+        "changeTrackingId": 51,
+        "changeId": 51,
+        "item": {
+         "objectId": "ffffffffffffffffffffffffffffffffffffffff",
+         "originalObjectId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+         "path": "/tests/Accounts.Tests/Session/TimeoutPolicyTests.cs"
+        },
+        "changeType": "add"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/202/commits",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "commitId": "2021111111111111111111111111111111111111",
+        "author": {
+         "name": "Dana Sampleton",
+         "email": "dana.sampleton@example.com",
+         "date": "2026-03-09T10:00:00Z"
+        },
+        "committer": {
+         "name": "Dana Sampleton",
+         "email": "dana.sampleton@example.com",
+         "date": "2026-03-09T10:00:00Z"
+        },
+        "comment": "Drop address from log line",
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2021111111111111111111111111111111111111"
+       }
+      ],
+      "count": 1
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/202/iterations",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "id": 1,
+        "description": "Update 1",
+        "author": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "createdDate": "2026-03-01T00:00:00Z",
+        "updatedDate": "2026-03-01T00:00:00Z",
+        "sourceRefCommit": {
+         "commitId": "20212021202120212021202120212021"
+        }
+       }
+      ],
+      "count": 1
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/202/iterations/1/changes",
+   "match": {
+    "$skip": "0"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "changeEntries": [
+       {
+        "changeTrackingId": 21,
+        "changeId": 21,
+        "item": {
+         "path": "/src/Accounts/Address",
+         "isFolder": true,
+         "gitObjectType": "tree"
+        },
+        "changeType": "edit"
+       },
+       {
+        "changeTrackingId": 38,
+        "changeId": 38,
+        "item": {
+         "objectId": "ffffffffffffffffffffffffffffffffffffffff",
+         "originalObjectId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+         "path": "/src/Accounts/Address/AddressMapper.cs"
+        },
+        "changeType": "edit"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/203/commits",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "commitId": "2031111111111111111111111111111111111111",
+        "author": {
+         "name": "Oluwaseun Mockley",
+         "email": "o.mockley@example.com",
+         "date": "2026-03-19T10:00:00Z"
+        },
+        "committer": {
+         "name": "Oluwaseun Mockley",
+         "email": "o.mockley@example.com",
+         "date": "2026-03-19T10:00:00Z"
+        },
+        "comment": "Bump image",
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2031111111111111111111111111111111111111"
+       }
+      ],
+      "count": 1
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/203/iterations",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "id": 1,
+        "description": "Update 1",
+        "author": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "createdDate": "2026-03-01T00:00:00Z",
+        "updatedDate": "2026-03-01T00:00:00Z",
+        "sourceRefCommit": {
+         "commitId": "20312031203120312031203120312031"
+        }
+       }
+      ],
+      "count": 1
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/203/iterations/1/changes",
+   "match": {
+    "$skip": "0"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "changeEntries": [
+       {
+        "changeTrackingId": 26,
+        "changeId": 26,
+        "item": {
+         "objectId": "ffffffffffffffffffffffffffffffffffffffff",
+         "originalObjectId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+         "path": "/build/azure-pipelines.yml"
+        },
+        "changeType": "edit"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/204/commits",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "commitId": "2041111111111111111111111111111111111111",
+        "author": {
+         "name": "Priya Testwell",
+         "email": "priya.testwell@example.com",
+         "date": "2026-04-19T10:00:00Z"
+        },
+        "committer": {
+         "name": "Priya Testwell",
+         "email": "priya.testwell@example.com",
+         "date": "2026-04-19T10:00:00Z"
+        },
+        "comment": "ABC-102 shorten idle window\n\nReviewed-by: Grace Placeholder <grace.placeholder@example.net>",
+        "url": "https://dev.azure.com/example-org/aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee/_apis/git/repositories/11111111-2222-4333-8444-555555555555/commits/2041111111111111111111111111111111111111"
+       }
+      ],
+      "count": 1
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/204/iterations",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "value": [
+       {
+        "id": 1,
+        "description": "Update 1",
+        "author": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "createdDate": "2026-03-01T00:00:00Z",
+        "updatedDate": "2026-03-01T00:00:00Z",
+        "sourceRefCommit": {
+         "commitId": "20412041204120412041204120412041"
+        }
+       },
+       {
+        "id": 2,
+        "description": "Update 2",
+        "author": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "createdDate": "2026-03-01T00:00:00Z",
+        "updatedDate": "2026-03-01T00:00:00Z",
+        "sourceRefCommit": {
+         "commitId": "20422042204220422042204220422042"
+        }
+       },
+       {
+        "id": 3,
+        "description": "Update 3",
+        "author": {
+         "displayName": "Priya Testwell",
+         "uniqueName": "priya.testwell@example.com",
+         "id": "00000000-0000-4000-8000-000000000001",
+         "descriptor": "aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw",
+         "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-000000000001",
+         "url": "https://spsprodweu5.vssps.visualstudio.com/A0/_apis/Identities/00000000-0000-4000-8000-000000000001",
+         "_links": {
+          "avatar": {
+           "href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.UHJpeWFUZXN0d2VsbFN5bnRoZXRpYw"
+          }
+         }
+        },
+        "createdDate": "2026-03-01T00:00:00Z",
+        "updatedDate": "2026-03-01T00:00:00Z",
+        "sourceRefCommit": {
+         "commitId": "20432043204320432043204320432043"
+        }
+       }
+      ],
+      "count": 3
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/example-org/Accounts/_apis/git/repositories/accounts-api/pullRequests/204/iterations/3/changes",
+   "match": {
+    "$skip": "0"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "changeEntries": [
+       {
+        "changeTrackingId": 38,
+        "changeId": 38,
+        "item": {
+         "objectId": "ffffffffffffffffffffffffffffffffffffffff",
+         "originalObjectId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+         "path": "/src/Accounts/Session/TimeoutPolicy.cs"
+        },
+        "changeType": "edit"
+       },
+       {
+        "changeTrackingId": 10,
+        "changeId": 10,
+        "item": {
+         "objectId": "ffffffffffffffffffffffffffffffffffffffff",
+         "originalObjectId": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+         "path": "/README.md"
+        },
+        "changeType": "edit"
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

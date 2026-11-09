@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"changeEntries\": [{\"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"path\": \"/build/azure-pipelines.yml\"}, \"changeType\": \"edit\"}, {\"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"path\": \"/CHANGELOG.md\"}, \"changeType\": \"edit\"}]}"
+  }
+ ]
+}

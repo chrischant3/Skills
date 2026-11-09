@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"changeEntries\": [{\"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"path\": \"/src/Accounts/Profile/Profile.cs\"}, \"changeType\": \"edit\"}, {\"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"path\": \"/tests/Accounts.Tests/Profile/ProfileTests.cs\"}, \"changeType\": \"edit\"}, {\"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"path\": \"/build/azure-pipelines.yml\"}, \"changeType\": \"edit\"}]}"
+  }
+ ]
+}

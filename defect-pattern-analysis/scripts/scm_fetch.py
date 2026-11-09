@@ -13,8 +13,8 @@ The window starts at --since, or by default at the earliest created date among t
 anonymised defects in clean/, so it follows the run's own time window. --print-since
 prints that date, for use when fetching through an MCP instead.
 
-Credentials come from the environment and are never written. GitLab: GITLAB_TOKEN.
-Repos on platforms that aren't ready yet (Azure DevOps) are skipped.
+Credentials come from the environment and are never written or logged. GitLab:
+GITLAB_TOKEN. Azure DevOps: AZDO_PAT. Repos on platforms that aren't ready yet are skipped.
 """
 
 import argparse

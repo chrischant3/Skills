@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"4321005000000000000000000000000000000000\", \"short_id\": \"43210050\", \"title\": \"Work for ABC-504 and ABC-505\", \"message\": \"Work for ABC-504 and ABC-505\\n\\nCo-authored-by: Oluwaseun Mockley <o.mockley@example.com>\", \"author_name\": \"Priya Testwell\", \"author_email\": \"priya.testwell@example.com\", \"committer_name\": \"Priya Testwell\", \"committer_email\": \"priya.testwell@example.com\", \"trailers\": {}}]"
+  }
+ ]
+}

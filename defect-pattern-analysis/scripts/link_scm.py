@@ -23,7 +23,7 @@ Writes:
   suppress.py. A defect linked from several repos counts once, under "multiple repos",
   so the repo rows add up to the total.
 
-Repos on platforms that aren't ready yet (Azure DevOps) are listed as skipped.
+Works the same for GitLab and Azure DevOps. Repos on platforms that aren't ready yet are listed as skipped.
 """
 
 import argparse

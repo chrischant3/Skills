@@ -7,6 +7,8 @@ the command line only up to the point where it would need credentials.
 import json
 
 import anonymise
+import scm_adapter
+import scm_azure
 import scm_config
 import scm_fetch
 import scm_gitlab
@@ -31,14 +33,36 @@ def test_print_since_gives_the_earliest_defect_date(tmp_path, capsys):
     assert capsys.readouterr().out.strip() == "2026-03-04"
 
 
-def test_ready_repos_are_fetched_and_planned_ones_skipped(tmp_path):
+def recorded_client(repo):
+    if repo["platform"] == "gitlab":
+        fixture = load_fixture("recorded/gitlab_rest.json")
+        return scm_gitlab.GitLabClient(fixture["base_url"], "t", transport=Recorded(fixture), sleep=lambda s: None)
+    fixture = load_fixture("recorded/azure_rest.json")
+    return scm_azure.AzureDevOpsClient(repo["org"], "t", transport=Recorded(fixture), sleep=lambda s: None, page_size=2)
+
+
+def test_repos_on_both_platforms_are_fetched(tmp_path):
     (tmp_path / "scm.yaml").write_text(CONFIG)
-    fixture = load_fixture("recorded/gitlab_rest.json")
-    client = scm_gitlab.GitLabClient(fixture["base_url"], "t", transport=Recorded(fixture), sleep=lambda s: None)
     results = scm_fetch.fetch_all(scm_config.load_config(tmp_path / "scm.yaml"), "2026-01-01",
-                                  tmp_path / "raw", client_for=lambda repo: client)
+                                  tmp_path / "raw", client_for=recorded_client)
     assert results == [{"repo": "group/checkout-service", "changes": 4, "files_written": 16},
-                       {"repo": "accounts-api", "skipped": "azure isn't ready yet"}]
+                       {"repo": "Accounts/accounts-api", "changes": 4, "files_written": 14}]
+
+
+def test_repos_on_a_planned_platform_are_skipped(tmp_path, monkeypatch):
+    monkeypatch.setattr(scm_adapter, "PLANNED", {"bitbucket": ("workspace", "repo")})
+    config = {"repos": [{"platform": "bitbucket", "workspace": "w", "repo": "web-app"}]}
+    assert scm_fetch.fetch_all(config, "2026-01-01", tmp_path / "raw", client_for=recorded_client) == \
+        [{"repo": "web-app", "skipped": "bitbucket isn't ready yet"}]
+
+
+def test_a_missing_azure_devops_token_is_named_and_nothing_is_fetched(tmp_path, capsys, monkeypatch):
+    monkeypatch.setenv("GITLAB_TOKEN", "t")
+    monkeypatch.delenv("AZDO_PAT", raising=False)
+    (tmp_path / "scm.yaml").write_text(CONFIG)
+    code = scm_fetch.main(["--config", str(tmp_path / "scm.yaml"), "--since", "2026-01-01", "--out", str(tmp_path / "raw")])
+    assert code == 2 and "AZDO_PAT" in capsys.readouterr().err
+    assert not (tmp_path / "raw").exists()
 
 
 def test_a_missing_token_is_named_and_nothing_is_fetched(tmp_path, capsys, monkeypatch):

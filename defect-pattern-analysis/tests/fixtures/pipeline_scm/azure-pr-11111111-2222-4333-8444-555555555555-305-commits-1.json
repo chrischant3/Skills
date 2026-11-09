@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"commitId\": \"305aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"author\": {\"name\": \"Priya Testwell\", \"email\": \"priya.testwell@example.com\", \"date\": \"2026-03-01T10:00:00Z\"}, \"committer\": {\"name\": \"Priya Testwell\", \"email\": \"priya.testwell@example.com\", \"date\": \"2026-03-01T10:00:00Z\"}, \"comment\": \"Work for ABC_520\\n\\nSigned-off-by: Priya Testwell <priya.testwell@example.com>\"}]"
+  }
+ ]
+}
