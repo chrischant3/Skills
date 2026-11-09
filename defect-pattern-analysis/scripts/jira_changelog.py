@@ -28,14 +28,13 @@ import os
 import re
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
-from email.utils import parsedate_to_datetime
 from pathlib import Path
 
+import rest_transport
+from rest_transport import DEFAULT_RETRY_AFTER, urllib_transport  # noqa: F401  (kept importable from here)
+
 MANIFEST_NAME = "_manifest.json"
-DEFAULT_RETRY_AFTER = 10
 DEFAULT_WINDOW_DAYS = 365
 PAGE_SIZE = 100
 FIELDS = ["summary", "description", "issuetype", "status", "priority", "labels", "components", "project",
@@ -86,29 +85,6 @@ def jql_for_keys(keys) -> str:
     return f"key in ({', '.join(keys)}) ORDER BY key ASC"
 
 
-def urllib_transport(method, url, headers, body, timeout):
-    """Send one HTTP request. Returns (status, headers, body bytes); HTTP errors are returned, not raised."""
-    req = urllib.request.Request(url, data=body, headers=headers, method=method)
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.status, dict(resp.headers), resp.read()
-    except urllib.error.HTTPError as err:
-        return err.code, dict(err.headers or {}), err.read() or b""
-
-
-def _retry_after(headers: dict) -> int:
-    value = next((v for k, v in headers.items() if k.lower() == "retry-after"), None)
-    if value is None:
-        return DEFAULT_RETRY_AFTER
-    try:
-        return max(0, int(value))
-    except ValueError:
-        try:
-            return max(0, int(parsedate_to_datetime(value).timestamp() - time.time()))
-        except (TypeError, ValueError):
-            return DEFAULT_RETRY_AFTER
-
-
 class JiraClient:
     """A small Jira REST client for Cloud or Data Center.
 
@@ -147,7 +123,7 @@ class JiraClient:
         for _ in range(self._max_retries + 1):
             status, resp_headers, raw = self._transport(method, url, headers, data, 60)
             if status == 429:
-                self._sleep(_retry_after(resp_headers))
+                self._sleep(rest_transport.retry_after(resp_headers))
                 continue
             if status >= 400:
                 raise RuntimeError(f"Jira returned HTTP {status} for {method} {path}")
