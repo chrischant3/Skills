@@ -9,7 +9,7 @@ A **critical rule** is one whose breach is costly or hard to undo (leaked secret
 - **S1.** Critical rules appear first, numbered, each with a one-line reason.
   High when a critical rule is hard to find: inside narrative prose, sharing a sentence or paragraph with unrelated content, or placed after less important rules.
 - **S2.** Each rule is stated once; detail points back to it rather than rewording it.
-  High when a critical rule appears twice with different wording or strength, because the reader cannot tell which version governs. Medium for other repetition.
+  High when a critical rule is restated in different wording or strength, because the reader cannot tell which version governs. Medium when the repeated content is not a critical rule, or is repeated word for word.
 - **S3.** Headers show hierarchy, no deeper than H3.
 - **S4.** Numbered lists for ordered steps, bullets for independent rules.
 
@@ -48,8 +48,8 @@ A rationalisation table lists the excuses an agent gives for skipping a rule ("i
 
 ## Severity scale
 
-- **High:** a critical rule is buried, contradicted, stated in two conflicting versions, or unreachable from what the agent loads.
-- **Medium:** bloat, repetition or weak pointers that dilute attention.
+- **High:** a critical rule is buried, contradicted or unreachable from what the agent loads. For repeated rules, S2 sets the severity.
+- **Medium:** bloat or weak pointers that dilute attention.
 - **Low:** style and formatting.
 
 Where an item above has a severity note, the note takes precedence.
