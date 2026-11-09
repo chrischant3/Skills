@@ -7,3 +7,12 @@ evals/results/
 .testzilla/
 
 .DS_Store
+
+# Python bytecode
+__pycache__/
+
+# Local Claude Code settings
+.claude/
+
+# Private handover notes (contain employer-specific detail)
+skills-to-develop/
