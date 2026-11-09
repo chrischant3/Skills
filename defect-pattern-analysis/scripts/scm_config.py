@@ -89,12 +89,16 @@ def _scalar(raw: str | None, n: int):
     return raw
 
 
-def parse_with_lines(text: str) -> tuple[dict, dict]:
+def parse_with_lines(text: str, list_key: str = LIST_KEY) -> tuple[dict, dict]:
     """Parse the supported subset into a dict, plus the line each part came from.
 
+    Args:
+        text: the file's contents.
+        list_key: the name of the one top-level list, used in messages and in the line map.
+            Other config files that share this subset (such as signals.yaml) pass their own.
     Returns:
-        (data, lines): lines maps a top-level key to its line, ("repos", i) to item i's
-        first line, and ("repos", i, key) to that setting's line.
+        (data, lines): lines maps a top-level key to its line, (list_key, i) to item i's
+        first line, and (list_key, i, key) to that setting's line.
     Raises:
         ValueError: "line N: ..." for anything outside the subset.
     """
@@ -120,7 +124,7 @@ def parse_with_lines(text: str) -> tuple[dict, dict]:
         indent, key, value = len(m["indent"]), m["key"], _scalar(m["value"], n)
         if m["dash"]:
             if items is None or indent == 0:
-                raise ValueError(f"line {n}: a list item must be indented under {LIST_KEY}:")
+                raise ValueError(f"line {n}: a list item must be indented under {list_key}:")
             if dash_indent is not None and indent != dash_indent:
                 raise ValueError(f"line {n}: unexpected indentation; list items must line up")
             if value is None:
@@ -128,8 +132,8 @@ def parse_with_lines(text: str) -> tuple[dict, dict]:
             dash_indent, item_indent = indent, indent + len(m["dash"])
             current = {key: value}
             items.append(current)
-            lines[(LIST_KEY, len(items) - 1)] = n
-            lines[(LIST_KEY, len(items) - 1, key)] = n
+            lines[(list_key, len(items) - 1)] = n
+            lines[(list_key, len(items) - 1, key)] = n
         elif indent == 0:
             if key in out:
                 raise ValueError(f"line {n}: duplicate setting {key!r} (first on line {lines[key]})")
@@ -142,12 +146,13 @@ def parse_with_lines(text: str) -> tuple[dict, dict]:
                 out[key] = value
         elif current is not None and indent == item_indent:
             if key in current:
-                first = lines[(LIST_KEY, len(items) - 1, key)]
-                raise ValueError(f"line {n}: duplicate setting {key!r} in this repo (first on line {first})")
+                first = lines[(list_key, len(items) - 1, key)]
+                item = "repo" if list_key == LIST_KEY else "item"
+                raise ValueError(f"line {n}: duplicate setting {key!r} in this {item} (first on line {first})")
             if value is None:
                 raise ValueError(f"line {n}: {key} needs a value")
             current[key] = value
-            lines[(LIST_KEY, len(items) - 1, key)] = n
+            lines[(list_key, len(items) - 1, key)] = n
         else:
             raise ValueError(f"line {n}: unexpected indentation")
     return out, lines
