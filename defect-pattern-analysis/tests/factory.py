@@ -28,15 +28,17 @@ PATHS = [
 ]
 
 
-def _mention_forms(person, flavour):
+def _mention_forms(person, flavour, scm_handles):
     first, last = person["display_name"].split()
     forms = [
         person["display_name"], first, f"{last}'s", person["email"], f"<{person['email']}>",
-        f"@{person['scm_username']}", f"@{first.lower()}",
+        f"@{first.lower()}", f"@{first.lower()}.{last.lower()}", f"@{first[0].lower()}{last.lower()}",
         f"Co-authored-by: {person['display_name']} <{person['email']}>",
         f"Signed-off-by: {person['display_name']} <{person['email']}>",
         f"Reviewed-by: {person['display_name']} <{person['email']}>",
     ]
+    if scm_handles:
+        forms.append(f"@{person['scm_username']}")
     if flavour == "cloud":
         forms.append(f"[~accountid:{person['account_id']}]")
     else:
@@ -53,15 +55,15 @@ def _user(person, flavour):
             "key": person["dc_key"], "emailAddress": person["email"], "displayName": person["display_name"], "active": True}
 
 
-def _sentence(rng, people, flavour):
+def _sentence(rng, people, flavour, scm_handles):
     person = rng.choice(people)
-    form = rng.choice(_mention_forms(person, flavour))
+    form = rng.choice(_mention_forms(person, flavour, scm_handles))
     keep = rng.choice(CODE_SNIPPETS + PATHS + [f"moved to {s}" for s in STATUSES])
     return f"{form} looked at this. See {keep} for detail."
 
 
-def _body(rng, people, flavour, sentences=3):
-    text = "\n".join(_sentence(rng, people, flavour) for _ in range(sentences))
+def _body(rng, people, flavour, scm_handles, sentences=3):
+    text = "\n".join(_sentence(rng, people, flavour, scm_handles) for _ in range(sentences))
     if flavour == "cloud" and rng.random() < 0.5:
         person = rng.choice(people)
         return {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [
@@ -71,8 +73,11 @@ def _body(rng, people, flavour, sentences=3):
 
 
 def make_issue(rng: random.Random, key: str, people, flavour: str, created: str, component: str | None = None,
-               issue_type: str = "Bug") -> dict:
-    """Return one synthetic Jira issue in the REST shape for flavour ('cloud' or 'dc')."""
+               issue_type: str = "Bug", scm_handles: bool = False) -> dict:
+    """Return one synthetic Jira issue in the REST shape for flavour ('cloud' or 'dc').
+
+    scm_handles adds source control usernames (which Jira alone cannot know) to the text.
+    """
     pick = lambda: _user(rng.choice(people), flavour)  # noqa: E731
     component = component or rng.choice(COMPONENTS)
     status = rng.choice(STATUSES)
@@ -88,7 +93,7 @@ def make_issue(rng: random.Random, key: str, people, flavour: str, created: str,
                       "items": [{"field": "assignee", "fieldtype": "jira", "fieldId": "assignee",
                                  "from": ident(a), "fromString": a["display_name"], "to": ident(b), "toString": b["display_name"]}]})
     comments = [{"id": f"{key}-c{n}", "author": pick(), "updateAuthor": pick(), "created": created,
-                 "body": _body(rng, people, flavour, 2)} for n in range(rng.randint(1, 4))]
+                 "body": _body(rng, people, flavour, scm_handles, 2)} for n in range(rng.randint(1, 4))]
     return {
         "id": key.split("-")[1], "key": key, "self": f"{CLOUD if flavour == 'cloud' else DC}/rest/api/2/issue/{key}",
         "fields": {
@@ -102,15 +107,21 @@ def make_issue(rng: random.Random, key: str, people, flavour: str, created: str,
             "created": created, "resolutiondate": None,
             "assignee": pick(), "reporter": pick(), "creator": pick(),
             "customfield_10050": pick(), "customfield_10051": [pick(), pick()],
-            "description": _body(rng, people, flavour, 4),
+            "description": _body(rng, people, flavour, scm_handles, 4),
             "comment": {"comments": comments, "total": len(comments), "maxResults": len(comments), "startAt": 0},
         },
         "changelog": {"startAt": 0, "total": len(histories), "maxResults": len(histories), "histories": histories},
     }
 
 
-def make_dataset(seed: int, people, count: int = 6) -> list[dict]:
+def make_dataset(seed: int, people, count: int = 6, scm_handles: bool = False) -> list[dict]:
     """Return count synthetic issues, alternating Cloud and Data Center shapes, from a fixed seed."""
     rng = random.Random(seed)
     return [make_issue(rng, f"ABC-{seed * 100 + n}", people, "cloud" if n % 2 == 0 else "dc",
-                       f"2026-0{1 + n % 9}-1{n % 9}T10:00:00.000+0000") for n in range(count)]
+                       f"2026-0{1 + n % 9}-1{n % 9}T10:00:00.000+0000", scm_handles=scm_handles) for n in range(count)]
+
+
+def gitlab_users(people) -> list[dict]:
+    """GitLab user objects for people, as a source control export would hold them."""
+    return [{"id": 500 + n, "username": p["scm_username"], "name": p["display_name"], "state": "active"}
+            for n, p in enumerate(people)]
