@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "{\"changeEntries\": [{\"changeTrackingId\": 38, \"changeId\": 38, \"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"originalObjectId\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"path\": \"/src/Accounts/Session/TimeoutPolicy.cs\"}, \"changeType\": \"add\"}, {\"changeTrackingId\": 37, \"changeId\": 37, \"item\": {\"objectId\": \"ffffffffffffffffffffffffffffffffffffffff\", \"originalObjectId\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"path\": \"/src/Accounts/Session/SessionStore.cs\"}, \"changeType\": \"edit\"}]}"
+  }
+ ]
+}

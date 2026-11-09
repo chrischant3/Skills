@@ -14,6 +14,7 @@ import pytest
 
 import anonymise
 import link_scm
+import scm_adapter
 import scm_config
 from conftest import FIXTURES, ROOT, all_text_under, load_fixture, person_identifiers
 
@@ -100,9 +101,17 @@ def test_the_config_default_key_pattern_applies_to_repos_without_their_own(tmp_p
     assert [c["id"] for c in links["defects"]["ABC-101"]["changes"]] == ["12", "16"]
 
 
-def test_azure_devops_repos_are_reported_as_not_ready_and_skipped(tmp_path):
+def test_every_repo_in_the_example_config_is_linked_on_both_platforms(tmp_path):
     links = link_scm.link(scm_config.load_config(ROOT / "scm.yaml"), make_run(tmp_path))
-    assert links["skipped"] == [{"repo": "accounts-api", "platform": "azure", "reason": "not ready yet"}]
+    assert links["skipped"] == []
+    assert {name: r["platform"] for name, r in links["repos"].items()} == {"group/checkout-service": "gitlab",
+                                                                         "Accounts/accounts-api": "azure"}
+
+
+def test_repos_on_a_planned_platform_are_reported_as_not_ready_and_skipped(tmp_path, monkeypatch):
+    monkeypatch.setattr(scm_adapter, "PLANNED", {"bitbucket": ("workspace", "repo")})
+    links = link_scm.link(config(GITLAB, {"platform": "bitbucket", "workspace": "w", "repo": "web-app"}), make_run(tmp_path))
+    assert links["skipped"] == [{"repo": "web-app", "platform": "bitbucket", "reason": "not ready yet"}]
     assert list(links["repos"]) == ["group/checkout-service"]
 
 
