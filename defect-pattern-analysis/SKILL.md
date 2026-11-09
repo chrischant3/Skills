@@ -106,7 +106,7 @@ Known limit of anonymisation: an @handle is removed only when it matches a perso
 python3 <skill>/scripts/make_batches.py clean/ work/batches/
 ```
 
-Read each `work/batches/batch-NNN.json` and classify every ticket against `reference/taxonomy.md`. Load that file before you start, and keep to it exactly so results compare between runs.
+Read each `work/batches/batch-NNN.json` and classify every ticket against `references/taxonomy.md`. Load that file before you start, and keep to it exactly so results compare between runs.
 
 For each ticket, give:
 - `defect_type`, `trigger` and `escape_stage`, spelt exactly as in the taxonomy. One defect type per ticket: the root cause, not the symptom.

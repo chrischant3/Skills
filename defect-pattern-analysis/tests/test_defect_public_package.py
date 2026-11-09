@@ -40,12 +40,12 @@ def test_fixture_emails_use_reserved_example_domains(path):
 
 def test_every_reference_named_in_skill_md_exists():
     skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-    named = set(re.findall(r"(?:reference|scripts)/[\w.-]+", skill))
+    named = set(re.findall(r"(?:references|scripts)/[\w.-]+", skill))
     missing = [n for n in sorted(named) if not (ROOT / n).exists()]
     assert named and missing == []
 
 
 def test_every_reference_file_is_signposted_from_skill_md():
     skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
-    unlisted = [p.name for p in (ROOT / "reference").iterdir() if f"reference/{p.name}" not in skill]
+    unlisted = [p.name for p in (ROOT / "references").iterdir() if f"references/{p.name}" not in skill]
     assert unlisted == []

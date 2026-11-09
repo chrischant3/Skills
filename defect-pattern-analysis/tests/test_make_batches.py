@@ -48,7 +48,7 @@ def test_tickets_carry_what_classification_needs(clean_dir, tmp_path):
     assert first["components"] == ["Payments"] and first["summary"].startswith("Checkout fails")
     assert "@Override" in first["description"] and "assets/logo@2x.png" in first["description"]
     assert len(first["comments"]) == 2
-    assert batch["taxonomy"] == "reference/taxonomy.md"
+    assert batch["taxonomy"] == "references/taxonomy.md"
 
 
 def test_long_descriptions_are_trimmed_and_say_so():

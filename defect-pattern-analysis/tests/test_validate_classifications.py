@@ -7,7 +7,7 @@ import pytest
 import validate_classifications as vc
 from conftest import ROOT
 
-TAXONOMY = vc.load_taxonomy(ROOT / "reference/taxonomy.md")
+TAXONOMY = vc.load_taxonomy(ROOT / "references/taxonomy.md")
 KEYS = ["ABC-1", "ABC-2", "ABC-3"]
 
 

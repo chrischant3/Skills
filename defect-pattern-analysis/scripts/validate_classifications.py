@@ -2,7 +2,7 @@
 """Check Claude's per-ticket classifications against the taxonomy before anything is counted.
 
 Usage: validate_classifications.py <classifications_dir_or_file> --issues clean/ --out work/classified.json
-                                   [--taxonomy reference/taxonomy.md]
+                                   [--taxonomy references/taxonomy.md]
 
 Each input file holds a JSON list of records (or {"classifications": [...]}), one per ticket:
   key, defect_type, trigger, escape_stage, confidence (0 to 1), theme, reason
@@ -39,11 +39,11 @@ UNSAFE_TEXT = [
     (re.compile(r"person_[0-9a-f]{12}"), "a pseudonym"),
     (re.compile(r"\[person\]"), "a redacted person"),
 ]
-DEFAULT_TAXONOMY = Path(__file__).resolve().parent.parent / "reference" / "taxonomy.md"
+DEFAULT_TAXONOMY = Path(__file__).resolve().parent.parent / "references" / "taxonomy.md"
 
 
 def load_taxonomy(path) -> dict:
-    """Read the version and allowed values from reference/taxonomy.md.
+    """Read the version and allowed values from references/taxonomy.md.
 
     Returns {"version", "defect_type": [...], "trigger": [...], "escape_stage": [...]}.
     """

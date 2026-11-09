@@ -19,7 +19,7 @@ from pathlib import Path
 
 import clean_data
 
-TAXONOMY = "reference/taxonomy.md"
+TAXONOMY = "references/taxonomy.md"
 RESPONSE_SHAPE = ("A JSON list with one object per ticket: key, defect_type, trigger, escape_stage, confidence "
                   "(0 to 1), theme (your own words, never copied ticket text), reason (one line; required when "
                   "confidence is below 0.6 or defect_type is unclassified). Values must come from the taxonomy.")
