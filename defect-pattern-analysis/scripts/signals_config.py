@@ -9,7 +9,8 @@ file lists them, per Jira project, in workflow order, each with one category:
   active   work is happening. Time here counts as active.
   waiting  queued, blocked or waiting for someone. Once work has started, time here
            counts as waiting.
-  done     finished. Lead and cycle time end at the last move into done.
+  done     finished. Lead and cycle time end at the last move into done from a
+           status that isn't done.
 
 A move to a status listed earlier for the same project is a backward move.
 

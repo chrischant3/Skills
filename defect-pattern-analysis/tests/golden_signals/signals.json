@@ -1,0 +1,2186 @@
+{
+  "settings": {
+    "min_group_size": 5,
+    "period": "month",
+    "groupings": [
+      "all",
+      "team",
+      "period"
+    ],
+    "acceptance_criteria_field": "customfield_10010",
+    "acceptance_criteria_name": "Acceptance Criteria",
+    "statuses": {
+      "ABC": [
+        {
+          "status": "To Do",
+          "category": "waiting"
+        },
+        {
+          "status": "In Progress",
+          "category": "started"
+        },
+        {
+          "status": "In Review",
+          "category": "waiting"
+        },
+        {
+          "status": "In Test",
+          "category": "active"
+        },
+        {
+          "status": "Done",
+          "category": "done"
+        },
+        {
+          "status": "Closed",
+          "category": "done"
+        }
+      ]
+    }
+  },
+  "suppressed_marker": "suppressed",
+  "summary": {
+    "defects_analysed": 71,
+    "changelog_incomplete_defects": 7,
+    "comments_incomplete_defects": "suppressed",
+    "defects_done": 52,
+    "defects_with_unmapped_statuses": 0,
+    "source_control": "available",
+    "defects_linked_to_source_control": 57
+  },
+  "sections": {
+    "clarity": {
+      "description": "How clearly the defect was described and understood. The rubric score counts how many of four parts the description has: steps to reproduce, expected against actual, environment and acceptance criteria.",
+      "rows": [
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "rubric_score",
+          "defects": 71,
+          "median": 2.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "has_repro_steps",
+          "defects": 71,
+          "with_signal": 50,
+          "share": 0.7
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "has_expected_vs_actual",
+          "defects": 71,
+          "with_signal": 33,
+          "share": 0.46
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "has_environment",
+          "defects": 71,
+          "with_signal": 37,
+          "share": 0.52
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "has_acceptance_criteria",
+          "defects": 71,
+          "with_signal": 36,
+          "share": 0.51
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "edited_after_start",
+          "defects": 51,
+          "with_signal": 19,
+          "share": 0.37
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "rubric_score",
+          "defects": 20,
+          "median": 2.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "has_repro_steps",
+          "defects": 20,
+          "with_signal": 14,
+          "share": 0.7
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "has_expected_vs_actual",
+          "defects": 20,
+          "with_signal": 10,
+          "share": 0.5
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "has_environment",
+          "defects": 20,
+          "with_signal": 10,
+          "share": 0.5
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "has_acceptance_criteria",
+          "defects": 20,
+          "with_signal": 10,
+          "share": 0.5
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "edited_after_start",
+          "defects": 14,
+          "with_signal": 5,
+          "share": 0.36
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "rubric_score",
+          "defects": 30,
+          "median": 2.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "has_repro_steps",
+          "defects": 30,
+          "with_signal": 19,
+          "share": 0.63
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "has_expected_vs_actual",
+          "defects": 30,
+          "with_signal": 9,
+          "share": 0.3
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "has_environment",
+          "defects": 30,
+          "with_signal": 12,
+          "share": 0.4
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "has_acceptance_criteria",
+          "defects": 30,
+          "with_signal": 15,
+          "share": 0.5
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "edited_after_start",
+          "defects": 23,
+          "with_signal": 9,
+          "share": 0.39
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "rubric_score",
+          "defects": 6,
+          "median": 2.0
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "has_repro_steps",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "has_expected_vs_actual",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "has_environment",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "has_acceptance_criteria",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "rubric_score",
+          "defects": 5,
+          "median": 3.0
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "has_repro_steps",
+          "defects": 5,
+          "with_signal": 5,
+          "share": 1.0
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "has_expected_vs_actual",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "has_environment",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "has_acceptance_criteria",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "rubric_score",
+          "defects": 11,
+          "median": 3.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "has_repro_steps",
+          "defects": 11,
+          "with_signal": 11,
+          "share": 1.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "has_expected_vs_actual",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "has_environment",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "has_acceptance_criteria",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "rubric_score",
+          "defects": 12,
+          "median": 2.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "has_repro_steps",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "has_expected_vs_actual",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "has_environment",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "has_acceptance_criteria",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "rubric_score",
+          "defects": 12,
+          "median": 1.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "has_repro_steps",
+          "defects": 12,
+          "with_signal": 7,
+          "share": 0.58
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "has_expected_vs_actual",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "has_environment",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "has_acceptance_criteria",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "rubric_score",
+          "defects": 12,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "has_repro_steps",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "has_expected_vs_actual",
+          "defects": 12,
+          "with_signal": 5,
+          "share": 0.42
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "has_environment",
+          "defects": 12,
+          "with_signal": 6,
+          "share": 0.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "has_acceptance_criteria",
+          "defects": 12,
+          "with_signal": 7,
+          "share": 0.58
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "rubric_score",
+          "defects": 12,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "has_repro_steps",
+          "defects": 12,
+          "with_signal": 5,
+          "share": 0.42
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "has_expected_vs_actual",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "has_environment",
+          "defects": 12,
+          "with_signal": 6,
+          "share": 0.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "has_acceptance_criteria",
+          "defects": 12,
+          "with_signal": 6,
+          "share": 0.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "rubric_score",
+          "defects": 12,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "has_repro_steps",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "has_expected_vs_actual",
+          "defects": 12,
+          "with_signal": 5,
+          "share": 0.42
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "has_environment",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "has_acceptance_criteria",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "edited_after_start",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "clarifying_question",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "reopened",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        }
+      ],
+      "suppressed_groups": 4
+    },
+    "complexity": {
+      "description": "How much the defect touched. Source control figures count only defects linked in step 5; a defect with no link is left out, not counted as zero. Lines changed aren't available, because diff text is dropped during anonymisation.",
+      "rows": [
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "linked_issues",
+          "defects": 71,
+          "median": 2.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "changes",
+          "defects": 57,
+          "median": 2.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "commits",
+          "defects": 57,
+          "median": 3.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "files_changed",
+          "defects": 57,
+          "median": 7.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "repos_touched",
+          "defects": 57,
+          "median": 1.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "linked_issues",
+          "defects": 20,
+          "median": 2.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "commits",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "files_changed",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "repos_touched",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "linked_issues",
+          "defects": 30,
+          "median": 2.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "changes",
+          "defects": 22,
+          "median": 2.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "commits",
+          "defects": 22,
+          "median": 3.5
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "files_changed",
+          "defects": 22,
+          "median": 6.5
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "repos_touched",
+          "defects": 22,
+          "median": 1.0
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "linked_issues",
+          "defects": 6,
+          "median": 1.5
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "comments",
+          "defects": 6,
+          "median": 3.0
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "changes",
+          "defects": 6,
+          "median": 2.5
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "commits",
+          "defects": 6,
+          "median": 3.5
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "files_changed",
+          "defects": 6,
+          "median": 4.5
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "repos_touched",
+          "defects": 6,
+          "median": 1.5
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "linked_issues",
+          "defects": 5,
+          "median": 2.0
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "commits",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "files_changed",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "repos_touched",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "linked_issues",
+          "defects": 11,
+          "median": 3.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "comments",
+          "defects": 11,
+          "median": 3.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "commits",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "files_changed",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "repos_touched",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "linked_issues",
+          "defects": 12,
+          "median": 1.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "commits",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "files_changed",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "repos_touched",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "linked_issues",
+          "defects": 12,
+          "median": 1.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "changes",
+          "defects": 12,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "commits",
+          "defects": 12,
+          "median": 3.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "files_changed",
+          "defects": 12,
+          "median": 5.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "repos_touched",
+          "defects": 12,
+          "median": 1.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "linked_issues",
+          "defects": 12,
+          "median": 1.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "commits",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "files_changed",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "repos_touched",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "linked_issues",
+          "defects": 12,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "commits",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "files_changed",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "repos_touched",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "linked_issues",
+          "defects": 12,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "comments",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "changes",
+          "defects": 7,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "commits",
+          "defects": 7,
+          "median": 2.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "files_changed",
+          "defects": 7,
+          "median": 9.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "repos_touched",
+          "defects": 7,
+          "median": 1.0
+        }
+      ],
+      "suppressed_groups": 4
+    },
+    "flow": {
+      "description": "Flow describes the system the work moves through (queues, hand-offs and waiting), not the ticket and not the people working on it. Times are in hours and cover defects that reached a done status. Time spent done before a reopen, or in a status missing from the config, is neither active nor waiting.",
+      "rows": [
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "lead_time_hours",
+          "defects": 52,
+          "median": 91.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "cycle_time_hours",
+          "defects": 45,
+          "median": 78.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "active_hours",
+          "defects": 45,
+          "median": 53.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "waiting_hours",
+          "defects": 45,
+          "median": 31.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "flow_efficiency",
+          "defects": 45,
+          "median": 0.67
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "status_changes",
+          "defects": 64,
+          "median": 4.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "backward_move",
+          "defects": 64,
+          "with_signal": 14,
+          "share": 0.22
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "hours_in_status: To Do",
+          "defects": 52,
+          "median": 17.5
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "hours_in_status: In Progress",
+          "defects": 45,
+          "median": 33.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "hours_in_status: In Review",
+          "defects": 45,
+          "median": 31.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "hours_in_status: In Test",
+          "defects": 45,
+          "median": 28.0
+        },
+        {
+          "grouping": "all",
+          "group": "all defects",
+          "signal": "hours_in_status: Done",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "lead_time_hours",
+          "defects": 15,
+          "median": 105.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "cycle_time_hours",
+          "defects": 13,
+          "median": 104.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "active_hours",
+          "defects": 13,
+          "median": 62.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "waiting_hours",
+          "defects": 13,
+          "median": 39.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "flow_efficiency",
+          "defects": 13,
+          "median": 0.64
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "hours_in_status: To Do",
+          "defects": 15,
+          "median": 28.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "hours_in_status: In Progress",
+          "defects": 13,
+          "median": 33.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "hours_in_status: In Review",
+          "defects": 13,
+          "median": 39.0
+        },
+        {
+          "grouping": "team",
+          "group": "Accounts",
+          "signal": "hours_in_status: In Test",
+          "defects": 13,
+          "median": 25.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "lead_time_hours",
+          "defects": 22,
+          "median": 85.5
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "cycle_time_hours",
+          "defects": 19,
+          "median": 76.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "active_hours",
+          "defects": 19,
+          "median": 48.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "waiting_hours",
+          "defects": 19,
+          "median": 25.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "flow_efficiency",
+          "defects": 19,
+          "median": 0.7
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "hours_in_status: To Do",
+          "defects": 22,
+          "median": 17.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "hours_in_status: In Progress",
+          "defects": 19,
+          "median": 27.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "hours_in_status: In Review",
+          "defects": 19,
+          "median": 25.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "hours_in_status: In Test",
+          "defects": 19,
+          "median": 32.0
+        },
+        {
+          "grouping": "team",
+          "group": "Payments",
+          "signal": "hours_in_status: Done",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "lead_time_hours",
+          "defects": 6,
+          "median": 83.0
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "cycle_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "active_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "waiting_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "flow_efficiency",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "status_changes",
+          "defects": 6,
+          "median": 4.0
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "hours_in_status: To Do",
+          "defects": 6,
+          "median": 12.5
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "hours_in_status: In Progress",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "hours_in_status: In Review",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "hours_in_status: In Test",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Search",
+          "signal": "hours_in_status: Done",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "lead_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "cycle_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "active_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "waiting_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "flow_efficiency",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "hours_in_status: To Do",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "hours_in_status: In Progress",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "hours_in_status: In Review",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "team",
+          "group": "Web",
+          "signal": "hours_in_status: In Test",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "lead_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "cycle_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "active_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "waiting_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "flow_efficiency",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "hours_in_status: To Do",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "hours_in_status: In Progress",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "hours_in_status: In Review",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "hours_in_status: In Test",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-01",
+          "signal": "hours_in_status: Done",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "lead_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "cycle_time_hours",
+          "defects": 5,
+          "median": 59.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "active_hours",
+          "defects": 5,
+          "median": 43.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "waiting_hours",
+          "defects": 5,
+          "median": 17.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "flow_efficiency",
+          "defects": 5,
+          "median": 0.77
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "hours_in_status: To Do",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "hours_in_status: In Progress",
+          "defects": 5,
+          "median": 15.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "hours_in_status: In Review",
+          "defects": 5,
+          "median": 17.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-02",
+          "signal": "hours_in_status: In Test",
+          "defects": 5,
+          "median": 33.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "lead_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "cycle_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "active_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "waiting_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "flow_efficiency",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "hours_in_status: To Do",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "hours_in_status: In Progress",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "hours_in_status: In Review",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "hours_in_status: In Test",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-03",
+          "signal": "hours_in_status: Done",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "lead_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "cycle_time_hours",
+          "defects": 6,
+          "median": 94.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "active_hours",
+          "defects": 6,
+          "median": 55.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "waiting_hours",
+          "defects": 6,
+          "median": 39.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "flow_efficiency",
+          "defects": 6,
+          "median": 0.64
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "hours_in_status: To Do",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "hours_in_status: In Progress",
+          "defects": 6,
+          "median": 23.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "hours_in_status: In Review",
+          "defects": 6,
+          "median": 39.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "hours_in_status: In Test",
+          "defects": 6,
+          "median": 29.5
+        },
+        {
+          "grouping": "period",
+          "group": "2026-04",
+          "signal": "hours_in_status: Done",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "lead_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "cycle_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "active_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "waiting_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "flow_efficiency",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "hours_in_status: To Do",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "hours_in_status: In Progress",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "hours_in_status: In Review",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-05",
+          "signal": "hours_in_status: In Test",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "lead_time_hours",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "cycle_time_hours",
+          "defects": 7,
+          "median": 105.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "active_hours",
+          "defects": 7,
+          "median": 68.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "waiting_hours",
+          "defects": 7,
+          "median": 44.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "flow_efficiency",
+          "defects": 7,
+          "median": 0.66
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "status_changes",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "backward_move",
+          "defects": "suppressed",
+          "with_signal": "suppressed",
+          "share": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "hours_in_status: To Do",
+          "defects": "suppressed",
+          "median": "suppressed"
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "hours_in_status: In Progress",
+          "defects": 7,
+          "median": 45.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "hours_in_status: In Review",
+          "defects": 7,
+          "median": 44.0
+        },
+        {
+          "grouping": "period",
+          "group": "2026-06",
+          "signal": "hours_in_status: In Test",
+          "defects": 7,
+          "median": 32.0
+        }
+      ],
+      "suppressed_groups": 4
+    }
+  },
+  "rework_by_complexity": {
+    "band_by": "files_changed",
+    "bands": {
+      "low": "up to 5 files",
+      "middle": "6 to 8 files",
+      "high": "more than 8 files"
+    },
+    "note": "Rework means the defect was reopened or moved backward on the board. Clarity is higher with a rubric score of 3 or more out of 4. Compare clarity within a band, not across bands. These are correlations, not causes.",
+    "rows": [
+      {
+        "band": "low",
+        "files_changed": "up to 5 files",
+        "clarity": "lower",
+        "defects": "suppressed",
+        "with_rework": "suppressed",
+        "share": "suppressed"
+      },
+      {
+        "band": "low",
+        "files_changed": "up to 5 files",
+        "clarity": "higher",
+        "defects": "suppressed",
+        "with_rework": "suppressed",
+        "share": "suppressed"
+      },
+      {
+        "band": "middle",
+        "files_changed": "6 to 8 files",
+        "clarity": "lower",
+        "defects": "suppressed",
+        "with_rework": "suppressed",
+        "share": "suppressed"
+      },
+      {
+        "band": "middle",
+        "files_changed": "6 to 8 files",
+        "clarity": "higher",
+        "defects": "suppressed",
+        "with_rework": "suppressed",
+        "share": "suppressed"
+      },
+      {
+        "band": "high",
+        "files_changed": "more than 8 files",
+        "clarity": "lower",
+        "defects": "suppressed",
+        "with_rework": "suppressed",
+        "share": "suppressed"
+      },
+      {
+        "band": "high",
+        "files_changed": "more than 8 files",
+        "clarity": "higher",
+        "defects": "suppressed",
+        "with_rework": "suppressed",
+        "share": "suppressed"
+      }
+    ],
+    "suppressed_groups": 0
+  }
+}
