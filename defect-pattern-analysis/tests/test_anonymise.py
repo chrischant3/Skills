@@ -168,6 +168,27 @@ def test_azure_devops_identities_and_guid_mentions_are_removed():
     assert pr["changes"][0]["item"]["path"] == "/src/Accounts/TimeoutPolicy.cs"
 
 
+def test_azure_devops_mentions_of_people_found_nowhere_else_are_removed():
+    doc = {"description": "Thanks @<00000000-0000-4000-8000-0000000000aa>, and @<0000000A-0000-4000-8000-0000000000BB>."}
+    assert scrub_all([doc])[0]["description"] == "Thanks @<[person]>, and @<[person]>."
+
+
+def test_an_azure_devops_identity_ref_without_a_name_is_still_a_person():
+    ref = {"id": "00000000-0000-4000-8000-0000000000cc", "descriptor": "aad.ZmFrZS1kZXNjcmlwdG9y",
+           "imageUrl": "https://dev.azure.com/example-org/_api/_common/identityImage?id=00000000-0000-4000-8000-0000000000cc",
+           "_links": {"avatar": {"href": "https://dev.azure.com/example-org/_apis/GraphProfile/MemberAvatars/aad.ZmFr"}}}
+    doc = {"autoCompleteSetBy": ref, "description": "Set by aad.ZmFrZS1kZXNjcmlwdG9y."}
+    clean = scrub_all([doc])[0]
+    assert clean["autoCompleteSetBy"] == PERSON
+    assert clean["description"] == "Set by [person]."
+
+
+def test_the_account_part_of_a_domain_unique_name_is_removed_from_text():
+    doc = {"reviewers": [{"displayName": "Robin Quill", "uniqueName": "EXAMPLE\\rquill", "id": "x1"}],
+           "description": "Ask EXAMPLE\\rquill, or rquill directly."}
+    assert scrub_all([doc])[0]["description"] == "Ask [person], or [person] directly."
+
+
 # --- P1 for source control data and MCP results ----------------------------------------------
 
 def mcp_text_block(value) -> dict:
