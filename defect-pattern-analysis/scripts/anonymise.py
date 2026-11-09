@@ -12,6 +12,11 @@ Person detection is structural, not a flat key list:
   users (username), Azure DevOps identities (uniqueName, displayName) and git
   name/email pairs are replaced by {"person": "[person]"}. Status, issue type, component and
   other named Jira entities are never treated as people.
+- MCP results that hold JSON as text are decoded first, so the people inside them are
+  learnt and removed like any others.
+- GitLab parsed commit trailers lose every value, and diff bodies are dropped (only
+  file paths are needed, and diff text can name people). Bare numbers, such as GitLab
+  user ids, are never removed from text, so issue keys and counts survive.
 - Changelog items for person fields (assignee, reporter, creator, or any item whose
   value is a known person) keep their shape but lose the person.
 - In free text: commit trailers, Jira [~...] mentions, ADF mention nodes and email
@@ -39,6 +44,7 @@ import jira_normalise
 
 PLACEHOLDER = "[person]"
 TRAILER_PLACEHOLDER = "[trailer removed]"
+DIFF_PLACEHOLDER = "[diff removed]"
 MARKER = {"by": "anonymise.py", "version": 3}
 MARKER_KEY = "_anonymised"
 INGEST_REPORT = "_ingest.json"
@@ -54,6 +60,8 @@ PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date"}
 # Flat string fields that hold a person in GitLab and git exports.
 PERSON_STRING_KEYS = {"author_name", "author_email", "committer_name", "committer_email",
                       "authorName", "authorEmail", "committerName", "committerEmail"}
+# GitLab commit fields that hold parsed trailers ({"Co-authored-by": "Name <email>"}).
+TRAILER_FIELDS = {"trailers", "extended_trailers"}
 PERSON_CHANGELOG_FIELDS = {"assignee", "reporter", "creator"}
 # Changelog fields whose from/to strings are names of Jira entities, not free text.
 ENTITY_CHANGELOG_FIELDS = {"status", "component", "components", "issuetype", "priority", "resolution",
@@ -76,7 +84,8 @@ FILE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp", "pd
                    "jsx", "css", "scss", "less", "html", "json", "py", "java", "kt", "cs", "go", "rb", "md",
                    "txt", "yml", "yaml", "xml", "lock", "zip", "gz", "jar", "dll"}
 
-TRAILER = re.compile(r"(?im)^[ \t]*(signed-off-by|co-authored-by|reviewed-by|acked-by|tested-by|reported-by):.*$")
+TRAILER = re.compile(r"(?im)^[ \t]*(signed-off-by|co-authored-by|co-developed-by|reviewed-by|acked-by|tested-by|"
+                     r"reported-by|approved-by|helped-by|suggested-by):.*$")
 JIRA_MENTION = re.compile(r"\[~accountid:[^\]]*\]|\[~[^\]\s][^\]]*\]", re.IGNORECASE)
 EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.([A-Za-z]{2,24})(?![\w-])")
 HANDLE = re.compile(r"(?<![\w@./])@([A-Za-z0-9_](?:[A-Za-z0-9_.\-]*[A-Za-z0-9_])?)")
@@ -184,7 +193,9 @@ class Anonymiser:
             return
         for v in values:
             self._identifiers.add(v.lower())
-            if len(v) >= 3:
+            # A bare number (such as a GitLab user id) means nothing in prose, and removing it
+            # would also wreck issue keys and counts that happen to share the digits.
+            if len(v) >= 3 and not v.isdigit():
                 self._literals.add(v)
             if "@" in v:
                 self._handles.add(v.split("@")[0].lower())
@@ -303,13 +314,43 @@ class Anonymiser:
             return {"type": "mention", "attrs": {"text": PLACEHOLDER}}
         if "field" in obj and ("fromString" in obj or "toString" in obj) and self._is_person_item(obj):
             return self._scrub_changelog_item(obj)
+        is_diff = "new_path" in obj or "old_path" in obj
         out = {}
         for k, v in obj.items():
             if k in PERSON_STRING_KEYS and isinstance(v, str):
                 out[k] = PLACEHOLDER
+            elif k in TRAILER_FIELDS and isinstance(v, dict):
+                out[k] = {name: PLACEHOLDER for name in v}
+            elif k == "diff" and is_diff and isinstance(v, str):
+                out[k] = DIFF_PLACEHOLDER  # only paths are needed; diff text can name people
             else:
                 out[k] = self.scrub(v, in_code)
         return out
+
+
+def decode_mcp_result(doc):
+    """Return the JSON held in an MCP tool result's text blocks, or doc unchanged.
+
+    Claude saves MCP results verbatim, so JSON often arrives as a string inside
+    {"content": [{"type": "text", "text": "..."}]}. It must be decoded before learning,
+    or the people inside it would be invisible to learn() and their names would survive.
+    One block gives its value; several give a list of values.
+    """
+    if isinstance(doc, str):
+        try:
+            return decode_mcp_result(json.loads(doc))
+        except ValueError:
+            return doc
+    if not (isinstance(doc, dict) and isinstance(doc.get("content"), list) and doc["content"]):
+        return doc
+    blocks = doc["content"]
+    if not all(isinstance(b, dict) and b.get("type") == "text" and isinstance(b.get("text"), str) for b in blocks):
+        return doc
+    try:
+        values = [json.loads(b["text"]) for b in blocks]
+    except ValueError:
+        return doc
+    return values[0] if len(values) == 1 else values
 
 
 def mark(doc):
@@ -338,7 +379,7 @@ def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None) -> int:
         raise ValueError("clean output must go to a different folder from the raw input")
     manifest, docs = None, []
     for path in sorted(p for p in in_dir.glob("*.json") if p.is_file()):
-        doc = json.loads(path.read_text(encoding="utf-8"))
+        doc = decode_mcp_result(json.loads(path.read_text(encoding="utf-8")))
         if path.name == jira_normalise.MANIFEST_NAME:
             manifest = doc
         else:

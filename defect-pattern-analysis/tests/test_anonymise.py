@@ -168,6 +168,52 @@ def test_azure_devops_identities_and_guid_mentions_are_removed():
     assert pr["changes"][0]["item"]["path"] == "/src/Accounts/TimeoutPolicy.cs"
 
 
+# --- P1 for source control data and MCP results ----------------------------------------------
+
+def mcp_text_block(value) -> dict:
+    """Wrap value the way an MCP tool result holds JSON: as text inside a content block."""
+    return {"content": [{"type": "text", "text": json.dumps(value)}]}
+
+
+def test_people_inside_an_mcp_text_block_are_learnt_so_their_plain_names_go_everywhere(tmp_path, identifiers):
+    issue = load_fixture("jira/cloud_issue_ABC-101.json")
+    mr = load_fixture("scm/gitlab_mr.json")
+    mr["description"] = "Tomasz Fakename and Priya said this fixes it"
+    clean = run_dir(tmp_path, {"mcp-page-1.json": mcp_text_block({"issues": [issue]}),
+                               "gitlab-mrs-1.json": mcp_text_block([mr])})
+    assert leaks(all_text_under(clean), identifiers) == []
+    assert json.loads((clean / "gitlab-mrs-1.json").read_text())["items"][0]["author"] == PERSON
+
+
+def test_a_numeric_user_id_does_not_remove_the_same_number_from_text():
+    mr = load_fixture("scm/gitlab_mr.json")
+    mr["title"] = "ABC-501 and ABC-502 fix, 501 lines"
+    out = scrub_all([mr])[0]
+    assert out["title"] == "ABC-501 and ABC-502 fix, 501 lines"
+    assert out["author"] == PERSON
+
+
+def test_gitlab_commit_trailer_fields_lose_every_value():
+    commit = {"id": "a" * 40, "message": "Fix", "author_name": "Priya Testwell",
+              "trailers": {"Co-authored-by": "Unseen Contributor <unseen@example.com>"},
+              "extended_trailers": {"Reviewed-by": ["Another Outsider <other@example.com>"]}}
+    out = json.dumps(scrub_all([commit])[0])
+    assert "Unseen" not in out and "Outsider" not in out and "example.com" not in out
+    assert "Co-authored-by" in out and "Reviewed-by" in out
+
+
+@pytest.mark.parametrize("trailer", ["Approved-by", "Helped-by", "Suggested-by", "Co-developed-by"])
+def test_other_person_trailers_in_commit_messages_are_removed(trailer):
+    a = anonymise.Anonymiser()
+    assert a.scrub_text(f"Fix it\n\n{trailer}: Unseen Contributor <u@example.com>") == "Fix it\n\n[trailer removed]"
+
+
+def test_diff_bodies_are_dropped_but_paths_kept():
+    diff = {"old_path": "CODEOWNERS", "new_path": "CODEOWNERS", "diff": "+/src/ Unseen Contributor", "new_file": False}
+    out = scrub_all([[diff]])[0][0]
+    assert out == {"old_path": "CODEOWNERS", "new_path": "CODEOWNERS", "diff": "[diff removed]", "new_file": False}
+
+
 # --- P2 and P3: one plain placeholder, no salt, hash or pseudonym ---------------------------
 
 def test_different_people_become_the_same_placeholder_so_no_one_can_be_told_apart():
