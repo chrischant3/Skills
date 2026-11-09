@@ -32,7 +32,8 @@ def test_no_references_to_private_documents(path):
 
 @pytest.mark.parametrize("path", PACKAGE_FILES, ids=lambda p: str(p.relative_to(ROOT)))
 def test_fixture_emails_use_reserved_example_domains(path):
-    domains = set(re.findall(r"[\w.+-]+@([\w-]+(?:\.[\w-]+)+)", path.read_text(encoding="utf-8")))
+    text = re.sub(r"\\[nrt\"]", " ", path.read_text(encoding="utf-8"))  # escaped newlines in JSON aren't part of an address
+    domains = set(re.findall(r"[\w.+-]+@([\w-]+(?:\.[\w-]+)+)", text))
     real = {d for d in domains if not re.search(r"(^|\.)example\.(com|org|net)$", d) and not re.search(r"\.(png|jpe?g|svg|webp|gif)$", d)}
     assert real == set()
 

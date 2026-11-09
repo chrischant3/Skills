@@ -1,0 +1,787 @@
+{
+ "deployment": "datacenter",
+ "base_url": "https://jira.example.com",
+ "routes": [
+  {
+   "method": "POST",
+   "path": "/rest/api/2/search",
+   "match": {
+    "startAt": 0
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "startAt": 0,
+      "maxResults": 2,
+      "total": 3,
+      "issues": [
+       {
+        "id": "301",
+        "key": "ABC-301",
+        "self": "https://jira.example.com/rest/api/2/issue/ABC-301",
+        "fields": {
+         "summary": "Error in Accounts",
+         "issuetype": {
+          "id": "1",
+          "name": "Bug",
+          "subtask": false
+         },
+         "status": {
+          "id": "3",
+          "name": "In Review",
+          "statusCategory": {
+           "id": 4,
+           "key": "indeterminate",
+           "name": "In Progress"
+          }
+         },
+         "priority": {
+          "id": "2",
+          "name": "High"
+         },
+         "components": [
+          {
+           "id": "100",
+           "name": "Accounts"
+          }
+         ],
+         "project": {
+          "id": "1",
+          "key": "ABC",
+          "name": "Alpha Billing"
+         },
+         "labels": [
+          "regression"
+         ],
+         "created": "2026-03-01T09:00:00.000+0000",
+         "resolutiondate": null,
+         "assignee": {
+          "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+          "name": "ptestwell",
+          "key": "JIRAUSER10101",
+          "emailAddress": "priya.testwell@example.com",
+          "displayName": "Priya Testwell",
+          "active": true
+         },
+         "reporter": {
+          "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+          "name": "omockley",
+          "key": "JIRAUSER10104",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true
+         },
+         "creator": {
+          "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+          "name": "dsampleton",
+          "key": "JIRAUSER10105",
+          "emailAddress": "dana.sampleton@example.com",
+          "displayName": "Dana Sampleton",
+          "active": true
+         },
+         "customfield_10050": {
+          "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+          "name": "omockley",
+          "key": "JIRAUSER10104",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true
+         },
+         "customfield_10051": [
+          {
+           "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+           "name": "ptestwell",
+           "key": "JIRAUSER10101",
+           "emailAddress": "priya.testwell@example.com",
+           "displayName": "Priya Testwell",
+           "active": true
+          },
+          {
+           "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+           "name": "ptestwell",
+           "key": "JIRAUSER10101",
+           "emailAddress": "priya.testwell@example.com",
+           "displayName": "Priya Testwell",
+           "active": true
+          }
+         ],
+         "description": "grace.placeholder@example.net looked at this. See moved to In Review for detail.\n@ptestwell looked at this. See moved to In Progress for detail.\ndana.sampleton@example.com looked at this. See moved to To Do for detail.\nSigned-off-by: Tomasz Fakename <t.fakename@example.org> looked at this. See @media (max-width: 600px) { .nav { display: none; } } for detail.",
+         "comment": {
+          "startAt": 0,
+          "maxResults": 1,
+          "total": 3,
+          "comments": [
+           {
+            "id": "ABC-301-c0",
+            "author": {
+             "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+             "name": "omockley",
+             "key": "JIRAUSER10104",
+             "emailAddress": "o.mockley@example.com",
+             "displayName": "Oluwaseun Mockley",
+             "active": true
+            },
+            "updateAuthor": {
+             "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+             "name": "ptestwell",
+             "key": "JIRAUSER10101",
+             "emailAddress": "priya.testwell@example.com",
+             "displayName": "Priya Testwell",
+             "active": true
+            },
+            "created": "2026-03-01T09:00:00.000+0000",
+            "body": "o.mockley@example.com looked at this. See moved to Ready for Test for detail.\n[~ptestwell] looked at this. See @import url('theme.css'); for detail."
+           }
+          ]
+         }
+        },
+        "changelog": {
+         "startAt": 0,
+         "maxResults": 2,
+         "total": 2,
+         "histories": [
+          {
+           "id": "ABC-301-h0",
+           "author": {
+            "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+            "name": "ptestwell",
+            "key": "JIRAUSER10101",
+            "emailAddress": "priya.testwell@example.com",
+            "displayName": "Priya Testwell",
+            "active": true
+           },
+           "created": "2026-03-01T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "In Progress",
+             "to": "2",
+             "toString": "Done"
+            }
+           ]
+          },
+          {
+           "id": "ABC-301-h1",
+           "author": {
+            "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+            "name": "tfakename",
+            "key": "JIRAUSER10102",
+            "emailAddress": "t.fakename@example.org",
+            "displayName": "Tomasz Fakename",
+            "active": true
+           },
+           "created": "2026-03-01T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "To Do",
+             "to": "2",
+             "toString": "In Progress"
+            }
+           ]
+          }
+         ]
+        }
+       },
+       {
+        "id": "302",
+        "key": "ABC-302",
+        "self": "https://jira.example.com/rest/api/2/issue/ABC-302",
+        "fields": {
+         "summary": "Wrong total in Checkout",
+         "issuetype": {
+          "id": "1",
+          "name": "Bug",
+          "subtask": false
+         },
+         "status": {
+          "id": "3",
+          "name": "To Do",
+          "statusCategory": {
+           "id": 4,
+           "key": "indeterminate",
+           "name": "In Progress"
+          }
+         },
+         "priority": {
+          "id": "2",
+          "name": "High"
+         },
+         "components": [
+          {
+           "id": "100",
+           "name": "Checkout"
+          }
+         ],
+         "project": {
+          "id": "1",
+          "key": "ABC",
+          "name": "Alpha Billing"
+         },
+         "labels": [
+          "regression"
+         ],
+         "created": "2026-03-02T09:00:00.000+0000",
+         "resolutiondate": null,
+         "assignee": {
+          "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+          "name": "ptestwell",
+          "key": "JIRAUSER10101",
+          "emailAddress": "priya.testwell@example.com",
+          "displayName": "Priya Testwell",
+          "active": true
+         },
+         "reporter": {
+          "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+          "name": "tfakename",
+          "key": "JIRAUSER10102",
+          "emailAddress": "t.fakename@example.org",
+          "displayName": "Tomasz Fakename",
+          "active": true
+         },
+         "creator": {
+          "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+          "name": "tfakename",
+          "key": "JIRAUSER10102",
+          "emailAddress": "t.fakename@example.org",
+          "displayName": "Tomasz Fakename",
+          "active": true
+         },
+         "customfield_10050": {
+          "self": "https://jira.example.com/rest/api/2/user?username=gplaceholder",
+          "name": "gplaceholder",
+          "key": "JIRAUSER10103",
+          "emailAddress": "grace.placeholder@example.net",
+          "displayName": "Grace Placeholder",
+          "active": true
+         },
+         "customfield_10051": [
+          {
+           "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+           "name": "ptestwell",
+           "key": "JIRAUSER10101",
+           "emailAddress": "priya.testwell@example.com",
+           "displayName": "Priya Testwell",
+           "active": true
+          },
+          {
+           "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+           "name": "ptestwell",
+           "key": "JIRAUSER10101",
+           "emailAddress": "priya.testwell@example.com",
+           "displayName": "Priya Testwell",
+           "active": true
+          }
+         ],
+         "description": "@oluwaseun looked at this. See moved to Done for detail.\nSigned-off-by: Tomasz Fakename <t.fakename@example.org> looked at this. See assets/logo@2x.png for detail.\nFakename's looked at this. See assets/logo@2x.png for detail.\n@dsampleton looked at this. See assets/logo@2x.png for detail.",
+         "comment": {
+          "startAt": 0,
+          "maxResults": 1,
+          "total": 1,
+          "comments": [
+           {
+            "id": "ABC-302-c0",
+            "author": {
+             "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+             "name": "dsampleton",
+             "key": "JIRAUSER10105",
+             "emailAddress": "dana.sampleton@example.com",
+             "displayName": "Dana Sampleton",
+             "active": true
+            },
+            "updateAuthor": {
+             "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+             "name": "dsampleton",
+             "key": "JIRAUSER10105",
+             "emailAddress": "dana.sampleton@example.com",
+             "displayName": "Dana Sampleton",
+             "active": true
+            },
+            "created": "2026-03-02T09:00:00.000+0000",
+            "body": "<t.fakename@example.org> looked at this. See @Test void rejectsEmptyPostcode() {} for detail.\nCo-authored-by: Grace Placeholder <grace.placeholder@example.net> looked at this. See @import url('theme.css'); for detail."
+           }
+          ]
+         }
+        },
+        "changelog": {
+         "startAt": 0,
+         "maxResults": 2,
+         "total": 4,
+         "histories": [
+          {
+           "id": "ABC-302-h0",
+           "author": {
+            "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+            "name": "dsampleton",
+            "key": "JIRAUSER10105",
+            "emailAddress": "dana.sampleton@example.com",
+            "displayName": "Dana Sampleton",
+            "active": true
+           },
+           "created": "2026-03-02T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "In Progress",
+             "to": "2",
+             "toString": "Done"
+            }
+           ]
+          },
+          {
+           "id": "ABC-302-h1",
+           "author": {
+            "self": "https://jira.example.com/rest/api/2/user?username=gplaceholder",
+            "name": "gplaceholder",
+            "key": "JIRAUSER10103",
+            "emailAddress": "grace.placeholder@example.net",
+            "displayName": "Grace Placeholder",
+            "active": true
+           },
+           "created": "2026-03-02T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "Ready for Test",
+             "to": "2",
+             "toString": "Done"
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/rest/api/2/search",
+   "match": {
+    "startAt": 2
+   },
+   "responses": [
+    {
+     "status": 429,
+     "headers": {
+      "Retry-After": "1"
+     },
+     "body": {}
+    },
+    {
+     "status": 429,
+     "headers": {},
+     "body": {}
+    },
+    {
+     "status": 200,
+     "body": {
+      "startAt": 2,
+      "maxResults": 2,
+      "total": 3,
+      "issues": [
+       {
+        "id": "303",
+        "key": "ABC-303",
+        "self": "https://jira.example.com/rest/api/2/issue/ABC-303",
+        "fields": {
+         "summary": "Wrong total in Notifications",
+         "issuetype": {
+          "id": "1",
+          "name": "Bug",
+          "subtask": false
+         },
+         "status": {
+          "id": "3",
+          "name": "To Do",
+          "statusCategory": {
+           "id": 4,
+           "key": "indeterminate",
+           "name": "In Progress"
+          }
+         },
+         "priority": {
+          "id": "2",
+          "name": "High"
+         },
+         "components": [
+          {
+           "id": "100",
+           "name": "Notifications"
+          }
+         ],
+         "project": {
+          "id": "1",
+          "key": "ABC",
+          "name": "Alpha Billing"
+         },
+         "labels": [
+          "regression"
+         ],
+         "created": "2026-03-03T09:00:00.000+0000",
+         "resolutiondate": null,
+         "assignee": {
+          "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+          "name": "ptestwell",
+          "key": "JIRAUSER10101",
+          "emailAddress": "priya.testwell@example.com",
+          "displayName": "Priya Testwell",
+          "active": true
+         },
+         "reporter": {
+          "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+          "name": "dsampleton",
+          "key": "JIRAUSER10105",
+          "emailAddress": "dana.sampleton@example.com",
+          "displayName": "Dana Sampleton",
+          "active": true
+         },
+         "creator": {
+          "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+          "name": "tfakename",
+          "key": "JIRAUSER10102",
+          "emailAddress": "t.fakename@example.org",
+          "displayName": "Tomasz Fakename",
+          "active": true
+         },
+         "customfield_10050": {
+          "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+          "name": "tfakename",
+          "key": "JIRAUSER10102",
+          "emailAddress": "t.fakename@example.org",
+          "displayName": "Tomasz Fakename",
+          "active": true
+         },
+         "customfield_10051": [
+          {
+           "self": "https://jira.example.com/rest/api/2/user?username=gplaceholder",
+           "name": "gplaceholder",
+           "key": "JIRAUSER10103",
+           "emailAddress": "grace.placeholder@example.net",
+           "displayName": "Grace Placeholder",
+           "active": true
+          },
+          {
+           "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+           "name": "omockley",
+           "key": "JIRAUSER10104",
+           "emailAddress": "o.mockley@example.com",
+           "displayName": "Oluwaseun Mockley",
+           "active": true
+          }
+         ],
+         "description": "Oluwaseun looked at this. See @media (max-width: 600px) { .nav { display: none; } } for detail.\nSigned-off-by: Tomasz Fakename <t.fakename@example.org> looked at this. See @app.route('/checkout') def checkout(): pass for detail.\n@omockley looked at this. See web/styles/print.css for detail.\n@tomasz.fakename looked at this. See @media (max-width: 600px) { .nav { display: none; } } for detail.",
+         "comment": {
+          "comments": [
+           {
+            "id": "ABC-303-c0",
+            "author": {
+             "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+             "name": "tfakename",
+             "key": "JIRAUSER10102",
+             "emailAddress": "t.fakename@example.org",
+             "displayName": "Tomasz Fakename",
+             "active": true
+            },
+            "updateAuthor": {
+             "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+             "name": "dsampleton",
+             "key": "JIRAUSER10105",
+             "emailAddress": "dana.sampleton@example.com",
+             "displayName": "Dana Sampleton",
+             "active": true
+            },
+            "created": "2026-03-03T09:00:00.000+0000",
+            "body": "[~omockley] looked at this. See @Test void rejectsEmptyPostcode() {} for detail.\nDana looked at this. See @app.route('/checkout') def checkout(): pass for detail."
+           },
+           {
+            "id": "ABC-303-c1",
+            "author": {
+             "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+             "name": "ptestwell",
+             "key": "JIRAUSER10101",
+             "emailAddress": "priya.testwell@example.com",
+             "displayName": "Priya Testwell",
+             "active": true
+            },
+            "updateAuthor": {
+             "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+             "name": "tfakename",
+             "key": "JIRAUSER10102",
+             "emailAddress": "t.fakename@example.org",
+             "displayName": "Tomasz Fakename",
+             "active": true
+            },
+            "created": "2026-03-03T09:00:00.000+0000",
+            "body": "@grace.placeholder looked at this. See moved to In Progress for detail.\nDana looked at this. See moved to In Review for detail."
+           }
+          ],
+          "total": 2,
+          "maxResults": 3,
+          "startAt": 0
+         }
+        },
+        "changelog": {
+         "startAt": 0,
+         "total": 1,
+         "maxResults": 2,
+         "histories": [
+          {
+           "id": "ABC-303-h0",
+           "author": {
+            "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+            "name": "ptestwell",
+            "key": "JIRAUSER10101",
+            "emailAddress": "priya.testwell@example.com",
+            "displayName": "Priya Testwell",
+            "active": true
+           },
+           "created": "2026-03-03T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "In Review",
+             "to": "2",
+             "toString": "To Do"
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/rest/api/2/issue/ABC-301/comment",
+   "match": {
+    "startAt": "0"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "startAt": 0,
+      "maxResults": 50,
+      "total": 3,
+      "comments": [
+       {
+        "id": "ABC-301-c0",
+        "author": {
+         "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+         "name": "omockley",
+         "key": "JIRAUSER10104",
+         "emailAddress": "o.mockley@example.com",
+         "displayName": "Oluwaseun Mockley",
+         "active": true
+        },
+        "updateAuthor": {
+         "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+         "name": "ptestwell",
+         "key": "JIRAUSER10101",
+         "emailAddress": "priya.testwell@example.com",
+         "displayName": "Priya Testwell",
+         "active": true
+        },
+        "created": "2026-03-01T09:00:00.000+0000",
+        "body": "o.mockley@example.com looked at this. See moved to Ready for Test for detail.\n[~ptestwell] looked at this. See @import url('theme.css'); for detail."
+       },
+       {
+        "id": "ABC-301-c1",
+        "author": {
+         "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+         "name": "dsampleton",
+         "key": "JIRAUSER10105",
+         "emailAddress": "dana.sampleton@example.com",
+         "displayName": "Dana Sampleton",
+         "active": true
+        },
+        "updateAuthor": {
+         "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+         "name": "omockley",
+         "key": "JIRAUSER10104",
+         "emailAddress": "o.mockley@example.com",
+         "displayName": "Oluwaseun Mockley",
+         "active": true
+        },
+        "created": "2026-03-01T09:00:00.000+0000",
+        "body": "@oluwaseun.mockley looked at this. See moved to In Review for detail.\nReviewed-by: Priya Testwell <priya.testwell@example.com> looked at this. See @import url('theme.css'); for detail."
+       },
+       {
+        "id": "ABC-301-c0x2",
+        "author": {
+         "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+         "name": "omockley",
+         "key": "JIRAUSER10104",
+         "emailAddress": "o.mockley@example.com",
+         "displayName": "Oluwaseun Mockley",
+         "active": true
+        },
+        "updateAuthor": {
+         "self": "https://jira.example.com/rest/api/2/user?username=ptestwell",
+         "name": "ptestwell",
+         "key": "JIRAUSER10101",
+         "emailAddress": "priya.testwell@example.com",
+         "displayName": "Priya Testwell",
+         "active": true
+        },
+        "created": "2026-03-01T09:00:00.000+0000",
+        "body": "o.mockley@example.com looked at this. See moved to Ready for Test for detail.\n[~ptestwell] looked at this. See @import url('theme.css'); for detail."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/rest/api/2/issue/ABC-302",
+   "match": {
+    "expand": "changelog"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "key": "ABC-302",
+      "fields": {},
+      "changelog": {
+       "startAt": 0,
+       "maxResults": 4,
+       "total": 4,
+       "histories": [
+        {
+         "id": "ABC-302-h0",
+         "author": {
+          "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+          "name": "dsampleton",
+          "key": "JIRAUSER10105",
+          "emailAddress": "dana.sampleton@example.com",
+          "displayName": "Dana Sampleton",
+          "active": true
+         },
+         "created": "2026-03-02T09:00:00.000+0000",
+         "items": [
+          {
+           "field": "status",
+           "fieldtype": "jira",
+           "fieldId": "status",
+           "from": "1",
+           "fromString": "In Progress",
+           "to": "2",
+           "toString": "Done"
+          }
+         ]
+        },
+        {
+         "id": "ABC-302-h1",
+         "author": {
+          "self": "https://jira.example.com/rest/api/2/user?username=gplaceholder",
+          "name": "gplaceholder",
+          "key": "JIRAUSER10103",
+          "emailAddress": "grace.placeholder@example.net",
+          "displayName": "Grace Placeholder",
+          "active": true
+         },
+         "created": "2026-03-02T09:00:00.000+0000",
+         "items": [
+          {
+           "field": "status",
+           "fieldtype": "jira",
+           "fieldId": "status",
+           "from": "1",
+           "fromString": "Ready for Test",
+           "to": "2",
+           "toString": "Done"
+          }
+         ]
+        },
+        {
+         "id": "ABC-302-h2",
+         "author": {
+          "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+          "name": "omockley",
+          "key": "JIRAUSER10104",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true
+         },
+         "created": "2026-03-02T09:00:00.000+0000",
+         "items": [
+          {
+           "field": "status",
+           "fieldtype": "jira",
+           "fieldId": "status",
+           "from": "1",
+           "fromString": "Done",
+           "to": "2",
+           "toString": "In Review"
+          }
+         ]
+        },
+        {
+         "id": "ABC-302-h3",
+         "author": {
+          "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+          "name": "dsampleton",
+          "key": "JIRAUSER10105",
+          "emailAddress": "dana.sampleton@example.com",
+          "displayName": "Dana Sampleton",
+          "active": true
+         },
+         "created": "2026-03-02T09:00:00.000+0000",
+         "items": [
+          {
+           "field": "status",
+           "fieldtype": "jira",
+           "fieldId": "status",
+           "from": "1",
+           "fromString": "In Progress",
+           "to": "2",
+           "toString": "Done"
+          }
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "expected": {
+  "ABC-301": [
+   2,
+   3
+  ],
+  "ABC-302": [
+   4,
+   1
+  ],
+  "ABC-303": [
+   1,
+   2
+  ]
+ }
+}

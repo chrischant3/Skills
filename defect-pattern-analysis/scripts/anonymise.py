@@ -32,10 +32,14 @@ import secrets
 import sys
 from pathlib import Path
 
+import jira_normalise
+
 PLACEHOLDER = "[person]"
 TRAILER_PLACEHOLDER = "[trailer removed]"
 MARKER = {"by": "anonymise.py", "version": 2}
 MARKER_KEY = "_anonymised"
+INGEST_REPORT = "_ingest.json"
+ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
 
 # Any of these keys marks a dict as a person: Jira Cloud and Data Center users, GitLab
 # users, Azure DevOps identities and git author/committer objects.
@@ -292,20 +296,52 @@ def is_marked(doc) -> bool:
 def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None) -> int:
     """Anonymise every *.json file in in_dir into out_dir. Returns the number of files written.
 
-    Every input is read before any is written, so a person named in one file is removed
-    from all of them. Nothing but the cleaned files is written.
+    Jira issues, in any shape jira_normalise understands (MCP results or REST files), are
+    merged by key and written one file per issue as <KEY>.json, with _ingest.json
+    reporting coverage and gaps. Any other JSON (such as source control exports) keeps
+    its file name. Every input is read before any is written, so a person named in one
+    file is removed from all of them. Nothing else is written.
     """
     in_dir, out_dir = Path(in_dir), Path(out_dir)
     if in_dir.resolve() == out_dir.resolve():
         raise ValueError("clean output must go to a different folder from the raw input")
-    sources = sorted(p for p in in_dir.glob("*.json") if p.is_file())
-    docs = [json.loads(p.read_text(encoding="utf-8")) for p in sources]
+    manifest, docs = None, []
+    for path in sorted(p for p in in_dir.glob("*.json") if p.is_file()):
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        if path.name == jira_normalise.MANIFEST_NAME:
+            manifest = doc
+        else:
+            docs.append((path, doc))
     anonymiser = anonymiser or Anonymiser()
-    anonymiser.learn(docs)
+    anonymiser.learn([doc for _, doc in docs])
+
+    jira_issues, others = [], []
+    for path, doc in docs:
+        found = jira_normalise.issues_from_document(doc)
+        if found:
+            jira_issues += found
+        else:
+            others.append((path, doc))
+    issues = jira_normalise.merge_issues(jira_issues)
+
     out_dir.mkdir(parents=True, exist_ok=True)
-    for path, doc in zip(sources, docs):
-        (out_dir / path.name).write_text(json.dumps(mark(anonymiser.scrub(doc)), indent=2), encoding="utf-8")
-    return len(sources)
+    written = 0
+    for issue in issues:
+        if not ISSUE_KEY.fullmatch(issue["key"]):
+            raise ValueError(f"unexpected issue key {issue['key']!r}")
+        _write(out_dir / f"{issue['key']}.json", mark(anonymiser.scrub(issue)))
+        written += 1
+    for path, doc in others:
+        _write(out_dir / path.name, mark(anonymiser.scrub(doc)))
+        written += 1
+    if issues:
+        _write(out_dir / INGEST_REPORT, mark(anonymiser.scrub(jira_normalise.ingest_report(issues, manifest))))
+        written += 1
+    return written
+
+
+def _write(path: Path, doc) -> None:
+    path.write_text(json.dumps(doc, indent=2), encoding="utf-8")
 
 
 def main(argv=None) -> int:

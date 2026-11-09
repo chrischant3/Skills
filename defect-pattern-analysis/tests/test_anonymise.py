@@ -165,8 +165,8 @@ def test_the_same_person_gets_the_same_pseudonym_within_a_run():
 
 
 def test_pseudonyms_differ_between_runs_so_they_cannot_be_joined(tmp_path):
-    first = json.loads((run_dir(tmp_path / "a", static_docs()) / "cloud_issue_ABC-101.json").read_text())
-    second = json.loads((run_dir(tmp_path / "b", static_docs()) / "cloud_issue_ABC-101.json").read_text())
+    first = json.loads((run_dir(tmp_path / "a", static_docs()) / "ABC-101.json").read_text())
+    second = json.loads((run_dir(tmp_path / "b", static_docs()) / "ABC-101.json").read_text())
     assert first["fields"]["assignee"] != second["fields"]["assignee"]
 
 
@@ -188,7 +188,8 @@ def test_each_anonymiser_draws_a_fresh_salt():
 
 def test_only_cleaned_files_are_written(tmp_path):
     clean = run_dir(tmp_path, static_docs())
-    assert sorted(p.name for p in clean.iterdir()) == sorted(static_docs())
+    assert sorted(p.name for p in clean.iterdir()) == ["ABC-101.json", "ABC-102.json", "_ingest.json",
+                                                       "azure_pr.json", "gitlab_mr.json"]
     assert sorted(p.name for p in tmp_path.iterdir()) == ["clean", "raw"]
 
 
@@ -279,7 +280,7 @@ def test_non_json_and_unrelated_files_are_ignored(tmp_path):
     shutil.copy(FIXTURES / "jira/cloud_issue_ABC-101.json", raw)
     (raw / "notes.txt").write_text("Priya Testwell")
     anonymise.anonymise_dir(raw, tmp_path / "clean")
-    assert [p.name for p in (tmp_path / "clean").iterdir()] == ["cloud_issue_ABC-101.json"]
+    assert sorted(p.name for p in (tmp_path / "clean").iterdir()) == ["ABC-101.json", "_ingest.json"]
 
 
 def test_identifier_list_used_by_these_tests_is_not_empty(people):
