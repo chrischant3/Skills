@@ -1,0 +1,1073 @@
+{
+ "deployment": "cloud",
+ "base_url": "https://example.atlassian.net",
+ "routes": [
+  {
+   "method": "POST",
+   "path": "/rest/api/3/search/jql",
+   "match": {
+    "nextPageToken": null
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "issues": [
+       {
+        "id": "201",
+        "key": "ABC-201",
+        "self": "https://example.atlassian.net/rest/api/2/issue/ABC-201",
+        "fields": {
+         "summary": "Crash in Search",
+         "issuetype": {
+          "id": "1",
+          "name": "Bug",
+          "subtask": false
+         },
+         "status": {
+          "id": "3",
+          "name": "In Progress",
+          "statusCategory": {
+           "id": 4,
+           "key": "indeterminate",
+           "name": "In Progress"
+          }
+         },
+         "priority": {
+          "id": "2",
+          "name": "High"
+         },
+         "components": [
+          {
+           "id": "100",
+           "name": "Search"
+          }
+         ],
+         "project": {
+          "id": "1",
+          "key": "ABC",
+          "name": "Alpha Billing"
+         },
+         "labels": [
+          "regression"
+         ],
+         "created": "2026-02-01T09:00:00.000+0000",
+         "resolutiondate": null,
+         "assignee": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+          "emailAddress": "grace.placeholder@example.net",
+          "displayName": "Grace Placeholder",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+          },
+          "accountType": "atlassian"
+         },
+         "reporter": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c04",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c04",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c04.png"
+          },
+          "accountType": "atlassian"
+         },
+         "creator": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+          "emailAddress": "dana.sampleton@example.com",
+          "displayName": "Dana Sampleton",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+          },
+          "accountType": "atlassian"
+         },
+         "customfield_10050": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c04",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c04",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c04.png"
+          },
+          "accountType": "atlassian"
+         },
+         "customfield_10051": [
+          {
+           "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+           "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+           "emailAddress": "grace.placeholder@example.net",
+           "displayName": "Grace Placeholder",
+           "active": true,
+           "avatarUrls": {
+            "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+           },
+           "accountType": "atlassian"
+          },
+          {
+           "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+           "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+           "emailAddress": "grace.placeholder@example.net",
+           "displayName": "Grace Placeholder",
+           "active": true,
+           "avatarUrls": {
+            "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+           },
+           "accountType": "atlassian"
+          }
+         ],
+         "description": {
+          "type": "doc",
+          "version": 1,
+          "content": [
+           {
+            "type": "paragraph",
+            "content": [
+             {
+              "type": "mention",
+              "attrs": {
+               "id": "5f0c1a2b3c4d5e6f7a8b9c01",
+               "text": "@Priya Testwell"
+              }
+             },
+             {
+              "type": "text",
+              "text": " Fakename's looked at this. See moved to In Review for detail.\nTomasz looked at this. See moved to To Do for detail.\nCo-authored-by: Grace Placeholder <grace.placeholder@example.net> looked at this. See web/styles/print.css for detail.\n[~accountid:5f0c1a2b3c4d5e6f7a8b9c03] looked at this. See web/styles/print.css for detail."
+             }
+            ]
+           }
+          ]
+         },
+         "comment": {
+          "startAt": 0,
+          "maxResults": 1,
+          "total": 4,
+          "comments": [
+           {
+            "id": "ABC-201-c0",
+            "author": {
+             "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+             "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+             "emailAddress": "priya.testwell@example.com",
+             "displayName": "Priya Testwell",
+             "active": true,
+             "avatarUrls": {
+              "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+             },
+             "accountType": "atlassian"
+            },
+            "updateAuthor": {
+             "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+             "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+             "emailAddress": "dana.sampleton@example.com",
+             "displayName": "Dana Sampleton",
+             "active": true,
+             "avatarUrls": {
+              "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+             },
+             "accountType": "atlassian"
+            },
+            "created": "2026-02-01T09:00:00.000+0000",
+            "body": "priya.testwell@example.com looked at this. See moved to In Progress for detail.\nDana Sampleton looked at this. See moved to To Do for detail."
+           }
+          ]
+         }
+        },
+        "changelog": {
+         "startAt": 0,
+         "maxResults": 2,
+         "total": 5,
+         "histories": [
+          {
+           "id": "ABC-201-h0",
+           "author": {
+            "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+            "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+            "emailAddress": "dana.sampleton@example.com",
+            "displayName": "Dana Sampleton",
+            "active": true,
+            "avatarUrls": {
+             "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+            },
+            "accountType": "atlassian"
+           },
+           "created": "2026-02-01T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "To Do",
+             "to": "2",
+             "toString": "Done"
+            }
+           ]
+          },
+          {
+           "id": "ABC-201-h1",
+           "author": {
+            "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+            "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+            "emailAddress": "dana.sampleton@example.com",
+            "displayName": "Dana Sampleton",
+            "active": true,
+            "avatarUrls": {
+             "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+            },
+            "accountType": "atlassian"
+           },
+           "created": "2026-02-01T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "To Do",
+             "to": "2",
+             "toString": "In Review"
+            }
+           ]
+          }
+         ]
+        }
+       },
+       {
+        "id": "202",
+        "key": "ABC-202",
+        "self": "https://example.atlassian.net/rest/api/2/issue/ABC-202",
+        "fields": {
+         "summary": "Crash in Payments",
+         "issuetype": {
+          "id": "1",
+          "name": "Bug",
+          "subtask": false
+         },
+         "status": {
+          "id": "3",
+          "name": "Done",
+          "statusCategory": {
+           "id": 4,
+           "key": "indeterminate",
+           "name": "In Progress"
+          }
+         },
+         "priority": {
+          "id": "2",
+          "name": "High"
+         },
+         "components": [
+          {
+           "id": "100",
+           "name": "Payments"
+          }
+         ],
+         "project": {
+          "id": "1",
+          "key": "ABC",
+          "name": "Alpha Billing"
+         },
+         "labels": [
+          "regression"
+         ],
+         "created": "2026-02-02T09:00:00.000+0000",
+         "resolutiondate": null,
+         "assignee": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+          "emailAddress": "priya.testwell@example.com",
+          "displayName": "Priya Testwell",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+          },
+          "accountType": "atlassian"
+         },
+         "reporter": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=712020:3f6a1c2e-0000-4000-8000-00000000a001",
+          "accountId": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+          "emailAddress": "t.fakename@example.org",
+          "displayName": "Tomasz Fakename",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/712020:3f6a1c2e-0000-4000-8000-00000000a001.png"
+          },
+          "accountType": "atlassian"
+         },
+         "creator": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c04",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c04",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c04.png"
+          },
+          "accountType": "atlassian"
+         },
+         "customfield_10050": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c04",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c04",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c04.png"
+          },
+          "accountType": "atlassian"
+         },
+         "customfield_10051": [
+          {
+           "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+           "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+           "emailAddress": "dana.sampleton@example.com",
+           "displayName": "Dana Sampleton",
+           "active": true,
+           "avatarUrls": {
+            "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+           },
+           "accountType": "atlassian"
+          },
+          {
+           "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+           "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+           "emailAddress": "grace.placeholder@example.net",
+           "displayName": "Grace Placeholder",
+           "active": true,
+           "avatarUrls": {
+            "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+           },
+           "accountType": "atlassian"
+          }
+         ],
+         "description": {
+          "type": "doc",
+          "version": 1,
+          "content": [
+           {
+            "type": "paragraph",
+            "content": [
+             {
+              "type": "mention",
+              "attrs": {
+               "id": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+               "text": "@Tomasz Fakename"
+              }
+             },
+             {
+              "type": "text",
+              "text": " @tomasz.fakename looked at this. See moved to Done for detail.\n<dana.sampleton@example.com> looked at this. See moved to In Review for detail.\n@oluwaseun looked at this. See moved to In Progress for detail.\no.mockley@example.com looked at this. See @Test void rejectsEmptyPostcode() {} for detail."
+             }
+            ]
+           }
+          ]
+         },
+         "comment": {
+          "comments": [
+           {
+            "id": "ABC-202-c0",
+            "author": {
+             "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c04",
+             "accountId": "5f0c1a2b3c4d5e6f7a8b9c04",
+             "emailAddress": "o.mockley@example.com",
+             "displayName": "Oluwaseun Mockley",
+             "active": true,
+             "avatarUrls": {
+              "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c04.png"
+             },
+             "accountType": "atlassian"
+            },
+            "updateAuthor": {
+             "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+             "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+             "emailAddress": "priya.testwell@example.com",
+             "displayName": "Priya Testwell",
+             "active": true,
+             "avatarUrls": {
+              "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+             },
+             "accountType": "atlassian"
+            },
+            "created": "2026-02-02T09:00:00.000+0000",
+            "body": "[~accountid:5f0c1a2b3c4d5e6f7a8b9c01] looked at this. See moved to In Review for detail.\nReviewed-by: Grace Placeholder <grace.placeholder@example.net> looked at this. See moved to To Do for detail."
+           }
+          ],
+          "total": 1,
+          "maxResults": 3,
+          "startAt": 0
+         }
+        },
+        "changelog": {
+         "startAt": 0,
+         "total": 2,
+         "maxResults": 5,
+         "histories": [
+          {
+           "id": "ABC-202-h0",
+           "author": {
+            "self": "https://example.atlassian.net/rest/api/3/user?accountId=712020:3f6a1c2e-0000-4000-8000-00000000a001",
+            "accountId": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+            "emailAddress": "t.fakename@example.org",
+            "displayName": "Tomasz Fakename",
+            "active": true,
+            "avatarUrls": {
+             "48x48": "https://avatar.example.com/712020:3f6a1c2e-0000-4000-8000-00000000a001.png"
+            },
+            "accountType": "atlassian"
+           },
+           "created": "2026-02-02T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "In Progress",
+             "to": "2",
+             "toString": "In Review"
+            }
+           ]
+          },
+          {
+           "id": "ABC-202-h1",
+           "author": {
+            "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+            "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+            "emailAddress": "priya.testwell@example.com",
+            "displayName": "Priya Testwell",
+            "active": true,
+            "avatarUrls": {
+             "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+            },
+            "accountType": "atlassian"
+           },
+           "created": "2026-02-02T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "Ready for Test",
+             "to": "2",
+             "toString": "Done"
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ],
+      "nextPageToken": "tok-2",
+      "isLast": false
+     }
+    }
+   ]
+  },
+  {
+   "method": "POST",
+   "path": "/rest/api/3/search/jql",
+   "match": {
+    "nextPageToken": "tok-2"
+   },
+   "responses": [
+    {
+     "status": 429,
+     "headers": {
+      "Retry-After": "2"
+     },
+     "body": {
+      "errorMessages": [
+       "Rate limit exceeded"
+      ]
+     }
+    },
+    {
+     "status": 200,
+     "body": {
+      "issues": [
+       {
+        "id": "203",
+        "key": "ABC-203",
+        "self": "https://example.atlassian.net/rest/api/2/issue/ABC-203",
+        "fields": {
+         "summary": "Error in Accounts",
+         "issuetype": {
+          "id": "1",
+          "name": "Bug",
+          "subtask": false
+         },
+         "status": {
+          "id": "3",
+          "name": "In Progress",
+          "statusCategory": {
+           "id": 4,
+           "key": "indeterminate",
+           "name": "In Progress"
+          }
+         },
+         "priority": {
+          "id": "2",
+          "name": "High"
+         },
+         "components": [
+          {
+           "id": "100",
+           "name": "Accounts"
+          }
+         ],
+         "project": {
+          "id": "1",
+          "key": "ABC",
+          "name": "Alpha Billing"
+         },
+         "labels": [
+          "regression"
+         ],
+         "created": "2026-02-03T09:00:00.000+0000",
+         "resolutiondate": null,
+         "assignee": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=712020:3f6a1c2e-0000-4000-8000-00000000a001",
+          "accountId": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+          "emailAddress": "t.fakename@example.org",
+          "displayName": "Tomasz Fakename",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/712020:3f6a1c2e-0000-4000-8000-00000000a001.png"
+          },
+          "accountType": "atlassian"
+         },
+         "reporter": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+          "emailAddress": "dana.sampleton@example.com",
+          "displayName": "Dana Sampleton",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+          },
+          "accountType": "atlassian"
+         },
+         "creator": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c04",
+          "accountId": "5f0c1a2b3c4d5e6f7a8b9c04",
+          "emailAddress": "o.mockley@example.com",
+          "displayName": "Oluwaseun Mockley",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c04.png"
+          },
+          "accountType": "atlassian"
+         },
+         "customfield_10050": {
+          "self": "https://example.atlassian.net/rest/api/3/user?accountId=712020:3f6a1c2e-0000-4000-8000-00000000a001",
+          "accountId": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+          "emailAddress": "t.fakename@example.org",
+          "displayName": "Tomasz Fakename",
+          "active": true,
+          "avatarUrls": {
+           "48x48": "https://avatar.example.com/712020:3f6a1c2e-0000-4000-8000-00000000a001.png"
+          },
+          "accountType": "atlassian"
+         },
+         "customfield_10051": [
+          {
+           "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+           "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+           "emailAddress": "grace.placeholder@example.net",
+           "displayName": "Grace Placeholder",
+           "active": true,
+           "avatarUrls": {
+            "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+           },
+           "accountType": "atlassian"
+          },
+          {
+           "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+           "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+           "emailAddress": "grace.placeholder@example.net",
+           "displayName": "Grace Placeholder",
+           "active": true,
+           "avatarUrls": {
+            "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+           },
+           "accountType": "atlassian"
+          }
+         ],
+         "description": {
+          "type": "doc",
+          "version": 1,
+          "content": [
+           {
+            "type": "paragraph",
+            "content": [
+             {
+              "type": "mention",
+              "attrs": {
+               "id": "5f0c1a2b3c4d5e6f7a8b9c03",
+               "text": "@Grace Placeholder"
+              }
+             },
+             {
+              "type": "text",
+              "text": " @dana looked at this. See web/styles/print.css for detail.\nPriya looked at this. See moved to Done for detail.\n@omockley looked at this. See web/styles/print.css for detail.\n<o.mockley@example.com> looked at this. See @media (max-width: 600px) { .nav { display: none; } } for detail."
+             }
+            ]
+           }
+          ]
+         },
+         "comment": {
+          "comments": [
+           {
+            "id": "ABC-203-c0",
+            "author": {
+             "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+             "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+             "emailAddress": "dana.sampleton@example.com",
+             "displayName": "Dana Sampleton",
+             "active": true,
+             "avatarUrls": {
+              "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+             },
+             "accountType": "atlassian"
+            },
+            "updateAuthor": {
+             "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+             "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+             "emailAddress": "grace.placeholder@example.net",
+             "displayName": "Grace Placeholder",
+             "active": true,
+             "avatarUrls": {
+              "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+             },
+             "accountType": "atlassian"
+            },
+            "created": "2026-02-03T09:00:00.000+0000",
+            "body": "Signed-off-by: Dana Sampleton <dana.sampleton@example.com> looked at this. See src/main/java/com/example/checkout/AddressValidator.java for detail.\n[~accountid:712020:3f6a1c2e-0000-4000-8000-00000000a001] looked at this. See moved to Done for detail."
+           }
+          ],
+          "total": 1,
+          "maxResults": 4,
+          "startAt": 0
+         }
+        },
+        "changelog": {
+         "startAt": 0,
+         "total": 1,
+         "maxResults": 2,
+         "histories": [
+          {
+           "id": "ABC-203-h0",
+           "author": {
+            "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+            "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+            "emailAddress": "grace.placeholder@example.net",
+            "displayName": "Grace Placeholder",
+            "active": true,
+            "avatarUrls": {
+             "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+            },
+            "accountType": "atlassian"
+           },
+           "created": "2026-02-03T09:00:00.000+0000",
+           "items": [
+            {
+             "field": "status",
+             "fieldtype": "jira",
+             "fieldId": "status",
+             "from": "1",
+             "fromString": "Ready for Test",
+             "to": "2",
+             "toString": "In Progress"
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ],
+      "isLast": true
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/rest/api/3/issue/ABC-201/changelog",
+   "match": {
+    "startAt": "0"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "startAt": 0,
+      "maxResults": 3,
+      "total": 5,
+      "isLast": false,
+      "values": [
+       {
+        "id": "ABC-201-h0",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+         "emailAddress": "dana.sampleton@example.com",
+         "displayName": "Dana Sampleton",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "items": [
+         {
+          "field": "status",
+          "fieldtype": "jira",
+          "fieldId": "status",
+          "from": "1",
+          "fromString": "To Do",
+          "to": "2",
+          "toString": "Done"
+         }
+        ]
+       },
+       {
+        "id": "ABC-201-h1",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+         "emailAddress": "dana.sampleton@example.com",
+         "displayName": "Dana Sampleton",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "items": [
+         {
+          "field": "status",
+          "fieldtype": "jira",
+          "fieldId": "status",
+          "from": "1",
+          "fromString": "To Do",
+          "to": "2",
+          "toString": "In Review"
+         }
+        ]
+       },
+       {
+        "id": "ABC-201-h2",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+         "emailAddress": "priya.testwell@example.com",
+         "displayName": "Priya Testwell",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "items": [
+         {
+          "field": "status",
+          "fieldtype": "jira",
+          "fieldId": "status",
+          "from": "1",
+          "fromString": "To Do",
+          "to": "2",
+          "toString": "In Progress"
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/rest/api/3/issue/ABC-201/changelog",
+   "match": {
+    "startAt": "3"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "startAt": 3,
+      "maxResults": 3,
+      "total": 5,
+      "isLast": true,
+      "values": [
+       {
+        "id": "ABC-201-h3",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c04",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c04",
+         "emailAddress": "o.mockley@example.com",
+         "displayName": "Oluwaseun Mockley",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c04.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "items": [
+         {
+          "field": "status",
+          "fieldtype": "jira",
+          "fieldId": "status",
+          "from": "1",
+          "fromString": "To Do",
+          "to": "2",
+          "toString": "Ready for Test"
+         }
+        ]
+       },
+       {
+        "id": "ABC-201-assign",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+         "emailAddress": "priya.testwell@example.com",
+         "displayName": "Priya Testwell",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "items": [
+         {
+          "field": "assignee",
+          "fieldtype": "jira",
+          "fieldId": "assignee",
+          "from": "5f0c1a2b3c4d5e6f7a8b9c01",
+          "fromString": "Priya Testwell",
+          "to": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+          "toString": "Tomasz Fakename"
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/rest/api/3/issue/ABC-201/comment",
+   "match": {
+    "startAt": "0"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "startAt": 0,
+      "maxResults": 2,
+      "total": 4,
+      "comments": [
+       {
+        "id": "ABC-201-c0",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+         "emailAddress": "priya.testwell@example.com",
+         "displayName": "Priya Testwell",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+         },
+         "accountType": "atlassian"
+        },
+        "updateAuthor": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+         "emailAddress": "dana.sampleton@example.com",
+         "displayName": "Dana Sampleton",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "body": "priya.testwell@example.com looked at this. See moved to In Progress for detail.\nDana Sampleton looked at this. See moved to To Do for detail."
+       },
+       {
+        "id": "ABC-201-c1",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+         "emailAddress": "priya.testwell@example.com",
+         "displayName": "Priya Testwell",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+         },
+         "accountType": "atlassian"
+        },
+        "updateAuthor": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=712020:3f6a1c2e-0000-4000-8000-00000000a001",
+         "accountId": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+         "emailAddress": "t.fakename@example.org",
+         "displayName": "Tomasz Fakename",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/712020:3f6a1c2e-0000-4000-8000-00000000a001.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "body": {
+         "type": "doc",
+         "version": 1,
+         "content": [
+          {
+           "type": "paragraph",
+           "content": [
+            {
+             "type": "mention",
+             "attrs": {
+              "id": "5f0c1a2b3c4d5e6f7a8b9c01",
+              "text": "@Priya Testwell"
+             }
+            },
+            {
+             "type": "text",
+             "text": " Co-authored-by: Priya Testwell <priya.testwell@example.com> looked at this. See moved to Done for detail.\n<t.fakename@example.org> looked at this. See assets/logo@2x.png for detail."
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/rest/api/3/issue/ABC-201/comment",
+   "match": {
+    "startAt": "2"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "body": {
+      "startAt": 2,
+      "maxResults": 2,
+      "total": 4,
+      "comments": [
+       {
+        "id": "ABC-201-c2",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c05",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c05",
+         "emailAddress": "dana.sampleton@example.com",
+         "displayName": "Dana Sampleton",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c05.png"
+         },
+         "accountType": "atlassian"
+        },
+        "updateAuthor": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+         "emailAddress": "grace.placeholder@example.net",
+         "displayName": "Grace Placeholder",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "body": "Reviewed-by: Dana Sampleton <dana.sampleton@example.com> looked at this. See @Test void rejectsEmptyPostcode() {} for detail.\nSigned-off-by: Priya Testwell <priya.testwell@example.com> looked at this. See moved to To Do for detail."
+       },
+       {
+        "id": "ABC-201-c3",
+        "author": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c03",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c03",
+         "emailAddress": "grace.placeholder@example.net",
+         "displayName": "Grace Placeholder",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c03.png"
+         },
+         "accountType": "atlassian"
+        },
+        "updateAuthor": {
+         "self": "https://example.atlassian.net/rest/api/3/user?accountId=5f0c1a2b3c4d5e6f7a8b9c01",
+         "accountId": "5f0c1a2b3c4d5e6f7a8b9c01",
+         "emailAddress": "priya.testwell@example.com",
+         "displayName": "Priya Testwell",
+         "active": true,
+         "avatarUrls": {
+          "48x48": "https://avatar.example.com/5f0c1a2b3c4d5e6f7a8b9c01.png"
+         },
+         "accountType": "atlassian"
+        },
+        "created": "2026-02-01T09:00:00.000+0000",
+        "body": {
+         "type": "doc",
+         "version": 1,
+         "content": [
+          {
+           "type": "paragraph",
+           "content": [
+            {
+             "type": "mention",
+             "attrs": {
+              "id": "5f0c1a2b3c4d5e6f7a8b9c05",
+              "text": "@Dana Sampleton"
+             }
+            },
+            {
+             "type": "text",
+             "text": " [~accountid:5f0c1a2b3c4d5e6f7a8b9c05] looked at this. See @media (max-width: 600px) { .nav { display: none; } } for detail.\nDana Sampleton looked at this. See moved to To Do for detail."
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ],
+ "expected": {
+  "ABC-201": [
+   5,
+   4
+  ],
+  "ABC-202": [
+   2,
+   1
+  ],
+  "ABC-203": [
+   1,
+   1
+  ]
+ }
+}

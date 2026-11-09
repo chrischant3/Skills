@@ -1,0 +1,5 @@
+type,total
+checking_validation,14
+function_logic,9
+interface_integration,6
+"3 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",

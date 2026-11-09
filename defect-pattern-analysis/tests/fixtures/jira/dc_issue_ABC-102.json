@@ -1,0 +1,226 @@
+{
+  "expand": "renderedFields,names,schema,changelog",
+  "id": "20202",
+  "self": "https://jira.example.com/rest/api/2/issue/20202",
+  "key": "ABC-102",
+  "fields": {
+    "summary": "Session times out during payment confirmation",
+    "issuetype": {
+      "self": "https://jira.example.com/rest/api/2/issuetype/1",
+      "id": "1",
+      "name": "Bug",
+      "subtask": false,
+      "avatarId": 10303
+    },
+    "status": {
+      "self": "https://jira.example.com/rest/api/2/status/10001",
+      "description": "",
+      "iconUrl": "",
+      "name": "Ready for Test",
+      "id": "10001",
+      "statusCategory": {
+        "self": "https://jira.example.com/rest/api/2/statuscategory/4",
+        "id": 4,
+        "key": "indeterminate",
+        "colorName": "inprogress",
+        "name": "In Progress"
+      }
+    },
+    "priority": {
+      "self": "https://jira.example.com/rest/api/2/priority/3",
+      "name": "Medium",
+      "id": "3"
+    },
+    "components": [
+      {
+        "self": "https://jira.example.com/rest/api/2/component/10100",
+        "id": "10100",
+        "name": "Accounts"
+      }
+    ],
+    "project": {
+      "self": "https://jira.example.com/rest/api/2/project/10001",
+      "id": "10001",
+      "key": "ABC",
+      "name": "Alpha Billing"
+    },
+    "labels": [
+      "timeout"
+    ],
+    "created": "2026-04-10T09:00:00.000+0100",
+    "updated": "2026-04-12T09:00:00.000+0100",
+    "resolutiondate": "2026-04-12T09:00:00.000+0100",
+    "resolution": {
+      "self": "https://jira.example.com/rest/api/2/resolution/1",
+      "id": "1",
+      "name": "Fixed",
+      "description": "A fix for this issue is checked in."
+    },
+    "issuelinks": [],
+    "assignee": {
+      "self": "https://jira.example.com/rest/api/2/user?username=gplaceholder",
+      "name": "gplaceholder",
+      "key": "JIRAUSER10103",
+      "emailAddress": "grace.placeholder@example.net",
+      "avatarUrls": {
+        "48x48": "https://jira.example.com/secure/useravatar?ownerId=gplaceholder"
+      },
+      "displayName": "Grace Placeholder",
+      "active": true,
+      "timeZone": "Europe/London"
+    },
+    "reporter": {
+      "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+      "name": "tfakename",
+      "key": "JIRAUSER10102",
+      "emailAddress": "t.fakename@example.org",
+      "avatarUrls": {
+        "48x48": "https://jira.example.com/secure/useravatar?ownerId=tfakename"
+      },
+      "displayName": "Tomasz Fakename",
+      "active": true,
+      "timeZone": "Europe/London"
+    },
+    "creator": {
+      "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+      "name": "tfakename",
+      "key": "JIRAUSER10102",
+      "emailAddress": "t.fakename@example.org",
+      "avatarUrls": {
+        "48x48": "https://jira.example.com/secure/useravatar?ownerId=tfakename"
+      },
+      "displayName": "Tomasz Fakename",
+      "active": true,
+      "timeZone": "Europe/London"
+    },
+    "description": "h3. Steps\n# Sign in as [~ptestwell] on SIT\n# Wait 5 minutes on the confirm page\n\n{code:java}\n@Override\npublic Duration timeout() { return Duration.ofMinutes(5); }\n{code}\n{noformat}@media print { .nav { display: none; } }{noformat}\nReported by Tomasz Fakename (t.fakename@example.org). Stack trace mentions com/example/accounts/SessionFilter.java:88.\nSigned-off-by: Grace Placeholder <grace.placeholder@example.net>",
+    "comment": {
+      "comments": [
+        {
+          "self": "https://jira.example.com/rest/api/2/issue/20202/comment/30101",
+          "id": "30101",
+          "author": {
+            "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+            "name": "omockley",
+            "key": "JIRAUSER10104",
+            "emailAddress": "o.mockley@example.com",
+            "avatarUrls": {
+              "48x48": "https://jira.example.com/secure/useravatar?ownerId=omockley"
+            },
+            "displayName": "Oluwaseun Mockley",
+            "active": true,
+            "timeZone": "Europe/London"
+          },
+          "updateAuthor": {
+            "self": "https://jira.example.com/rest/api/2/user?username=omockley",
+            "name": "omockley",
+            "key": "JIRAUSER10104",
+            "emailAddress": "o.mockley@example.com",
+            "avatarUrls": {
+              "48x48": "https://jira.example.com/secure/useravatar?ownerId=omockley"
+            },
+            "displayName": "Oluwaseun Mockley",
+            "active": true,
+            "timeZone": "Europe/London"
+          },
+          "body": "@tfakename can you confirm which browser? The @Override on timeout() looks wrong. [~dsampleton] FYI.",
+          "created": "2026-04-10T10:00:00.000+0100",
+          "updated": "2026-04-10T10:00:00.000+0100"
+        },
+        {
+          "self": "https://jira.example.com/rest/api/2/issue/20202/comment/30102",
+          "id": "30102",
+          "author": {
+            "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+            "name": "dsampleton",
+            "key": "JIRAUSER10105",
+            "emailAddress": "dana.sampleton@example.com",
+            "avatarUrls": {
+              "48x48": "https://jira.example.com/secure/useravatar?ownerId=dsampleton"
+            },
+            "displayName": "Dana Sampleton",
+            "active": true,
+            "timeZone": "Europe/London"
+          },
+          "updateAuthor": {
+            "self": "https://jira.example.com/rest/api/2/user?username=dsampleton",
+            "name": "dsampleton",
+            "key": "JIRAUSER10105",
+            "emailAddress": "dana.sampleton@example.com",
+            "avatarUrls": {
+              "48x48": "https://jira.example.com/secure/useravatar?ownerId=dsampleton"
+            },
+            "displayName": "Dana Sampleton",
+            "active": true,
+            "timeZone": "Europe/London"
+          },
+          "body": "Chrome 128. Oluwaseun and I paired on it; gplaceholder reviewed.",
+          "created": "2026-04-10T11:00:00.000+0100",
+          "updated": "2026-04-10T11:00:00.000+0100"
+        }
+      ],
+      "maxResults": 2,
+      "total": 2,
+      "startAt": 0
+    }
+  },
+  "changelog": {
+    "startAt": 0,
+    "maxResults": 2,
+    "total": 2,
+    "histories": [
+      {
+        "id": "40001",
+        "author": {
+          "self": "https://jira.example.com/rest/api/2/user?username=gplaceholder",
+          "name": "gplaceholder",
+          "key": "JIRAUSER10103",
+          "emailAddress": "grace.placeholder@example.net",
+          "avatarUrls": {
+            "48x48": "https://jira.example.com/secure/useravatar?ownerId=gplaceholder"
+          },
+          "displayName": "Grace Placeholder",
+          "active": true,
+          "timeZone": "Europe/London"
+        },
+        "created": "2026-04-11T09:00:00.000+0100",
+        "items": [
+          {
+            "field": "status",
+            "fieldtype": "jira",
+            "from": "3",
+            "fromString": "In Progress",
+            "to": "10001",
+            "toString": "Ready for Test"
+          }
+        ]
+      },
+      {
+        "id": "40002",
+        "author": {
+          "self": "https://jira.example.com/rest/api/2/user?username=tfakename",
+          "name": "tfakename",
+          "key": "JIRAUSER10102",
+          "emailAddress": "t.fakename@example.org",
+          "avatarUrls": {
+            "48x48": "https://jira.example.com/secure/useravatar?ownerId=tfakename"
+          },
+          "displayName": "Tomasz Fakename",
+          "active": true,
+          "timeZone": "Europe/London"
+        },
+        "created": "2026-04-11T09:30:00.000+0100",
+        "items": [
+          {
+            "field": "assignee",
+            "fieldtype": "jira",
+            "from": "ptestwell",
+            "fromString": "Priya Testwell",
+            "to": "gplaceholder",
+            "toString": "Grace Placeholder"
+          }
+        ]
+      }
+    ]
+  }
+}

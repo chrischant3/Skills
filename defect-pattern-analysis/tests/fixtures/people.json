@@ -1,0 +1,58 @@
+{
+  "note": "Synthetic people. None of these are real.",
+  "people": [
+    {
+      "display_name": "Priya Testwell",
+      "email": "priya.testwell@example.com",
+      "account_id": "5f0c1a2b3c4d5e6f7a8b9c01",
+      "dc_username": "ptestwell",
+      "dc_key": "JIRAUSER10101",
+      "scm_username": "priya.t",
+      "ado_unique_name": "priya.testwell@example.com",
+      "ado_id": "00000000-0000-4000-8000-000000000001"
+    },
+    {
+      "display_name": "Tomasz Fakename",
+      "email": "t.fakename@example.org",
+      "account_id": "712020:3f6a1c2e-0000-4000-8000-00000000a001",
+      "dc_username": "tfakename",
+      "dc_key": "JIRAUSER10102",
+      "scm_username": "tomasz.f",
+      "ado_unique_name": "t.fakename@example.org",
+      "ado_id": "00000000-0000-4000-8000-000000000002"
+    },
+    {
+      "display_name": "Grace Placeholder",
+      "email": "grace.placeholder@example.net",
+      "account_id": "5f0c1a2b3c4d5e6f7a8b9c03",
+      "dc_username": "gplaceholder",
+      "dc_key": "JIRAUSER10103",
+      "scm_username": "grace.p",
+      "ado_unique_name": "grace.placeholder@example.net",
+      "ado_id": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "display_name": "Oluwaseun Mockley",
+      "email": "o.mockley@example.com",
+      "account_id": "5f0c1a2b3c4d5e6f7a8b9c04",
+      "dc_username": "omockley",
+      "dc_key": "JIRAUSER10104",
+      "scm_username": "seun.m",
+      "ado_unique_name": "o.mockley@example.com",
+      "ado_id": "00000000-0000-4000-8000-000000000004"
+    },
+    {
+      "display_name": "Dana Sampleton",
+      "email": "dana.sampleton@example.com",
+      "account_id": "5f0c1a2b3c4d5e6f7a8b9c05",
+      "dc_username": "dsampleton",
+      "dc_key": "JIRAUSER10105",
+      "scm_username": "dana.s",
+      "ado_unique_name": "dana.sampleton@example.com",
+      "ado_id": "00000000-0000-4000-8000-000000000005"
+    }
+  ],
+  "customer_emails": [
+    "customer.one@example.com"
+  ]
+}

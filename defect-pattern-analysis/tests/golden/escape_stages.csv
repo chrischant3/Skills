@@ -1,0 +1,4 @@
+escape_stage,total
+automated_test,10
+code_review,14
+"2 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",

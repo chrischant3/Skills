@@ -1,0 +1,13 @@
+min_group_size: 5
+default_key_pattern: '[A-Z][A-Z0-9]+-\d+'
+repos:
+  - platform: gitlab
+    url: https://gitlab.example.com
+    project: group/checkout-service
+    team: Checkout
+  - platform: azure
+    org: example-org
+    project: Accounts
+    repo: accounts-api
+    team: Accounts
+    key_pattern: 'ACC[-_ ]?\d+'   # team uses ACC_123 in branch names

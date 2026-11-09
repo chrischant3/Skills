@@ -1,0 +1,135 @@
+{
+ "classifications": [
+  {
+   "key": "ABC-520",
+   "defect_type": "interface_integration",
+   "trigger": "customer_report",
+   "escape_stage": "code_review",
+   "confidence": 0.79,
+   "theme": "Payment gateway timeouts"
+  },
+  {
+   "key": "ABC-521",
+   "defect_type": "function_logic",
+   "trigger": "customer_report",
+   "escape_stage": "code_review",
+   "confidence": 0.87,
+   "theme": "Discount rounding at basket level"
+  },
+  {
+   "key": "ABC-522",
+   "defect_type": "interface_integration",
+   "trigger": "production_incident",
+   "escape_stage": "automated_test",
+   "confidence": 0.85,
+   "theme": "Payment gateway timeouts"
+  },
+  {
+   "key": "ABC-523",
+   "defect_type": "function_logic",
+   "trigger": "exploratory_test",
+   "escape_stage": "code_review",
+   "confidence": 0.86,
+   "theme": "Discount rounding at basket level"
+  },
+  {
+   "key": "ABC-524",
+   "defect_type": "checking_validation",
+   "trigger": "production_incident",
+   "escape_stage": "refinement",
+   "confidence": 0.67,
+   "theme": "Postcode format rules"
+  },
+  {
+   "key": "ABC-525",
+   "defect_type": "function_logic",
+   "trigger": "customer_report",
+   "escape_stage": "automated_test",
+   "confidence": 0.77,
+   "theme": "Discount rounding at basket level"
+  },
+  {
+   "key": "ABC-526",
+   "defect_type": "interface_integration",
+   "trigger": "customer_report",
+   "escape_stage": "refinement",
+   "confidence": 0.69,
+   "theme": "Payment gateway timeouts"
+  },
+  {
+   "key": "ABC-527",
+   "defect_type": "function_logic",
+   "trigger": "exploratory_test",
+   "escape_stage": "automated_test",
+   "confidence": 0.77,
+   "theme": "Discount rounding at basket level"
+  },
+  {
+   "key": "ABC-528",
+   "defect_type": "ux_content",
+   "trigger": "customer_report",
+   "escape_stage": "automated_test",
+   "confidence": 0.77,
+   "theme": "Truncated button labels"
+  },
+  {
+   "key": "ABC-529",
+   "defect_type": "unclassified",
+   "trigger": null,
+   "escape_stage": null,
+   "confidence": 0.1,
+   "theme": null,
+   "reason": "Ticket is a placeholder with an empty description."
+  },
+  {
+   "key": "ABC-530",
+   "defect_type": "interface_integration",
+   "trigger": "customer_report",
+   "escape_stage": "code_review",
+   "confidence": 0.94,
+   "theme": "Payment gateway timeouts"
+  },
+  {
+   "key": "ABC-531",
+   "defect_type": "checking_validation",
+   "trigger": "production_incident",
+   "escape_stage": "code_review",
+   "confidence": 0.63,
+   "theme": "Null handling on optional address fields"
+  },
+  {
+   "key": "ABC-532",
+   "defect_type": "function_logic",
+   "trigger": "customer_report",
+   "escape_stage": "refinement",
+   "confidence": 0.44,
+   "theme": "Unclear",
+   "reason": "Description has no expected or actual result."
+  },
+  {
+   "key": "ABC-533",
+   "defect_type": "function_logic",
+   "trigger": "customer_report",
+   "escape_stage": "refinement",
+   "confidence": 0.43,
+   "theme": "Unclear",
+   "reason": "Description has no expected or actual result."
+  },
+  {
+   "key": "ABC-534",
+   "defect_type": "function_logic",
+   "trigger": "exploratory_test",
+   "escape_stage": "code_review",
+   "confidence": 0.91,
+   "theme": "Refund state transitions"
+  },
+  {
+   "key": "ABC-535",
+   "defect_type": "checking_validation",
+   "trigger": "production_incident",
+   "escape_stage": "automated_test",
+   "confidence": 0.89,
+   "theme": "Null handling on optional address fields"
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+{
+  "iid": 12,
+  "title": "ABC-101 fix address line 2 validation",
+  "description": "Closes ABC-101. cc @priya.t @grace.p\n\nTouches src/checkout/address.py only.",
+  "state": "merged",
+  "source_branch": "fix/ABC-101-address",
+  "merged_at": "2026-03-06T15:00:00Z",
+  "author": {
+    "id": 501,
+    "username": "priya.t",
+    "name": "Priya Testwell",
+    "state": "active",
+    "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/501/avatar.png",
+    "web_url": "https://gitlab.example.com/priya.t"
+  },
+  "merged_by": {
+    "id": 502,
+    "username": "tomasz.f",
+    "name": "Tomasz Fakename",
+    "state": "active",
+    "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/502/avatar.png",
+    "web_url": "https://gitlab.example.com/tomasz.f"
+  },
+  "reviewers": [
+    {
+      "id": 503,
+      "username": "grace.p",
+      "name": "Grace Placeholder",
+      "state": "active",
+      "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/503/avatar.png",
+      "web_url": "https://gitlab.example.com/grace.p"
+    }
+  ],
+  "assignees": [
+    {
+      "id": 501,
+      "username": "priya.t",
+      "name": "Priya Testwell",
+      "state": "active",
+      "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/501/avatar.png",
+      "web_url": "https://gitlab.example.com/priya.t"
+    }
+  ],
+  "commits": [
+    {
+      "id": "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678",
+      "short_id": "a1b2c3d4",
+      "title": "Fix null address line",
+      "message": "Fix null address line\n\nABC-101\n\nCo-authored-by: Dana Sampleton <dana.sampleton@example.com>\nSigned-off-by: Priya Testwell <priya.testwell@example.com>",
+      "author_name": "Priya Testwell",
+      "author_email": "priya.testwell@example.com",
+      "committer_name": "Tomasz Fakename",
+      "committer_email": "t.fakename@example.org",
+      "authored_date": "2026-03-05T14:00:00Z"
+    }
+  ],
+  "diffs": [
+    {
+      "old_path": "src/checkout/address.py",
+      "new_path": "src/checkout/address.py",
+      "new_file": false
+    }
+  ]
+}

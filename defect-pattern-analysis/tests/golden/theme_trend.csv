@@ -1,0 +1,5 @@
+type,theme,2026-01,2026-02,2026-03,2026-04,2026-05,2026-06,total
+checking_validation,Null handling on optional address fields,suppressed,suppressed,suppressed,suppressed,suppressed,suppressed,9
+checking_validation,Postcode format rules,suppressed,suppressed,suppressed,suppressed,0,0,5
+interface_integration,Payment gateway timeouts,suppressed,suppressed,suppressed,suppressed,suppressed,0,6
+"5 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",,,,,,,,

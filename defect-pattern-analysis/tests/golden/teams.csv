@@ -1,0 +1,4 @@
+team,checking_validation,function_logic,interface_integration,total
+Accounts,suppressed,suppressed,suppressed,12
+Payments,7,5,suppressed,16
+"7 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",,,,
