@@ -1,0 +1,614 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verifier/verdict-schema.json",
+  "title": "Verifier verdict file",
+  "description": "One file per verification run. The overall verdict rule is enforced, in order: any Failed claim or Broken applicable rule gives Fail; otherwise any Unverified high-risk claim or applicable rule gives Inconclusive; otherwise an empty claim list gives Inconclusive; otherwise Pass. Verdict files never contain verbatim transcript text.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "date",
+    "repo",
+    "task",
+    "builder_model",
+    "verifier_model",
+    "same_provider",
+    "profile",
+    "reasoning_available",
+    "overall_verdict",
+    "summary",
+    "claims",
+    "rules",
+    "observations",
+    "audit"
+  ],
+  "properties": {
+    "run_id": {
+      "description": "Unique id for the run, also used as the file name. Suggested form: UTC timestamp plus a short random suffix.",
+      "type": "string",
+      "minLength": 1
+    },
+    "date": {
+      "description": "When the verification ran, as an ISO 8601 UTC date-time.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "repo": {
+      "description": "The repository under review, for example org/repo-name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "task": {
+      "description": "The task as the requester stated it.",
+      "type": "string",
+      "minLength": 1
+    },
+    "builder_model": {
+      "description": "The model that did the work, as <provider>/<model>, for example openai/gpt-x. The provider is the part before the first slash.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/]+/.+$"
+    },
+    "verifier_model": {
+      "description": "The model that verified it, as <provider>/<model>, for example anthropic/claude-opus-x. The provider is the part before the first slash.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/]+/.+$"
+    },
+    "same_provider": {
+      "description": "true when the providers of builder_model and verifier_model (the part before the first slash) are the same. Independence is weaker when true.",
+      "type": "boolean"
+    },
+    "profile": {
+      "description": "null for the core verifier; rule-compliance when the rule-compliance profile was active.",
+      "enum": [
+        null,
+        "rule-compliance"
+      ]
+    },
+    "reasoning_available": {
+      "description": "Whether the builder's reasoning was available to the verifier: true if the transcript held reasoning text, false if it held none, null when no transcript was supplied.",
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "overall_verdict": {
+      "enum": [
+        "Pass",
+        "Fail",
+        "Inconclusive"
+      ]
+    },
+    "summary": {
+      "description": "The overall verdict, the highest-risk findings, gaps in what could be verified and why, and the verifier's confidence.",
+      "$ref": "#/$defs/text"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    },
+    "rules": {
+      "description": "Rule applicability map and compliance results. Empty unless the rule-compliance profile was active.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    },
+    "rationalisations": {
+      "description": "Optional. Excuses the builder gave for not following a rule. Empty array: searched, none found. Absent: not searched.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rationalisation"
+      }
+    },
+    "observations": {
+      "description": "Findings outside the claims and rules, and reasons for an Inconclusive verdict (empty claim list, no independent model, invalid verifier output).",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "audit": {
+      "description": "Reserved for a second-line auditor. Always null until that exists.",
+      "type": "null"
+    }
+  },
+  "allOf": [
+    {
+      "description": "Any Failed claim or Broken applicable rule gives Fail.",
+      "if": {
+        "$ref": "#/$defs/failCondition"
+      },
+      "then": {
+        "properties": {
+          "overall_verdict": {
+            "const": "Fail"
+          }
+        }
+      }
+    },
+    {
+      "description": "No fail condition, but an Unverified high-risk claim or applicable rule, gives Inconclusive.",
+      "if": {
+        "allOf": [
+          {
+            "not": {
+              "$ref": "#/$defs/failCondition"
+            }
+          },
+          {
+            "$ref": "#/$defs/inconclusiveCondition"
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "overall_verdict": {
+            "const": "Inconclusive"
+          }
+        }
+      }
+    },
+    {
+      "description": "No fail condition and an empty claim list gives Inconclusive.",
+      "if": {
+        "allOf": [
+          {
+            "not": {
+              "$ref": "#/$defs/failCondition"
+            }
+          },
+          {
+            "properties": {
+              "claims": {
+                "maxItems": 0
+              }
+            }
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "overall_verdict": {
+            "const": "Inconclusive"
+          }
+        }
+      }
+    },
+    {
+      "description": "Otherwise Pass: no fail or inconclusive condition, and at least one claim.",
+      "if": {
+        "allOf": [
+          {
+            "not": {
+              "$ref": "#/$defs/failCondition"
+            }
+          },
+          {
+            "not": {
+              "$ref": "#/$defs/inconclusiveCondition"
+            }
+          },
+          {
+            "properties": {
+              "claims": {
+                "minItems": 1
+              }
+            }
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "overall_verdict": {
+            "const": "Pass"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nullableText": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "failedClaim": {
+      "type": "object",
+      "required": [
+        "verdict"
+      ],
+      "properties": {
+        "verdict": {
+          "const": "Failed"
+        }
+      }
+    },
+    "unverifiedHighRiskClaim": {
+      "type": "object",
+      "required": [
+        "verdict",
+        "risk"
+      ],
+      "properties": {
+        "verdict": {
+          "const": "Unverified"
+        },
+        "risk": {
+          "const": "high"
+        }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim",
+        "risk",
+        "verdict",
+        "method",
+        "evidence",
+        "expected",
+        "observed",
+        "repro"
+      ],
+      "properties": {
+        "claim": {
+          "$ref": "#/$defs/text"
+        },
+        "risk": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "verdict": {
+          "enum": [
+            "Verified",
+            "Failed",
+            "Unverified"
+          ]
+        },
+        "method": {
+          "description": "How the evidence was gathered. null only for an Unverified claim where nothing could be checked.",
+          "enum": [
+            "executed",
+            "inspected",
+            null
+          ]
+        },
+        "evidence": {
+          "description": "Commands, output excerpts, file and line references. For Unverified, why it could not be checked.",
+          "$ref": "#/$defs/text"
+        },
+        "expected": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "observed": {
+          "$ref": "#/$defs/nullableText"
+        },
+        "repro": {
+          "$ref": "#/$defs/nullableText"
+        }
+      },
+      "allOf": [
+        {
+          "description": "A Failed claim must say what was expected, what was observed and how to reproduce it.",
+          "if": {
+            "properties": {
+              "verdict": {
+                "const": "Failed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "expected": {
+                "$ref": "#/$defs/text"
+              },
+              "observed": {
+                "$ref": "#/$defs/text"
+              },
+              "repro": {
+                "$ref": "#/$defs/text"
+              }
+            }
+          }
+        },
+        {
+          "description": "A Verified or Failed claim must say how it was checked.",
+          "if": {
+            "properties": {
+              "verdict": {
+                "enum": [
+                  "Verified",
+                  "Failed"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "method": {
+                "enum": [
+                  "executed",
+                  "inspected"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "applicable",
+        "risk",
+        "applicability_reason",
+        "verdict",
+        "evidence",
+        "flags"
+      ],
+      "properties": {
+        "rule_id": {
+          "$ref": "#/$defs/text"
+        },
+        "applicable": {
+          "type": "boolean"
+        },
+        "risk": {
+          "description": "Impact if the rule was broken unnoticed. high, medium or low when applicable; null when not.",
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            null
+          ]
+        },
+        "applicability_reason": {
+          "$ref": "#/$defs/text"
+        },
+        "verdict": {
+          "description": "Followed, Broken or Unverified when applicable; null when not applicable.",
+          "enum": [
+            "Followed",
+            "Broken",
+            "Unverified",
+            null
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/text"
+        },
+        "flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(not_considered|ambiguous|conflicts_with:.+)$"
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "applicable": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "enum": [
+              "Followed",
+              "Broken",
+              "Unverified"
+            ]
+          },
+          "risk": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "verdict": {
+            "const": null
+          },
+          "risk": {
+            "const": null
+          }
+        }
+      }
+    },
+    "rationalisation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id",
+        "location",
+        "source",
+        "table_entry",
+        "new"
+      ],
+      "properties": {
+        "rule_id": {
+          "$ref": "#/$defs/text"
+        },
+        "location": {
+          "description": "Where the excuse is in the builder's transcript, as a pointer. Never copy the text itself.",
+          "$ref": "#/$defs/transcriptLocation"
+        },
+        "source": {
+          "description": "Where the excuse appeared.",
+          "enum": [
+            "final_summary",
+            "reasoning",
+            "other_transcript"
+          ]
+        },
+        "table_entry": {
+          "description": "The matching row of the rule's rationalisation table; null when new.",
+          "$ref": "#/$defs/nullableText"
+        },
+        "new": {
+          "description": "true when the excuse matches no table entry.",
+          "type": "boolean"
+        }
+      },
+      "if": {
+        "properties": {
+          "new": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "table_entry": {
+            "type": "null"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "table_entry": {
+            "$ref": "#/$defs/text"
+          }
+        }
+      }
+    },
+    "brokenRule": {
+      "type": "object",
+      "required": [
+        "applicable",
+        "verdict"
+      ],
+      "properties": {
+        "applicable": {
+          "const": true
+        },
+        "verdict": {
+          "const": "Broken"
+        }
+      }
+    },
+    "failCondition": {
+      "description": "Any Failed claim or any Broken applicable rule.",
+      "anyOf": [
+        {
+          "properties": {
+            "claims": {
+              "contains": {
+                "$ref": "#/$defs/failedClaim"
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "rules": {
+              "contains": {
+                "$ref": "#/$defs/brokenRule"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "transcriptLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "transcript_id",
+        "message_index",
+        "part_id"
+      ],
+      "properties": {
+        "transcript_id": {
+          "description": "Session or transcript id, or file name, as the harness records it.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "message_index": {
+          "description": "Zero-based index of the message within the transcript, or null if not known.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "part_id": {
+          "description": "Id of the content block or part within the message, where the harness has one, or null.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "unverifiedHighRiskRule": {
+      "type": "object",
+      "required": [
+        "applicable",
+        "verdict",
+        "risk"
+      ],
+      "properties": {
+        "applicable": {
+          "const": true
+        },
+        "verdict": {
+          "const": "Unverified"
+        },
+        "risk": {
+          "const": "high"
+        }
+      }
+    },
+    "inconclusiveCondition": {
+      "description": "Any Unverified high-risk claim or applicable rule.",
+      "anyOf": [
+        {
+          "properties": {
+            "claims": {
+              "contains": {
+                "$ref": "#/$defs/unverifiedHighRiskClaim"
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "rules": {
+              "contains": {
+                "$ref": "#/$defs/unverifiedHighRiskRule"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
