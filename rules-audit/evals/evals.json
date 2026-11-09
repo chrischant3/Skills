@@ -3,11 +3,11 @@
   "evals": [
     {"id": 1, "name": "version-a-narrative-agents-md",
      "prompt": "Our coding agents keep ignoring some of the rules in evals/files/version-a/AGENTS.md. Can you audit it and tell me what's wrong with it and how you'd restructure it? Don't change the file.",
-     "expected_output": "High-severity finding for the secrets rule buried mid-paragraph under 'General'; high-severity finding for the migration rule (create a new migration, never edit a merged one) buried in the same paragraph; high-severity finding for the 'Reminders' section restating rules in different wording. Evidence quoted with line numbers; proposed restructure top-loads the critical rules and defers detail; findings called hypotheses; file left unchanged.",
+     "expected_output": "High-severity finding for the secrets rule buried mid-paragraph under 'General'; high-severity finding for the migration rule (create a new migration, never edit a merged one) buried in the same paragraph; high-severity finding for the 'Reminders' section restating rules in different wording. High-severity finding for the rule against logging personal data, buried under 'Code Style'. Evidence quoted with line numbers; proposed restructure top-loads the critical rules and defers detail; findings called hypotheses; file left unchanged.",
      "files": ["evals/files/version-a/AGENTS.md"]},
     {"id": 2, "name": "version-b-progressive-agents-md",
      "prompt": "Please review the agent rules in evals/files/version-b/ (AGENTS.md and the files under docs/agents/) and tell me how well they're likely to be followed.",
-     "expected_output": "Inventory shows AGENTS.md always loaded and the three docs/agents files on demand, each pointer with a trigger and one level deep. No high-severity findings, or only ones the owner agrees with. Any medium or low findings quote evidence; findings called hypotheses; files left unchanged.",
+     "expected_output": "Inventory shows AGENTS.md always loaded and the three docs/agents files on demand, each pointer with a trigger and one level deep. Exactly one high-severity finding: the rule against logging personal data is critical but placed under 'Working conventions' after less important rules. No high-severity findings for the six numbered non-negotiable rules. Any medium or low findings quote evidence; findings called hypotheses; files left unchanged.",
      "files": ["evals/files/version-b/AGENTS.md", "evals/files/version-b/docs/agents/migrations.md", "evals/files/version-b/docs/agents/integration-tests.md", "evals/files/version-b/docs/agents/ui-accessibility.md"]}
   ]
 }
