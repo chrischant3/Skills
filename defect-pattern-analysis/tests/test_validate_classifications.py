@@ -91,7 +91,7 @@ def test_fields_outside_the_schema_are_rejected_so_people_cannot_be_smuggled_in(
 
 
 @pytest.mark.parametrize("theme", ["", "   ", "x" * 81, "Two\nlines", "Asked @someone about it",
-                                   "Raised by a.person@example.com", "Mentioned [~someone]", "Owned by person_0123456789ab",
+                                   "Raised by a.person@example.com", "Mentioned [~someone]",
                                    "Work by [person]"])
 def test_unsafe_or_unusable_themes_are_rejected(theme):
     _, errors = check(all_three(theme=theme))

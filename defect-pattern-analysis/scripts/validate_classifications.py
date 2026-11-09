@@ -13,7 +13,7 @@ Rules:
 - Confidence below 0.6, or defect_type "unclassified", makes the ticket unclassified. It
   then needs a one-line reason.
 - A classified ticket needs a theme: one line, at most 80 characters, in Claude's own
-  words, with no handles, emails, mentions or pseudonyms.
+  words, with no handles, emails, mentions or redacted people.
 - No other fields are allowed, so person data can't be carried into the counts.
 
 If anything is wrong, every problem is printed and nothing is written, so the bad
@@ -36,7 +36,6 @@ REASON_MAX = 200
 UNSAFE_TEXT = [
     (re.compile(r"@"), "an @handle or email"),
     (re.compile(r"\[~"), "a Jira mention"),
-    (re.compile(r"person_[0-9a-f]{12}"), "a pseudonym"),
     (re.compile(r"\[person\]"), "a redacted person"),
 ]
 DEFAULT_TAXONOMY = Path(__file__).resolve().parent.parent / "references" / "taxonomy.md"

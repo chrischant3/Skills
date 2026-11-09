@@ -32,7 +32,7 @@ This is the most important rule. The skill must never identify, rank or single o
 
 - The skill judges the work, not the people. It assumes everyone on the team worked on every ticket, so it never looks at who did what, and never discriminates against or singles out anyone.
 - Every person identifier is removed by `scripts/anonymise.py` before any analysis script, classification input or output sees the data. With MCP fetching, the model sees raw data only during the fetch step (see [Before you start](#before-you-start)). Removal covers assignee, reporter, creator, commenters, changelog authors, user-picker fields, emails, account ids, usernames, ADF mentions, `[~...]` mentions, every @handle outside code, and `Signed-off-by` / `Co-authored-by` / `Reviewed-by` trailers.
-- People are replaced by pseudonyms salted with a random per-run salt that is never written to disk. Pseudonyms are used only inside the scripts and never appear in batches for classification or in any output.
+- Every person, whether in a field such as assignee or mentioned in text, is replaced by the same plain `[person]` placeholder. Nothing counts distinct people, so there is no salt, hash or pseudonym: two people can't be told apart, and nothing can be reversed or joined across runs.
 - Reports group only by team (Jira component), defect type, theme, trigger, escape stage or time period.
 - Any group with fewer than `min_group_size` defects (default 5) is suppressed in every output, along with enough other cells that it can't be worked out from the totals. Values below 5 are refused. Use a higher value for small teams.
 - No output contains ticket keys, ticket text or names. Themes are described in your own words.

@@ -10,7 +10,7 @@ Usage: anonymise.py <raw_dir> <clean_dir>
 Person detection is structural, not a flat key list:
 - Jira user objects (Cloud: accountId; Data Center: name, key and emailAddress), GitLab
   users (username), Azure DevOps identities (uniqueName, displayName) and git
-  name/email pairs are replaced by a pseudonym. Status, issue type, component and
+  name/email pairs are replaced by {"person": "[person]"}. Status, issue type, component and
   other named Jira entities are never treated as people.
 - Changelog items for person fields (assignee, reporter, creator, or any item whose
   value is a known person) keep their shape but lose the person.
@@ -25,16 +25,13 @@ Person detection is structural, not a flat key list:
   matches a known person is removed even inside code. The trade-off: an unusual
   annotation written in prose, outside any code formatting, is removed too.
 
-Pseudonyms are salted with a random per-run salt that is held in memory only, so they
-cannot be reversed or joined across runs. They exist so scripts can count distinct
-people. They never appear in any report.
+Every person, in structured fields and in text alike, becomes the same plain [person]
+placeholder. Nothing counts distinct people, so there is no salt, hash or pseudonym:
+two people can't be told apart, and nothing can be reversed or joined across runs.
 """
 
-import hashlib
-import hmac
 import json
 import re
-import secrets
 import sys
 from pathlib import Path
 
@@ -42,7 +39,7 @@ import jira_normalise
 
 PLACEHOLDER = "[person]"
 TRAILER_PLACEHOLDER = "[trailer removed]"
-MARKER = {"by": "anonymise.py", "version": 2}
+MARKER = {"by": "anonymise.py", "version": 3}
 MARKER_KEY = "_anonymised"
 INGEST_REPORT = "_ingest.json"
 ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
@@ -50,7 +47,7 @@ ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
 # Any of these keys marks a dict as a person: Jira Cloud and Data Center users, GitLab
 # users, Azure DevOps identities and git author/committer objects.
 PERSON_MARKER_KEYS = {"accountId", "emailAddress", "email", "uniqueName", "username", "displayName"}
-# Values worth remembering about a person, in order of preference for their pseudonym key.
+# Values that identify a person, learnt so they can be removed from free text too.
 PERSON_ID_KEYS = ("accountId", "key", "username", "uniqueName", "name", "emailAddress", "email", "displayName", "id")
 # Non-identifying facts on a person object that analysis may need.
 PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date"}
@@ -82,7 +79,6 @@ FILE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp", "pd
 TRAILER = re.compile(r"(?im)^[ \t]*(signed-off-by|co-authored-by|reviewed-by|acked-by|tested-by|reported-by):.*$")
 JIRA_MENTION = re.compile(r"\[~accountid:[^\]]*\]|\[~[^\]\s][^\]]*\]", re.IGNORECASE)
 EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.([A-Za-z]{2,24})(?![\w-])")
-PSEUDONYM = re.compile(r"person_[0-9a-f]{12}")
 HANDLE = re.compile(r"(?<![\w@./])@([A-Za-z0-9_](?:[A-Za-z0-9_.\-]*[A-Za-z0-9_])?)")
 # Code regions in plain or wiki text: Markdown fences and inline code, Jira {code}, {noformat} and {{...}}.
 CODE_REGION = re.compile(r"```.*?```|\{code(?::[^}]*)?\}.*?\{code\}|\{noformat\}.*?\{noformat\}|\{\{.*?\}\}|`[^`\n]+`",
@@ -98,7 +94,7 @@ def _word_alternation(words, flags=0):
 
 
 def _already_clean(value: str) -> bool:
-    return value == PLACEHOLDER or PSEUDONYM.fullmatch(value) is not None
+    return value == PLACEHOLDER
 
 
 def is_person(obj) -> bool:
@@ -115,15 +111,10 @@ class Anonymiser:
 
     Call learn() with every document in the run before scrub(), so a person named in
     one file is removed from all of them.
-
-    Args:
-        salt: bytes for the pseudonym HMAC. Leave as None in real runs to draw a fresh
-            random salt; it is held in memory only and never written anywhere.
     """
 
-    def __init__(self, salt: bytes | None = None):
-        self._salt = salt if salt is not None else secrets.token_bytes(32)
-        self._canonical: dict[str, str] = {}   # any identifier (lower case) -> canonical identifier
+    def __init__(self):
+        self._identifiers: set[str] = set()     # lower-case identifiers of known people
         self._literals: set[str] = set()        # removed as whole words, any case
         self._name_parts: set[str] = set()      # capitalised name parts, removed case-sensitively
         self._handles: set[str] = set()         # lower-case @handles
@@ -191,9 +182,8 @@ class Anonymiser:
         values = [v for v in values if v.strip() and not _already_clean(v)]
         if not values:
             return
-        canonical = next((self._canonical[v.lower()] for v in values if v.lower() in self._canonical), values[0])
         for v in values:
-            self._canonical.setdefault(v.lower(), canonical)
+            self._identifiers.add(v.lower())
             if len(v) >= 3:
                 self._literals.add(v)
             if "@" in v:
@@ -216,12 +206,6 @@ class Anonymiser:
         self._handles.update(low)
 
     # --- scrubbing -------------------------------------------------------------------
-
-    def pseudonym(self, value: str) -> str:
-        """Return the salted pseudonym for an identifier, consistent for one person within a run."""
-        canonical = self._canonical.get(str(value).lower(), str(value))
-        digest = hmac.new(self._salt, canonical.lower().encode("utf-8"), hashlib.sha256).hexdigest()
-        return "person_" + digest[:12]
 
     def _compiled(self):
         if self._patterns is None:
@@ -278,17 +262,14 @@ class Anonymiser:
         return text
 
     def _scrub_person(self, obj: dict) -> dict:
-        values = _person_values(obj)
-        out = {"pseudonym": self.pseudonym(values[0]) if values else self.pseudonym(json.dumps(obj, sort_keys=True))}
+        out = {"person": PLACEHOLDER}
         out.update({k: v for k, v in obj.items() if k in PERSON_SAFE_KEYS})
         return out
 
     def _scrub_changelog_item(self, item: dict) -> dict:
         out = {}
         for k, v in item.items():
-            if k in ("from", "to") and v is not None:
-                out[k] = v if _already_clean(str(v)) else self.pseudonym(str(v))
-            elif k in ("fromString", "toString") and v is not None:
+            if k in ("from", "to", "fromString", "toString") and v is not None:
                 out[k] = PLACEHOLDER
             else:
                 out[k] = self.scrub(v)
@@ -300,10 +281,10 @@ class Anonymiser:
             return True
         if field in ENTITY_CHANGELOG_FIELDS:
             return False
-        return any(isinstance(item.get(k), str) and item[k].lower() in self._canonical for k in ("from", "to"))
+        return any(isinstance(item.get(k), str) and item[k].lower() in self._identifiers for k in ("from", "to"))
 
     def scrub(self, obj, in_code: bool = False):
-        """Return a copy of obj with every person replaced by a pseudonym or placeholder.
+        """Return a copy of obj with every person replaced by the [person] placeholder.
 
         in_code is set internally for ADF code blocks and code-marked text.
         """
@@ -325,7 +306,7 @@ class Anonymiser:
         out = {}
         for k, v in obj.items():
             if k in PERSON_STRING_KEYS and isinstance(v, str):
-                out[k] = self.pseudonym(v)
+                out[k] = PLACEHOLDER
             else:
                 out[k] = self.scrub(v, in_code)
         return out
