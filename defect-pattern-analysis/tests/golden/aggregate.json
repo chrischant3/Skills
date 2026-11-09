@@ -1,0 +1,350 @@
+{
+  "settings": {
+    "taxonomy_version": "v1",
+    "period": "month",
+    "team_rule": "Jira component; several components count once as 'multiple components'",
+    "min_group_size": 5
+  },
+  "suppressed_marker": "suppressed",
+  "summary": {
+    "defects_analysed": 36,
+    "unclassified": "suppressed",
+    "matched_by_query": 36,
+    "changelog_incomplete_defects": 0,
+    "comments_incomplete_defects": 0
+  },
+  "tables": {
+    "types": {
+      "row_dims": [
+        "type"
+      ],
+      "column_dim": null,
+      "columns": [],
+      "rows": [
+        {
+          "labels": {
+            "type": "checking_validation"
+          },
+          "values": {},
+          "total": 14
+        },
+        {
+          "labels": {
+            "type": "function_logic"
+          },
+          "values": {},
+          "total": 9
+        },
+        {
+          "labels": {
+            "type": "interface_integration"
+          },
+          "values": {},
+          "total": 6
+        }
+      ],
+      "suppressed_rows": 3,
+      "suppressed_columns": 0
+    },
+    "type_trend": {
+      "row_dims": [
+        "type"
+      ],
+      "column_dim": "period",
+      "columns": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "rows": [
+        {
+          "labels": {
+            "type": "checking_validation"
+          },
+          "values": {
+            "2026-01": "suppressed",
+            "2026-02": "suppressed",
+            "2026-03": "suppressed",
+            "2026-04": "suppressed",
+            "2026-05": "suppressed",
+            "2026-06": "suppressed"
+          },
+          "total": 14
+        },
+        {
+          "labels": {
+            "type": "function_logic"
+          },
+          "values": {
+            "2026-01": 0,
+            "2026-02": "suppressed",
+            "2026-03": 0,
+            "2026-04": "suppressed",
+            "2026-05": "suppressed",
+            "2026-06": "suppressed"
+          },
+          "total": 9
+        },
+        {
+          "labels": {
+            "type": "interface_integration"
+          },
+          "values": {
+            "2026-01": "suppressed",
+            "2026-02": "suppressed",
+            "2026-03": "suppressed",
+            "2026-04": "suppressed",
+            "2026-05": "suppressed",
+            "2026-06": 0
+          },
+          "total": 6
+        }
+      ],
+      "suppressed_rows": 3,
+      "suppressed_columns": 0
+    },
+    "themes": {
+      "row_dims": [
+        "type",
+        "theme"
+      ],
+      "column_dim": null,
+      "columns": [],
+      "rows": [
+        {
+          "labels": {
+            "type": "checking_validation",
+            "theme": "Null handling on optional address fields"
+          },
+          "values": {},
+          "total": 9
+        },
+        {
+          "labels": {
+            "type": "checking_validation",
+            "theme": "Postcode format rules"
+          },
+          "values": {},
+          "total": 5
+        },
+        {
+          "labels": {
+            "type": "interface_integration",
+            "theme": "Payment gateway timeouts"
+          },
+          "values": {},
+          "total": 6
+        }
+      ],
+      "suppressed_rows": 5,
+      "suppressed_columns": 0
+    },
+    "theme_trend": {
+      "row_dims": [
+        "type",
+        "theme"
+      ],
+      "column_dim": "period",
+      "columns": [
+        "2026-01",
+        "2026-02",
+        "2026-03",
+        "2026-04",
+        "2026-05",
+        "2026-06"
+      ],
+      "rows": [
+        {
+          "labels": {
+            "type": "checking_validation",
+            "theme": "Null handling on optional address fields"
+          },
+          "values": {
+            "2026-01": "suppressed",
+            "2026-02": "suppressed",
+            "2026-03": "suppressed",
+            "2026-04": "suppressed",
+            "2026-05": "suppressed",
+            "2026-06": "suppressed"
+          },
+          "total": 9
+        },
+        {
+          "labels": {
+            "type": "checking_validation",
+            "theme": "Postcode format rules"
+          },
+          "values": {
+            "2026-01": "suppressed",
+            "2026-02": "suppressed",
+            "2026-03": "suppressed",
+            "2026-04": "suppressed",
+            "2026-05": 0,
+            "2026-06": 0
+          },
+          "total": 5
+        },
+        {
+          "labels": {
+            "type": "interface_integration",
+            "theme": "Payment gateway timeouts"
+          },
+          "values": {
+            "2026-01": "suppressed",
+            "2026-02": "suppressed",
+            "2026-03": "suppressed",
+            "2026-04": "suppressed",
+            "2026-05": "suppressed",
+            "2026-06": 0
+          },
+          "total": 6
+        }
+      ],
+      "suppressed_rows": 5,
+      "suppressed_columns": 0
+    },
+    "triggers": {
+      "row_dims": [
+        "trigger"
+      ],
+      "column_dim": null,
+      "columns": [],
+      "rows": [
+        {
+          "labels": {
+            "trigger": "customer_report"
+          },
+          "values": {},
+          "total": 18
+        },
+        {
+          "labels": {
+            "trigger": "exploratory_test"
+          },
+          "values": {},
+          "total": 8
+        }
+      ],
+      "suppressed_rows": 2,
+      "suppressed_columns": 0
+    },
+    "escape_stages": {
+      "row_dims": [
+        "escape_stage"
+      ],
+      "column_dim": null,
+      "columns": [],
+      "rows": [
+        {
+          "labels": {
+            "escape_stage": "automated_test"
+          },
+          "values": {},
+          "total": 10
+        },
+        {
+          "labels": {
+            "escape_stage": "code_review"
+          },
+          "values": {},
+          "total": 14
+        }
+      ],
+      "suppressed_rows": 2,
+      "suppressed_columns": 0
+    },
+    "teams": {
+      "row_dims": [
+        "team"
+      ],
+      "column_dim": "type",
+      "columns": [
+        "checking_validation",
+        "function_logic",
+        "interface_integration"
+      ],
+      "rows": [
+        {
+          "labels": {
+            "team": "Accounts"
+          },
+          "values": {
+            "checking_validation": "suppressed",
+            "function_logic": "suppressed",
+            "interface_integration": "suppressed"
+          },
+          "total": 12
+        },
+        {
+          "labels": {
+            "team": "Payments"
+          },
+          "values": {
+            "checking_validation": 7,
+            "function_logic": 5,
+            "interface_integration": "suppressed"
+          },
+          "total": 16
+        }
+      ],
+      "suppressed_rows": 4,
+      "suppressed_columns": 3
+    },
+    "periods": {
+      "row_dims": [
+        "period"
+      ],
+      "column_dim": null,
+      "columns": [],
+      "rows": [
+        {
+          "labels": {
+            "period": "2026-01"
+          },
+          "values": {},
+          "total": 6
+        },
+        {
+          "labels": {
+            "period": "2026-02"
+          },
+          "values": {},
+          "total": 6
+        },
+        {
+          "labels": {
+            "period": "2026-03"
+          },
+          "values": {},
+          "total": 6
+        },
+        {
+          "labels": {
+            "period": "2026-04"
+          },
+          "values": {},
+          "total": 6
+        },
+        {
+          "labels": {
+            "period": "2026-05"
+          },
+          "values": {},
+          "total": 6
+        },
+        {
+          "labels": {
+            "period": "2026-06"
+          },
+          "values": {},
+          "total": 6
+        }
+      ],
+      "suppressed_rows": 0,
+      "suppressed_columns": 0
+    }
+  }
+}

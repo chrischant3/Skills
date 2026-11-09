@@ -1,0 +1,5 @@
+type,theme,total
+checking_validation,Null handling on optional address fields,9
+checking_validation,Postcode format rules,5
+interface_integration,Payment gateway timeouts,6
+"5 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",,

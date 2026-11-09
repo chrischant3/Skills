@@ -179,3 +179,13 @@ def test_visible_counts_are_correct(tmp_path):
     write(tmp_path, records_with_group_sizes({"A": 6, "B": 7}), 5)
     teams = {r["labels"]["team"]: r["total"] for r in json.loads((tmp_path / "aggregate.json").read_text())["tables"]["teams"]["rows"]}
     assert teams == {"A": 6, "B": 7}
+
+
+def test_a_column_whose_own_total_is_suppressed_is_not_named(tmp_path):
+    records = records_with_group_sizes({"A": 6, "B": 6})
+    records.append({"team": "A", "type": "rare_type", "period": "2026-01"})
+    pub = write(tmp_path, records, 5)
+    table = pub.table(("team",), "type")
+    # Hiding rare_type forces a second type to be hidden too, or it could be found from the total.
+    assert "rare_type" not in table["columns"] and table["suppressed_columns"] >= 1
+    assert not any("rare_type" in p.read_text() for p in tmp_path.iterdir())

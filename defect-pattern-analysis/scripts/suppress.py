@@ -10,9 +10,9 @@ every cell for the groupings you name, then hides:
    visible cells from a visible total (for example a team of 2 hidden next to a team of 8
    and a total of 10), or by a hidden sum that only fits if every hidden cell is 1.
 
-Tables and output files are drawn only from those cells. A table row whose total is
-hidden is left out entirely, so a suppressed group is never named; the output says how
-many groups were suppressed instead. min_group_size below 5 is refused.
+Tables and output files are drawn only from those cells. A table row or column whose
+own total is hidden is left out entirely, so a suppressed group is never named; the
+output says how many groups were suppressed instead. min_group_size below 5 is refused.
 
 This is a practical guard against the obvious ways of recovering small counts. It is
 not a formal statistical disclosure control method.
@@ -129,6 +129,10 @@ class Publication:
         """Publish a count that isn't built from the records (such as defects matched by the query)."""
         return SUPPRESSED if 0 < n < self.min_group_size else n
 
+    def add_cell(self, name: str, key: frozenset) -> None:
+        """Record a named cell's published count (number or SUPPRESSED) for the summary."""
+        self._scalars[name] = self.value(key)
+
     def add_scalar(self, name: str, n: int) -> None:
         """Record a named stand-alone count for the summary, suppressed like any other."""
         self._scalars[name] = self.scalar(n)
@@ -141,6 +145,7 @@ class Publication:
         """Return a table of rows by row_dims, with optional columns by col_dim.
 
         Rows whose total is suppressed are left out and only counted, so they are never named.
+        Columns are left out the same way when their own total (the col_dim grouping) is suppressed.
         """
         row_dims = tuple(row_dims)
         self._check_combo(row_dims)
@@ -159,10 +164,14 @@ class Publication:
                         values[dict(child)[col_dim]] = self.value(child)
             rows.append({"labels": labels, "values": values, "total": self.value(key)})
         columns = sorted({c for r in rows for c in r["values"]})
+        hidden_columns = 0
+        if col_dim and frozenset({col_dim}) in self.combos:
+            visible = [c for c in columns if self.value(frozenset({(col_dim, c)})) != SUPPRESSED]
+            hidden_columns, columns = len(columns) - len(visible), visible
         for r in rows:
             r["values"] = {c: r["values"].get(c, 0) for c in columns}
         return {"row_dims": list(row_dims), "column_dim": col_dim, "columns": columns,
-                "rows": rows, "suppressed_rows": hidden_rows}
+                "rows": rows, "suppressed_rows": hidden_rows, "suppressed_columns": hidden_columns}
 
 
 def publish(records, combos, min_group_size=None) -> Publication:
@@ -209,12 +218,13 @@ def write_outputs(pub: Publication, tables: dict, out_dir, settings: dict | None
 
     for name, table in built.items():
         with (out_dir / f"{name}.csv").open("w", newline="", encoding="utf-8") as fh:
-            writer = csv.writer(fh)
+            writer = csv.writer(fh, lineterminator="\n")
             writer.writerow([*table["row_dims"], *table["columns"], "total"])
             for row in table["rows"]:
                 writer.writerow([*row["labels"].values(), *row["values"].values(), row["total"]])
-            if table["suppressed_rows"]:
-                writer.writerow([_note(table["suppressed_rows"], pub.min_group_size)]
+            hidden = table["suppressed_rows"] + table["suppressed_columns"]
+            if hidden:
+                writer.writerow([_note(hidden, pub.min_group_size)]
                                 + [""] * (len(table["row_dims"]) - 1 + len(table["columns"]) + 1))
 
     md = ["# Defect counts", "", f"Groups with fewer than {pub.min_group_size} defects are suppressed.", ""]
@@ -226,7 +236,8 @@ def write_outputs(pub: Publication, tables: dict, out_dir, settings: dict | None
         for row in table["rows"]:
             cells = [*row["labels"].values(), *row["values"].values(), row["total"]]
             md.append("| " + " | ".join(str(c) for c in cells) + " |")
-        if table["suppressed_rows"]:
-            md += ["", _note(table["suppressed_rows"], pub.min_group_size)]
+        hidden = table["suppressed_rows"] + table["suppressed_columns"]
+        if hidden:
+            md += ["", _note(hidden, pub.min_group_size)]
         md.append("")
     (out_dir / "tables.md").write_text("\n".join(md), encoding="utf-8")

@@ -1,0 +1,163 @@
+[
+ {
+  "key": "ABC-500",
+  "defect_type": "data_config",
+  "trigger": "exploratory_test",
+  "escape_stage": "code_review",
+  "confidence": 0.77,
+  "theme": "Feature flag defaults per environment"
+ },
+ {
+  "key": "ABC-501",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "code_review",
+  "confidence": 0.62,
+  "theme": "Postcode format rules"
+ },
+ {
+  "key": "ABC-502",
+  "defect_type": "checking_validation",
+  "trigger": "production_incident",
+  "escape_stage": "code_review",
+  "confidence": 0.91,
+  "theme": "Postcode format rules"
+ },
+ {
+  "key": "ABC-503",
+  "defect_type": "interface_integration",
+  "trigger": "exploratory_test",
+  "escape_stage": "code_review",
+  "confidence": 0.94,
+  "theme": "Payment gateway timeouts"
+ },
+ {
+  "key": "ABC-504",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "automated_test",
+  "confidence": 0.82,
+  "theme": "null handling on  optional address fields"
+ },
+ {
+  "key": "ABC-505",
+  "defect_type": "function_logic",
+  "trigger": "exploratory_test",
+  "escape_stage": "refinement",
+  "confidence": 0.83,
+  "theme": "Discount rounding at basket level"
+ },
+ {
+  "key": "ABC-506",
+  "defect_type": "checking_validation",
+  "trigger": "exploratory_test",
+  "escape_stage": "automated_test",
+  "confidence": 0.86,
+  "theme": "Postcode format rules"
+ },
+ {
+  "key": "ABC-507",
+  "defect_type": "function_logic",
+  "trigger": "production_incident",
+  "escape_stage": "refinement",
+  "confidence": 0.82,
+  "theme": "Refund state transitions"
+ },
+ {
+  "key": "ABC-508",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "refinement",
+  "confidence": 0.72,
+  "theme": "null handling on  optional address fields"
+ },
+ {
+  "key": "ABC-509",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "code_review",
+  "confidence": 0.84,
+  "theme": "Postcode format rules"
+ },
+ {
+  "key": "ABC-510",
+  "defect_type": "function_logic",
+  "trigger": "customer_report",
+  "escape_stage": "refinement",
+  "confidence": 0.88,
+  "theme": "Refund state transitions"
+ },
+ {
+  "key": "ABC-511",
+  "defect_type": "function_logic",
+  "trigger": "customer_report",
+  "escape_stage": "refinement",
+  "confidence": 0.45,
+  "theme": "Unclear",
+  "reason": "Description has no expected or actual result."
+ },
+ {
+  "key": "ABC-512",
+  "defect_type": "checking_validation",
+  "trigger": "exploratory_test",
+  "escape_stage": "refinement",
+  "confidence": 0.86,
+  "theme": "null handling on  optional address fields"
+ },
+ {
+  "key": "ABC-513",
+  "defect_type": "interface_integration",
+  "trigger": "customer_report",
+  "escape_stage": "code_review",
+  "confidence": 0.88,
+  "theme": "Payment gateway timeouts"
+ },
+ {
+  "key": "ABC-514",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "code_review",
+  "confidence": 0.81,
+  "theme": "Null handling on optional address fields"
+ },
+ {
+  "key": "ABC-515",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "automated_test",
+  "confidence": 0.83,
+  "theme": "Null handling on optional address fields"
+ },
+ {
+  "key": "ABC-516",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "code_review",
+  "confidence": 0.75,
+  "theme": "null handling on  optional address fields"
+ },
+ {
+  "key": "ABC-517",
+  "defect_type": "checking_validation",
+  "trigger": "customer_report",
+  "escape_stage": "refinement",
+  "confidence": 0.7,
+  "theme": "Null handling on optional address fields"
+ },
+ {
+  "key": "ABC-518",
+  "defect_type": "ux_content",
+  "trigger": "customer_report",
+  "escape_stage": "automated_test",
+  "confidence": 0.7,
+  "theme": "Truncated button labels"
+ },
+ {
+  "key": "ABC-519",
+  "defect_type": "function_logic",
+  "trigger": "customer_report",
+  "escape_stage": "automated_test",
+  "confidence": 0.79,
+  "theme": "Discount rounding at basket level"
+ }
+]

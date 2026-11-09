@@ -1,0 +1,5 @@
+{
+ "source": "mcp",
+ "jql": "project in (\"ABC\") AND issuetype in (\"Bug\") AND created >= -365d ORDER BY created ASC",
+ "matched": 36
+}

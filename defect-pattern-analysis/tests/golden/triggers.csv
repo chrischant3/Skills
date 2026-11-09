@@ -1,0 +1,4 @@
+trigger,total
+customer_report,18
+exploratory_test,8
+"2 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",
