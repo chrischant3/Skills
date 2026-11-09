@@ -7,6 +7,7 @@ raw data only during the fetch step, before this point.
 """
 
 import json
+import re
 from pathlib import Path
 
 import anonymise
@@ -82,3 +83,13 @@ def load_clean_documents(clean_dir) -> dict:
         doc = {k: v for k, v in _load_marked(path).items() if k != anonymise.MARKER_KEY}
         docs[path.name] = doc["items"] if set(doc) == {"items"} else doc
     return docs
+
+
+def earliest_created(issues) -> str | None:
+    """Return the earliest created date (YYYY-MM-DD) among issues, or None if none has one.
+
+    Source control linking starts its window here, so it follows the run's own time window.
+    """
+    dates = [str(i["fields"].get("created"))[:10] for i in issues if isinstance(i["fields"].get("created"), str)]
+    dates = [d for d in dates if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)]
+    return min(dates) if dates else None

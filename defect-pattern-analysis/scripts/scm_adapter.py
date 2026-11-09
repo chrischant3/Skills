@@ -69,6 +69,14 @@ class SourceControlAdapter(ABC):
         """A stable, readable name for a configured repo, used in every output."""
 
     @abstractmethod
+    def client_from_env(self, repo: dict, environ):
+        """Build the platform's REST client from credentials in environ.
+
+        Raises:
+            KeyError: naming the environment variable that is missing.
+        """
+
+    @abstractmethod
     def fetch(self, repo: dict, since: str, out_dir, client) -> dict:
         """REST fallback: write raw JSON for every change merged on or after since into out_dir.
 
