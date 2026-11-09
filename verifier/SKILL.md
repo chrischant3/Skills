@@ -31,12 +31,12 @@ This file is enough to run a verification. The files in `references/` add depth:
 
 ## Model independence
 
-Record `builder_model` and `verifier_model` on every run, without exception. Over many runs this shows which pairings catch the most failures and which share blind spots.
+Record `builder_model`, `verifier_model` and `same_provider` on every run, without exception. Over many runs this shows which pairings catch the most failures and which share blind spots.
 
 - **Recommended default: a different provider from the builder.** For example, a GPT model builds and a Claude model verifies, or the other way round. Models from different providers are less likely to share training data, habits and blind spots.
-- **Same provider is allowed, with weaker independence.** A common local setup is a smaller model building (for example Claude Haiku or Sonnet) and a larger model from the same family verifying (for example Claude Opus). This still gives a fresh context and a stronger model, but the two may share blind spots, so a Pass carries less weight. Say so in `observations` when it applies.
+- **Same provider is allowed, with weaker independence.** A common local setup is a smaller model building (for example Claude Haiku or Sonnet) and a larger model from the same family verifying (for example Claude Opus). This still gives a fresh context and a stronger model, but the two may share blind spots, so a Pass carries less weight. Set `same_provider` to `true`.
 - **Same model is not independent.** Don't verify a run with the model that built it. If no independent model is available, record the run as Inconclusive and give the reason in `observations`.
-- Write model ids with their provider where you can (for example `anthropic/claude-opus-x`, `openai/gpt-x`), so the provider can be read from the file later.
+- Write model ids with their provider where you can (for example `anthropic/claude-opus-x`, `openai/gpt-x`), so a reader can check `same_provider` against them.
 
 A team can make "never the builder's provider" a hard rule in its own harness. This skill records the pairing either way.
 
@@ -50,7 +50,7 @@ A team can make "never the builder's provider" a hard rule in its own harness. T
 | Criteria | Acceptance criteria, rules or standards that define success | Use the task alone, and note in `observations` that no criteria were given. |
 | Allowed evidence and tools | What you may run or read | Read-only inspection only. Anything not listed is out of bounds. |
 
-The rule-compliance profile adds two inputs: the rules, instructions and skills files active for the run, and the builder's transcript. The transcript is an artefact under review (a record of what the builder did), not testimony. A builder writing "I ran the tests" is a claim to check, not evidence that it did.
+The rule-compliance profile adds two inputs: the rules, instructions and skills files active for the run, and the builder's transcript. The transcript is an artefact under review (a record of what the builder did), not testimony. A builder writing "I ran the tests" is a claim to check, not evidence that it did. Record in `reasoning_available` whether the transcript held any reasoning text (`null` when no transcript was supplied).
 
 ## Process
 
@@ -59,7 +59,7 @@ The rule-compliance profile adds two inputs: the rules, instructions and skills 
 3. **Gather evidence for each claim.** Observe directly where you can: run the tests, execute the code, read the actual files, query the system. Fall back to inspection only when execution isn't possible or isn't allowed, and record which you used (`executed` or `inspected`).
 4. **Look for what is missing:** requirements with no matching change, edge cases with no test, rules that were never applied.
 5. **Issue verdicts.** Each claim is Verified, Failed or Unverified. Failures get `expected`, `observed` and `repro`. Unverified claims say why they couldn't be checked.
-6. **Set the overall verdict** using the rule below, then write the verdict file.
+6. **Set the overall verdict** using the rule below, write the summary, then write the verdict file.
 
 With the rule-compliance profile, also build a rule applicability map and check each applicable rule. See `references/rule-compliance-profile.md`.
 
@@ -67,12 +67,12 @@ With the rule-compliance profile, also build a rule applicability map and check 
 
 Apply these in order:
 
-1. **Any Failed claim gives Fail.**
+1. **Any Failed claim, or any Broken applicable rule, gives Fail.**
 2. **Otherwise, any Unverified high-risk claim gives Inconclusive.** Never Pass.
-3. **An empty claim list gives Inconclusive**, and is flagged in `observations`. Nothing was checked, so nothing can pass.
+3. **Otherwise, an empty claim list gives Inconclusive**, and is flagged in `observations`. Nothing was checked, so nothing can pass.
 4. Otherwise, Pass.
 
-Unverified medium-risk and low-risk claims don't block a Pass, but they must still be listed. The overall verdict is computed from claims only. Rule results are reported separately in `rules`.
+Unverified medium-risk and low-risk claims don't block a Pass, but they must still be listed. Followed, Unverified and not-applicable rules don't change the overall verdict; only a Broken applicable rule does.
 
 Other reasons to record Inconclusive, with the reason in `observations`: no independent model was available, or the verifier's own output failed schema validation. A response that fails validation is never retried until it passes, and never dropped silently.
 
@@ -82,11 +82,15 @@ One JSON file per run. The proposed location is `.verifier/runs/<run_id>.json` i
 
 The file must validate against `references/verdict-schema.json`. The schema enforces the enums, the overall verdict rule, and `expected`, `observed` and `repro` on every Failed claim. `audit` stays `null`: it is reserved for a second-line auditor that is not part of this skill yet.
 
-After writing the file, give a short summary in chat:
-- the overall verdict and the path to the file
+The `summary` field covers:
+- the overall verdict
 - the highest-risk findings
 - what couldn't be verified, and why
-- your confidence, and the builder and verifier models
+- your confidence
+
+**Never put verbatim transcript text in a verdict file.** Verdict files live in repos, and transcripts can hold private data. Describe what the transcript shows in your own words, and point to a place in it (a `location`) instead of quoting it.
+
+After writing the file, repeat the summary in chat with the path to the file and the builder and verifier models.
 
 ## Anti-patterns
 
@@ -95,6 +99,7 @@ After writing the file, give a short summary in chat:
 - **Silent skipping:** dropping a claim because it was hard to check. Mark it Unverified instead.
 - **Scope creep:** reviewing style or design when asked to verify specific claims. Extra findings go in `observations`, clearly separate from the verdicts.
 - **Passing the unchecked:** marking a claim Verified on inspection when it could have been executed and wasn't.
+- **Quoting the transcript:** copying the builder's words into the verdict file. Paraphrase and point instead.
 - **Treating a stated excuse as the verdict:** a builder admitting it skipped a step is evidence to weigh, not proof on its own. Check the effect too.
 
 ## When to load a reference

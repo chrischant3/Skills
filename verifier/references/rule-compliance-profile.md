@@ -20,7 +20,8 @@ The core verifier never sees the builder's reasoning. This profile does, because
 
 - The transcript is **evidence of actions** (which files were edited in what order, which commands ran, what the output was).
 - It is **never an argument for correctness.** "I ran the tests and they passed" in the transcript is a claim. The tool output that follows it, or a fresh run, is the evidence.
-- Some harnesses or models store little or no reasoning. If the transcript has no reasoning text, say so in `observations`, so that "no rationalisations found" is not read as "the agent made no excuses".
+- Some harnesses or models store little or no reasoning. Set `reasoning_available` to `false` when the transcript has no reasoning text, so that "no rationalisations found" is not read as "the agent made no excuses".
+- **Never copy transcript text into the verdict file.** Describe what it shows in your own words, and point to where it is.
 
 ## Addendum to the system prompt
 
@@ -35,7 +36,9 @@ The transcript is a record of what the builder did. Use it as evidence of action
 2. For each applicable rule, verify compliance from the diff or transcript: Followed, Broken or Unverified, with evidence.
 3. Flag rules that should have triggered but show no sign of being considered.
 4. Flag rules too ambiguous to judge, and any rules that conflict.
-5. If a rule has a rationalisation table, check the builder's final summary and any reasoning against it. Record each excuse you find, whether or not it is in the table.
+5. If a rule has a rationalisation table, check the builder's final summary and any reasoning against it. Record each excuse you find, whether or not it is in the table, as a pointer to where it is.
+
+Any Broken applicable rule makes the overall verdict Fail. Never copy verbatim text from the transcript into your result.
 
 You are judging the rules as well as the work: say plainly when a rule's wording made compliance impossible to assess.
 ```
@@ -49,7 +52,7 @@ List every rule in the active files, not only the ones that look relevant. For e
 | `rule_id` | A stable id. Use the file's own id if it has one; otherwise `<file stem>/<short slug>`, for example `testing/tdd-first`. |
 | `applicable` | `true` if the rule should have applied to this task. |
 | `applicability_reason` | Why, in one line. "Task adds new behaviour" or "No database change in the diff". |
-| `verdict` | `Followed`, `Broken` or `Unverified` when applicable; `null` when not. |
+| `verdict` | `Followed`, `Broken` or `Unverified` when applicable; `null` when not. Any `Broken` makes the overall verdict Fail. |
 | `evidence` | What the verdict rests on. For a rule that isn't applicable, what shows that. |
 | `flags` | Any of `not_considered`, `ambiguous`, `conflicts_with:<rule_id>`. |
 
@@ -75,9 +78,9 @@ A rationalisation is a reason the builder gives for not following a rule: "this 
 
 - Search the builder's **final summary** first, then any **reasoning** the transcript holds. In practice, excuses mostly appear in final summaries, and many harnesses store little or no reasoning.
 - Flag every excuse in a final summary, every time.
-- Record each one in the verdict file's optional `rationalisations` array: the `rule_id`, a short `quote`, where it came from (`source`), and the matching `table_entry`.
+- Record each one in the verdict file's optional `rationalisations` array: the `rule_id`, where it came from (`source`), a `location` pointer into the transcript, and the matching `table_entry`. The `location` holds the transcript or session id, the message index and the part or block id, each `null` if the harness doesn't record it. It never holds the text itself.
 - An excuse that matches no table entry is recorded with `"new": true` and `"table_entry": null`, for the rule's owner to decide whether it joins the table.
 - **A detected excuse is evidence, not a verdict.** Weigh it against the effect-based checks above. A builder that names a real blocker (no runner, shell denied) and stops to ask has not broken a rule by saying so. A builder that skips the test and says nothing has, and only the effect check will catch it.
 - Use an empty array when you searched and found nothing. Leave the field out when no search was done (for example, the profile isn't active). That keeps "none found" apart from "not looked for".
 
-The `quote` copies text from the transcript into the repo. Keep it short, and leave out anything sensitive.
+Verdict files are stored in repos and transcripts can hold private data, so the excuse itself stays in the transcript. Anyone with access to the transcript can follow the `location` to read it.
