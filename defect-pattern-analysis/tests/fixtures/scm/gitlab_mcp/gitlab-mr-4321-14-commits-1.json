@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"3333333333333333333333333333333333333333\", \"short_id\": \"33333333\", \"title\": \"Expire sessions on idle\", \"message\": \"Expire sessions on idle\", \"author_name\": \"Oluwaseun Mockley\", \"author_email\": \"seun.m@example.com\", \"authored_date\": \"2026-03-01T10:00:00Z\", \"committer_name\": \"Oluwaseun Mockley\", \"committer_email\": \"seun.m@example.org\", \"committed_date\": \"2026-03-01T10:05:00Z\", \"trailers\": {}, \"web_url\": \"https://gitlab.example.com/group/checkout-service/-/commit/3333333333333333333333333333333333333333\"}]"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"old_path\": \"services/accounts/session_filter.py\", \"new_path\": \"services/accounts/session_filter.py\", \"a_mode\": \"100644\", \"b_mode\": \"100644\", \"diff\": \"@@ +1 @@\\n+EXPIRY = 900\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}]"
+  }
+ ]
+}

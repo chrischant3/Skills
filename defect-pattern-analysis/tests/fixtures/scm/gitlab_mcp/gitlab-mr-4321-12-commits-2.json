@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"2222222222222222222222222222222222222222\", \"short_id\": \"22222222\", \"title\": \"Add address tests\", \"message\": \"Add address tests\\n\\nCo-authored-by: Grace Placeholder <grace.placeholder@example.net>\\nSigned-off-by: Priya Testwell <priya.testwell@example.com>\", \"author_name\": \"Priya Testwell\", \"author_email\": \"priya.t@example.com\", \"authored_date\": \"2026-03-01T10:00:00Z\", \"committer_name\": \"Priya Testwell\", \"committer_email\": \"priya.t@example.org\", \"committed_date\": \"2026-03-01T10:05:00Z\", \"trailers\": {\"Co-authored-by\": \"Grace Placeholder <grace.placeholder@example.net>\"}, \"web_url\": \"https://gitlab.example.com/group/checkout-service/-/commit/2222222222222222222222222222222222222222\"}]"
+  }
+ ]
+}
