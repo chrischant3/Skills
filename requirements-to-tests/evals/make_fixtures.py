@@ -4,14 +4,18 @@
 The documents are fictional and deliberately flawed: vague NFRs, missing tails, hidden
 functions, risky assumptions and absent privacy rules. That lets the evals check that the
 skill finds them.
+
+Dev-only dependencies: openpyxl (xlsx) and fpdf2 (pdf): `pip install openpyxl fpdf2`. fpdf2 is
+used rather than an OS print tool so the PDF builds identically on any machine and records
+nothing about the machine that built it.
 """
 
-import subprocess
-import textwrap
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 import openpyxl
+from fpdf import FPDF
 
 OUT = Path(__file__).resolve().parent / "files"
 W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
@@ -65,7 +69,12 @@ def clinic_docx():
     return path
 
 
-def payouts_pdf():
+# A fixed timestamp keeps the PDF byte-identical across rebuilds, so git only sees real changes.
+PDF_DATE = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+
+def payouts_pdf(out=OUT):
+    """Write the payouts NFR PDF (one section group per page) to `out` and return its path."""
     pages = [
         """Merchant Payouts API - Non-Functional Requirements (Draft 2)
 
@@ -99,16 +108,15 @@ NFR-D3 Merchants can export their payout history as CSV.
 NFR-D4 A payout, once confirmed, is never processed twice.
 """,
     ]
-    txt = OUT / "payouts.txt"
-    # Wrap below 80 columns: cupsfilter hard-wraps mid-word at 80.
-    wrapped = ["\n".join(textwrap.fill(line, 76, subsequent_indent="  ") if line else "" for line in page.splitlines())
-               for page in pages]
-    txt.write_text("\f".join(wrapped), encoding="utf-8")
-    path = OUT / "payouts-api-nfrs-draft2.pdf"
-    with path.open("wb") as fh:
-        subprocess.run(["/usr/sbin/cupsfilter", "-m", "application/pdf", str(txt)], stdout=fh,
-                       stderr=subprocess.DEVNULL, check=True)
-    txt.unlink()
+    pdf = FPDF(format="A4")
+    pdf.set_creation_date(PDF_DATE)
+    pdf.set_font("Courier", size=10)
+    for page in pages:
+        pdf.add_page()
+        for line in page.splitlines():
+            pdf.multi_cell(0, 5, line, new_x="LMARGIN", new_y="NEXT")
+    path = Path(out) / "payouts-api-nfrs-draft2.pdf"
+    pdf.output(str(path))
     return path
 
 
