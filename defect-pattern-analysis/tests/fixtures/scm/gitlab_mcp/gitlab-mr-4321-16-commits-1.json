@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"6666666666666666666666666666666666666666\", \"short_id\": \"66666666\", \"title\": \"Update README\", \"message\": \"Update README\", \"author_name\": \"Grace Placeholder\", \"author_email\": \"grace.p@example.com\", \"authored_date\": \"2026-03-01T10:00:00Z\", \"committer_name\": \"Grace Placeholder\", \"committer_email\": \"grace.p@example.org\", \"committed_date\": \"2026-03-01T10:05:00Z\", \"trailers\": {}, \"web_url\": \"https://gitlab.example.com/group/checkout-service/-/commit/6666666666666666666666666666666666666666\"}]"
+  }
+ ]
+}

@@ -5,6 +5,7 @@ repos:
     url: https://gitlab.example.com
     project: group/checkout-service
     team: Checkout
+    namespace: group   # group or user; a repo not marked group is treated as personal unless GitLab says otherwise
   - platform: azure
     org: example-org
     project: Accounts

@@ -32,8 +32,23 @@ def test_skill_never_lowers_the_group_threshold():
 
 def test_draft_scripts_with_known_problems_are_marked_not_ready():
     not_ready = SKILL.split("## Not ready yet", 1)[1]
-    for name in ["link_scm.py", "ticket_signals.py", "szz.py"]:
+    for name in ["ticket_signals.py", "szz.py"]:
         assert f"scripts/{name}" in not_ready
+    assert "Azure DevOps" in not_ready
+
+
+def test_gitlab_linking_runs_after_anonymisation_and_before_the_report():
+    workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
+    step = workflow.split("### 5.", 1)[1].split("### 6.", 1)[0]
+    assert "GitLab" in step and "MCP" in step
+    order = ["scripts/scm_fetch.py", "scripts/anonymise.py", "scripts/link_scm.py"]
+    positions = [step.index(name) for name in order]
+    assert positions == sorted(positions)
+    assert "Write the report" in workflow.split("### 6.", 1)[1]
+
+
+def test_skill_names_no_dependency_outside_the_standard_library():
+    assert "`requests`" not in SKILL and "pyyaml" not in SKILL.lower() and "pip install" not in SKILL
 
 
 def test_skill_md_uses_no_em_dashes():
@@ -59,3 +74,19 @@ def test_skill_states_the_work_not_people_stance():
 def test_skill_lists_component_attribution_as_an_open_question():
     later = SKILL.split("## Later versions", 1)[1]
     assert "several components" in later
+
+
+def test_skill_documents_the_yaml_subset_scm_yaml_may_use():
+    step = SKILL.split("### 5.", 1)[1].split("### 6.", 1)[0]
+    subset = step.split("`scm.yaml` uses a strict part of YAML", 1)[1].split("\n\n", 1)[0]
+    for word in ["single quotes", "tabs", "anchors", "flow", "multi-line", "duplicate", "line number"]:
+        assert word in subset, word
+
+
+def test_skill_explains_how_personal_namespaces_are_kept_out_of_outputs():
+    step = SKILL.split("### 5.", 1)[1].split("### 6.", 1)[0]
+    assert "namespace: group" in step and "namespace: user" in step
+    assert "[person]/checkout-tool" in step
+    assert "treated as personal" in step
+    assert "--scm-config scm.yaml" in step
+    assert "Link only group or team repos" not in step

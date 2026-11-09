@@ -5,13 +5,21 @@ Runs before any analysis script, classification input or output. With MCP fetchi
 model has seen the raw data once, during the fetch step; with the REST fallback it never
 sees names at all.
 
-Usage: anonymise.py <raw_dir> <clean_dir>
+Usage: anonymise.py <raw_dir> <clean_dir> [--scm-config scm.yaml]
+
+--scm-config is required when raw/ holds source control data, so that repos in a
+person's own namespace (such as a GitLab user namespace) lose the username in their path.
 
 Person detection is structural, not a flat key list:
 - Jira user objects (Cloud: accountId; Data Center: name, key and emailAddress), GitLab
   users (username), Azure DevOps identities (uniqueName, displayName) and git
-  name/email pairs are replaced by a pseudonym. Status, issue type, component and
+  name/email pairs are replaced by {"person": "[person]"}. Status, issue type, component and
   other named Jira entities are never treated as people.
+- MCP results that hold JSON as text are decoded first, so the people inside them are
+  learnt and removed like any others.
+- GitLab parsed commit trailers lose every value, and diff bodies are dropped (only
+  file paths are needed, and diff text can name people). Bare numbers, such as GitLab
+  user ids, are never removed from text, so issue keys and counts survive.
 - Changelog items for person fields (assignee, reporter, creator, or any item whose
   value is a known person) keep their shape but lose the person.
 - In free text: commit trailers, Jira [~...] mentions, ADF mention nodes and email
@@ -25,24 +33,25 @@ Person detection is structural, not a flat key list:
   matches a known person is removed even inside code. The trade-off: an unusual
   annotation written in prose, outside any code formatting, is removed too.
 
-Pseudonyms are salted with a random per-run salt that is held in memory only, so they
-cannot be reversed or joined across runs. They exist so scripts can count distinct
-people. They never appear in any report.
+Every person, in structured fields and in text alike, becomes the same plain [person]
+placeholder. Nothing counts distinct people, so there is no salt, hash or pseudonym:
+two people can't be told apart, and nothing can be reversed or joined across runs.
 """
 
-import hashlib
-import hmac
+import argparse
 import json
 import re
-import secrets
 import sys
 from pathlib import Path
 
 import jira_normalise
+import scm_adapter
+import scm_config
 
 PLACEHOLDER = "[person]"
 TRAILER_PLACEHOLDER = "[trailer removed]"
-MARKER = {"by": "anonymise.py", "version": 2}
+DIFF_PLACEHOLDER = "[diff removed]"
+MARKER = {"by": "anonymise.py", "version": 3}
 MARKER_KEY = "_anonymised"
 INGEST_REPORT = "_ingest.json"
 ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
@@ -50,13 +59,16 @@ ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
 # Any of these keys marks a dict as a person: Jira Cloud and Data Center users, GitLab
 # users, Azure DevOps identities and git author/committer objects.
 PERSON_MARKER_KEYS = {"accountId", "emailAddress", "email", "uniqueName", "username", "displayName"}
-# Values worth remembering about a person, in order of preference for their pseudonym key.
-PERSON_ID_KEYS = ("accountId", "key", "username", "uniqueName", "name", "emailAddress", "email", "displayName", "id")
+# Values that identify a person, learnt so they can be removed from free text too.
+PERSON_ID_KEYS = ("accountId", "key", "username", "uniqueName", "name", "emailAddress", "email", "displayName", "id",
+                  "path", "full_path")
 # Non-identifying facts on a person object that analysis may need.
-PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date"}
+PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date", "kind"}
 # Flat string fields that hold a person in GitLab and git exports.
 PERSON_STRING_KEYS = {"author_name", "author_email", "committer_name", "committer_email",
                       "authorName", "authorEmail", "committerName", "committerEmail"}
+# GitLab commit fields that hold parsed trailers ({"Co-authored-by": "Name <email>"}).
+TRAILER_FIELDS = {"trailers", "extended_trailers"}
 PERSON_CHANGELOG_FIELDS = {"assignee", "reporter", "creator"}
 # Changelog fields whose from/to strings are names of Jira entities, not free text.
 ENTITY_CHANGELOG_FIELDS = {"status", "component", "components", "issuetype", "priority", "resolution",
@@ -79,10 +91,10 @@ FILE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp", "pd
                    "jsx", "css", "scss", "less", "html", "json", "py", "java", "kt", "cs", "go", "rb", "md",
                    "txt", "yml", "yaml", "xml", "lock", "zip", "gz", "jar", "dll"}
 
-TRAILER = re.compile(r"(?im)^[ \t]*(signed-off-by|co-authored-by|reviewed-by|acked-by|tested-by|reported-by):.*$")
+TRAILER = re.compile(r"(?im)^[ \t]*(signed-off-by|co-authored-by|co-developed-by|reviewed-by|acked-by|tested-by|"
+                     r"reported-by|approved-by|helped-by|suggested-by):.*$")
 JIRA_MENTION = re.compile(r"\[~accountid:[^\]]*\]|\[~[^\]\s][^\]]*\]", re.IGNORECASE)
 EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.([A-Za-z]{2,24})(?![\w-])")
-PSEUDONYM = re.compile(r"person_[0-9a-f]{12}")
 HANDLE = re.compile(r"(?<![\w@./])@([A-Za-z0-9_](?:[A-Za-z0-9_.\-]*[A-Za-z0-9_])?)")
 # Code regions in plain or wiki text: Markdown fences and inline code, Jira {code}, {noformat} and {{...}}.
 CODE_REGION = re.compile(r"```.*?```|\{code(?::[^}]*)?\}.*?\{code\}|\{noformat\}.*?\{noformat\}|\{\{.*?\}\}|`[^`\n]+`",
@@ -98,12 +110,15 @@ def _word_alternation(words, flags=0):
 
 
 def _already_clean(value: str) -> bool:
-    return value == PLACEHOLDER or PSEUDONYM.fullmatch(value) is not None
+    return value == PLACEHOLDER
 
 
 def is_person(obj) -> bool:
-    """True if obj is a structural person record (user, identity or git signature)."""
-    return isinstance(obj, dict) and any(k in obj for k in PERSON_MARKER_KEYS)
+    """True if obj is a structural person record (user, identity, git signature or user namespace)."""
+    if not isinstance(obj, dict):
+        return False
+    user_namespace = obj.get("kind") == "user" and ("path" in obj or "full_path" in obj)
+    return user_namespace or any(k in obj for k in PERSON_MARKER_KEYS)
 
 
 def _person_values(obj: dict) -> list[str]:
@@ -115,15 +130,10 @@ class Anonymiser:
 
     Call learn() with every document in the run before scrub(), so a person named in
     one file is removed from all of them.
-
-    Args:
-        salt: bytes for the pseudonym HMAC. Leave as None in real runs to draw a fresh
-            random salt; it is held in memory only and never written anywhere.
     """
 
-    def __init__(self, salt: bytes | None = None):
-        self._salt = salt if salt is not None else secrets.token_bytes(32)
-        self._canonical: dict[str, str] = {}   # any identifier (lower case) -> canonical identifier
+    def __init__(self):
+        self._identifiers: set[str] = set()     # lower-case identifiers of known people
         self._literals: set[str] = set()        # removed as whole words, any case
         self._name_parts: set[str] = set()      # capitalised name parts, removed case-sensitively
         self._handles: set[str] = set()         # lower-case @handles
@@ -171,6 +181,14 @@ class Anonymiser:
         for value in obj.values():
             self._walk(value)
 
+    def add_identifiers(self, values) -> None:
+        """Treat each value (such as the owner of a personal repo) as a person to remove, however short."""
+        for v in (str(v) for v in values if str(v).strip() and not _already_clean(str(v))):
+            self._identifiers.add(v.lower())
+            self._literals.add(v)
+            self._handles.add(v.lower())
+        self._patterns = None
+
     def _learn_changelog_item(self, item: dict) -> None:
         field = str(item.get("fieldId") or item.get("field") or "").lower()
         self._protect(str(item.get("field", "")))
@@ -191,10 +209,11 @@ class Anonymiser:
         values = [v for v in values if v.strip() and not _already_clean(v)]
         if not values:
             return
-        canonical = next((self._canonical[v.lower()] for v in values if v.lower() in self._canonical), values[0])
         for v in values:
-            self._canonical.setdefault(v.lower(), canonical)
-            if len(v) >= 3:
+            self._identifiers.add(v.lower())
+            # A bare number (such as a GitLab user id) means nothing in prose, and removing it
+            # would also wreck issue keys and counts that happen to share the digits.
+            if len(v) >= 3 and not v.isdigit():
                 self._literals.add(v)
             if "@" in v:
                 self._handles.add(v.split("@")[0].lower())
@@ -216,12 +235,6 @@ class Anonymiser:
         self._handles.update(low)
 
     # --- scrubbing -------------------------------------------------------------------
-
-    def pseudonym(self, value: str) -> str:
-        """Return the salted pseudonym for an identifier, consistent for one person within a run."""
-        canonical = self._canonical.get(str(value).lower(), str(value))
-        digest = hmac.new(self._salt, canonical.lower().encode("utf-8"), hashlib.sha256).hexdigest()
-        return "person_" + digest[:12]
 
     def _compiled(self):
         if self._patterns is None:
@@ -278,17 +291,14 @@ class Anonymiser:
         return text
 
     def _scrub_person(self, obj: dict) -> dict:
-        values = _person_values(obj)
-        out = {"pseudonym": self.pseudonym(values[0]) if values else self.pseudonym(json.dumps(obj, sort_keys=True))}
+        out = {"person": PLACEHOLDER}
         out.update({k: v for k, v in obj.items() if k in PERSON_SAFE_KEYS})
         return out
 
     def _scrub_changelog_item(self, item: dict) -> dict:
         out = {}
         for k, v in item.items():
-            if k in ("from", "to") and v is not None:
-                out[k] = v if _already_clean(str(v)) else self.pseudonym(str(v))
-            elif k in ("fromString", "toString") and v is not None:
+            if k in ("from", "to", "fromString", "toString") and v is not None:
                 out[k] = PLACEHOLDER
             else:
                 out[k] = self.scrub(v)
@@ -300,10 +310,10 @@ class Anonymiser:
             return True
         if field in ENTITY_CHANGELOG_FIELDS:
             return False
-        return any(isinstance(item.get(k), str) and item[k].lower() in self._canonical for k in ("from", "to"))
+        return any(isinstance(item.get(k), str) and item[k].lower() in self._identifiers for k in ("from", "to"))
 
     def scrub(self, obj, in_code: bool = False):
-        """Return a copy of obj with every person replaced by a pseudonym or placeholder.
+        """Return a copy of obj with every person replaced by the [person] placeholder.
 
         in_code is set internally for ADF code blocks and code-marked text.
         """
@@ -322,13 +332,43 @@ class Anonymiser:
             return {"type": "mention", "attrs": {"text": PLACEHOLDER}}
         if "field" in obj and ("fromString" in obj or "toString" in obj) and self._is_person_item(obj):
             return self._scrub_changelog_item(obj)
+        is_diff = "new_path" in obj or "old_path" in obj
         out = {}
         for k, v in obj.items():
             if k in PERSON_STRING_KEYS and isinstance(v, str):
-                out[k] = self.pseudonym(v)
+                out[k] = PLACEHOLDER
+            elif k in TRAILER_FIELDS and isinstance(v, dict):
+                out[k] = {name: PLACEHOLDER for name in v}
+            elif k == "diff" and is_diff and isinstance(v, str):
+                out[k] = DIFF_PLACEHOLDER  # only paths are needed; diff text can name people
             else:
                 out[k] = self.scrub(v, in_code)
         return out
+
+
+def decode_mcp_result(doc):
+    """Return the JSON held in an MCP tool result's text blocks, or doc unchanged.
+
+    Claude saves MCP results verbatim, so JSON often arrives as a string inside
+    {"content": [{"type": "text", "text": "..."}]}. It must be decoded before learning,
+    or the people inside it would be invisible to learn() and their names would survive.
+    One block gives its value; several give a list of values.
+    """
+    if isinstance(doc, str):
+        try:
+            return decode_mcp_result(json.loads(doc))
+        except ValueError:
+            return doc
+    if not (isinstance(doc, dict) and isinstance(doc.get("content"), list) and doc["content"]):
+        return doc
+    blocks = doc["content"]
+    if not all(isinstance(b, dict) and b.get("type") == "text" and isinstance(b.get("text"), str) for b in blocks):
+        return doc
+    try:
+        values = [json.loads(b["text"]) for b in blocks]
+    except ValueError:
+        return doc
+    return values[0] if len(values) == 1 else values
 
 
 def mark(doc):
@@ -343,7 +383,7 @@ def is_marked(doc) -> bool:
     return isinstance(doc, dict) and isinstance(doc.get(MARKER_KEY), dict) and doc[MARKER_KEY].get("by") == MARKER["by"]
 
 
-def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None) -> int:
+def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None, scm_config: dict | None = None) -> int:
     """Anonymise every *.json file in in_dir into out_dir. Returns the number of files written.
 
     Jira issues, in any shape jira_normalise understands (MCP results or REST files), are
@@ -351,18 +391,30 @@ def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None) -> int:
     reporting coverage and gaps. Any other JSON (such as source control exports) keeps
     its file name. Every input is read before any is written, so a person named in one
     file is removed from all of them. Nothing else is written.
+
+    Args:
+        scm_config: scm.yaml as scm_config.load_config() returns it. Required when in_dir
+            holds source control files, so the owners of repos in personal namespaces are removed.
+    Raises:
+        ValueError: if in_dir holds source control files and scm_config is None.
     """
     in_dir, out_dir = Path(in_dir), Path(out_dir)
     if in_dir.resolve() == out_dir.resolve():
         raise ValueError("clean output must go to a different folder from the raw input")
     manifest, docs = None, []
     for path in sorted(p for p in in_dir.glob("*.json") if p.is_file()):
-        doc = json.loads(path.read_text(encoding="utf-8"))
+        doc = decode_mcp_result(json.loads(path.read_text(encoding="utf-8")))
         if path.name == jira_normalise.MANIFEST_NAME:
             manifest = doc
         else:
             docs.append((path, doc))
+    scm_files = [path.name for path, _ in docs if scm_adapter.is_source_control_file(path.name)]
+    if scm_files and scm_config is None:
+        raise ValueError(f"{in_dir} holds source control data ({', '.join(scm_files[:3])}, ...); pass its scm.yaml "
+                         "with --scm-config so repos in personal namespaces lose the username")
     anonymiser = anonymiser or Anonymiser()
+    if scm_files:
+        anonymiser.add_identifiers(scm_adapter.personal_owners(scm_config, {p.name: d for p, d in docs}))
     anonymiser.learn([doc for _, doc in docs])
 
     jira_issues, others = [], []
@@ -395,12 +447,18 @@ def _write(path: Path, doc) -> None:
 
 
 def main(argv=None) -> int:
-    args = sys.argv[1:] if argv is None else argv
-    if len(args) != 2:
-        print(next(line for line in __doc__.splitlines() if line.startswith("Usage:")), file=sys.stderr)
+    ap = argparse.ArgumentParser(description="Remove every person identifier before analysis.")
+    ap.add_argument("raw_dir")
+    ap.add_argument("clean_dir")
+    ap.add_argument("--scm-config", help="scm.yaml; required when raw/ holds source control data")
+    a = ap.parse_args(argv)
+    try:
+        config = scm_config.load_config(a.scm_config) if a.scm_config else None
+        n = anonymise_dir(a.raw_dir, a.clean_dir, scm_config=config)
+    except ValueError as err:
+        print(f"error: {err}", file=sys.stderr)
         return 2
-    n = anonymise_dir(args[0], args[1])
-    print(f"Anonymised {n} files -> {args[1]}")
+    print(f"Anonymised {n} files -> {a.clean_dir}")
     return 0
 
 

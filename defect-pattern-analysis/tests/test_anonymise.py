@@ -4,8 +4,8 @@ P1 here means no identifier survives into clean/, so none reaches analysis code,
 classification input or output. (With MCP fetching the model sees raw data only during
 the fetch step, which these tests can't cover.)
 
-Highest risk first: a person identifiable after anonymisation. Then pseudonym and salt
-handling, then damage to non-person data.
+Highest risk first: a person identifiable after anonymisation. Then the plain placeholder
+that replaces every person (no salt, hash or pseudonym), then damage to non-person data.
 """
 
 import json
@@ -34,7 +34,7 @@ def run_dir(tmp_path: Path, docs: dict[str, object]) -> Path:
     raw.mkdir(parents=True)
     for name, doc in docs.items():
         (raw / name).write_text(json.dumps(doc), encoding="utf-8")
-    anonymise.anonymise_dir(raw, clean)
+    anonymise.anonymise_dir(raw, clean, scm_config={"repos": []})
     return clean
 
 
@@ -84,18 +84,20 @@ def test_source_control_handles_in_jira_text_are_removed_even_without_scm_data(t
     assert leaks(all_text_under(clean), identifiers) == []
 
 
-def test_jira_user_objects_become_pseudonyms_wherever_they_appear():
+PERSON = {"person": "[person]"}
+
+
+def test_jira_user_objects_become_the_placeholder_wherever_they_appear():
     issue = scrub_all([load_fixture("jira/cloud_issue_ABC-101.json")])[0]
     f = issue["fields"]
     for user in [f["assignee"], f["reporter"], f["creator"], f["customfield_10050"], *f["customfield_10051"],
                  f["comment"]["comments"][0]["author"], issue["changelog"]["histories"][0]["author"]]:
-        assert set(user) == {"pseudonym"}
-        assert re.fullmatch(r"person_[0-9a-f]{12}", user["pseudonym"])
+        assert user == PERSON
 
 
 def test_data_center_user_objects_lose_username_and_key():
     issue = scrub_all([load_fixture("jira/dc_issue_ABC-102.json")])[0]
-    assert set(issue["fields"]["assignee"]) == {"pseudonym"}
+    assert issue["fields"]["assignee"] == PERSON
 
 
 def test_jira_mention_syntaxes_are_redacted():
@@ -139,20 +141,19 @@ def test_display_names_and_their_parts_are_redacted_in_free_text():
     assert dc["fields"]["comment"]["comments"][1]["body"] == "Chrome 128. [person] and I paired on it; [person] reviewed."
 
 
-def test_changelog_person_fields_are_pseudonymised():
+def test_changelog_person_fields_become_the_placeholder():
     cloud, dc = scrub_all([load_fixture("jira/cloud_issue_ABC-101.json"), load_fixture("jira/dc_issue_ABC-102.json")])
     for item in [cloud["changelog"]["histories"][1]["items"][0], dc["changelog"]["histories"][1]["items"][0]]:
-        assert item["fromString"] == "[person]" and item["toString"] == "[person]"
-        assert item["from"].startswith("person_") and item["to"].startswith("person_")
+        assert (item["from"], item["fromString"], item["to"], item["toString"]) == ("[person]",) * 4
 
 
-def test_gitlab_people_are_pseudonymised_and_paths_kept():
+def test_gitlab_people_become_the_placeholder_and_paths_are_kept():
     mr = scrub_all([load_fixture("scm/gitlab_mr.json")])[0]
     for user in [mr["author"], mr["merged_by"], *mr["reviewers"], *mr["assignees"]]:
-        assert set(user) == {"pseudonym"}
+        assert user == PERSON
     commit = mr["commits"][0]
     for key in ["author_name", "author_email", "committer_name", "committer_email"]:
-        assert commit[key].startswith("person_")
+        assert commit[key] == "[person]"
     assert mr["description"].startswith("Closes ABC-101. cc [person] [person]")
     assert mr["diffs"][0]["new_path"] == "src/checkout/address.py"
     assert mr["source_branch"] == "fix/ABC-101-address"
@@ -161,40 +162,83 @@ def test_gitlab_people_are_pseudonymised_and_paths_kept():
 def test_azure_devops_identities_and_guid_mentions_are_removed():
     pr = scrub_all([load_fixture("scm/azure_pr.json")])[0]
     for ident in [pr["createdBy"], pr["closedBy"], pr["reviewers"][0], pr["commits"][0]["author"], pr["commits"][0]["committer"]]:
-        assert "pseudonym" in ident and not {"displayName", "uniqueName", "name", "email"} & set(ident)
+        assert ident["person"] == "[person]" and not {"displayName", "uniqueName", "name", "email", "id"} & set(ident)
     assert pr["reviewers"][0]["vote"] == 10
     assert pr["description"] == "Retries with backoff. @<[person]> please review."
     assert pr["changes"][0]["item"]["path"] == "/src/Accounts/TimeoutPolicy.cs"
 
 
-# --- P2 and P3: pseudonyms and salt --------------------------------------------------------
+# --- P1 for source control data and MCP results ----------------------------------------------
 
-def test_the_same_person_gets_the_same_pseudonym_within_a_run():
+def mcp_text_block(value) -> dict:
+    """Wrap value the way an MCP tool result holds JSON: as text inside a content block."""
+    return {"content": [{"type": "text", "text": json.dumps(value)}]}
+
+
+def test_people_inside_an_mcp_text_block_are_learnt_so_their_plain_names_go_everywhere(tmp_path, identifiers):
+    issue = load_fixture("jira/cloud_issue_ABC-101.json")
+    mr = load_fixture("scm/gitlab_mr.json")
+    mr["description"] = "Tomasz Fakename and Priya said this fixes it"
+    clean = run_dir(tmp_path, {"mcp-page-1.json": mcp_text_block({"issues": [issue]}),
+                               "gitlab-mrs-1.json": mcp_text_block([mr])})
+    assert leaks(all_text_under(clean), identifiers) == []
+    assert json.loads((clean / "gitlab-mrs-1.json").read_text())["items"][0]["author"] == PERSON
+
+
+def test_a_numeric_user_id_does_not_remove_the_same_number_from_text():
+    mr = load_fixture("scm/gitlab_mr.json")
+    mr["title"] = "ABC-501 and ABC-502 fix, 501 lines"
+    out = scrub_all([mr])[0]
+    assert out["title"] == "ABC-501 and ABC-502 fix, 501 lines"
+    assert out["author"] == PERSON
+
+
+def test_gitlab_commit_trailer_fields_lose_every_value():
+    commit = {"id": "a" * 40, "message": "Fix", "author_name": "Priya Testwell",
+              "trailers": {"Co-authored-by": "Unseen Contributor <unseen@example.com>"},
+              "extended_trailers": {"Reviewed-by": ["Another Outsider <other@example.com>"]}}
+    out = json.dumps(scrub_all([commit])[0])
+    assert "Unseen" not in out and "Outsider" not in out and "example.com" not in out
+    assert "Co-authored-by" in out and "Reviewed-by" in out
+
+
+@pytest.mark.parametrize("trailer", ["Approved-by", "Helped-by", "Suggested-by", "Co-developed-by"])
+def test_other_person_trailers_in_commit_messages_are_removed(trailer):
+    a = anonymise.Anonymiser()
+    assert a.scrub_text(f"Fix it\n\n{trailer}: Unseen Contributor <u@example.com>") == "Fix it\n\n[trailer removed]"
+
+
+def test_diff_bodies_are_dropped_but_paths_kept():
+    diff = {"old_path": "CODEOWNERS", "new_path": "CODEOWNERS", "diff": "+/src/ Unseen Contributor", "new_file": False}
+    out = scrub_all([[diff]])[0][0]
+    assert out == {"old_path": "CODEOWNERS", "new_path": "CODEOWNERS", "diff": "[diff removed]", "new_file": False}
+
+
+# --- P2 and P3: one plain placeholder, no salt, hash or pseudonym ---------------------------
+
+def test_different_people_become_the_same_placeholder_so_no_one_can_be_told_apart():
     issue = scrub_all([load_fixture("jira/cloud_issue_ABC-101.json")])[0]
-    assert issue["fields"]["assignee"] == issue["fields"]["comment"]["comments"][0]["author"]
-    assert issue["fields"]["reporter"] != issue["fields"]["assignee"]
+    f = issue["fields"]
+    assert f["assignee"] == f["reporter"] == f["comment"]["comments"][0]["author"] == PERSON
 
 
-def test_pseudonyms_differ_between_runs_so_they_cannot_be_joined(tmp_path):
-    first = json.loads((run_dir(tmp_path / "a", static_docs()) / "ABC-101.json").read_text())
-    second = json.loads((run_dir(tmp_path / "b", static_docs()) / "ABC-101.json").read_text())
-    assert first["fields"]["assignee"] != second["fields"]["assignee"]
+def test_no_hash_or_pseudonym_of_a_person_is_written(tmp_path):
+    text = all_text_under(run_dir(tmp_path, static_docs()))
+    assert "pseudonym" not in text
+    assert not re.search(r"person_[0-9a-f]+", text)
+    without_commit_ids = re.sub(r"\b[0-9a-f]{40}\b", "", text)  # git SHAs are data, not people
+    assert not re.search(r"\b[0-9a-f]{12,}\b", without_commit_ids)
 
 
-def test_salt_is_never_written_to_disk(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    salt = b"known-test-salt-0123456789abcdef"
-    raw = tmp_path / "raw"
-    raw.mkdir()
-    for name, doc in static_docs().items():
-        (raw / name).write_text(json.dumps(doc), encoding="utf-8")
-    anonymise.anonymise_dir(raw, tmp_path / "clean", anonymiser=anonymise.Anonymiser(salt=salt))
-    everything = b"".join(p.read_bytes() for p in tmp_path.rglob("*") if p.is_file())
-    assert salt not in everything and salt.hex().encode() not in everything
+def test_output_is_identical_between_runs_because_nothing_is_salted(tmp_path):
+    first = all_text_under(run_dir(tmp_path / "a", static_docs()))
+    second = all_text_under(run_dir(tmp_path / "b", static_docs()))
+    assert first == second
 
 
-def test_each_anonymiser_draws_a_fresh_salt():
-    assert anonymise.Anonymiser().pseudonym("acc-1") != anonymise.Anonymiser().pseudonym("acc-1")
+def test_the_anonymiser_takes_no_salt():
+    with pytest.raises(TypeError):
+        anonymise.Anonymiser(salt=b"anything")
 
 
 def test_only_cleaned_files_are_written(tmp_path):

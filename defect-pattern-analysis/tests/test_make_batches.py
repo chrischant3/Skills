@@ -24,7 +24,7 @@ def issue(key, description="Short description.", comments=()):
     return {"key": key, "fields": {"summary": f"Summary {key}", "issuetype": {"name": "Bug"}, "status": {"name": "Done"},
                                    "components": [{"name": "Payments"}], "labels": [], "created": "2026-01-01T00:00:00.000+0000",
                                    "description": description,
-                                   "comment": {"comments": [{"body": c, "author": {"pseudonym": "person_0123456789ab"}} for c in comments]}}}
+                                   "comment": {"comments": [{"body": c, "author": {"person": "[person]"}} for c in comments]}}}
 
 
 def test_raw_unanonymised_input_is_refused(tmp_path):
@@ -33,10 +33,11 @@ def test_raw_unanonymised_input_is_refused(tmp_path):
         make_batches.write_batches(tmp_path, tmp_path / "batches")
 
 
-def test_batches_hold_no_people_and_no_pseudonyms(clean_dir, tmp_path, people):
+def test_batches_hold_no_people_and_no_person_records(clean_dir, tmp_path, people):
     make_batches.write_batches(clean_dir, tmp_path / "batches")
     text = all_text_under(tmp_path / "batches")
     assert not re.search(r"person_[0-9a-f]{12}", text)
+    assert '"person"' not in text and '"author"' not in text
     assert [i for i in person_identifiers(people) if re.search(rf"(?<!\w){re.escape(i)}(?!\w)", text, re.I)] == []
 
 
@@ -78,8 +79,3 @@ def test_every_ticket_lands_in_exactly_one_batch_within_limits():
     assert all(len(b) <= 10 for b in batches)
     assert all(len(json.dumps(b)) <= 3000 or len(b) == 1 for b in batches)
 
-
-def test_a_pseudonym_that_slipped_into_text_stops_the_batch():
-    leaky = issue("ABC-1", "assigned to person_0123456789ab")
-    with pytest.raises(ValueError, match="pseudonym"):
-        make_batches.make_batches([leaky])

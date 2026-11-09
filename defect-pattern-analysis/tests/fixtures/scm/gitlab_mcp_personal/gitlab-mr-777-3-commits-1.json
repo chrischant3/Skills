@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"9999999999999999999999999999999999999999\", \"short_id\": \"99999999\", \"title\": \"Guard null address\", \"message\": \"Guard null address\\n\\nABC-101\", \"author_name\": \"Priya Testwell\", \"author_email\": \"priya.t@example.com\", \"authored_date\": \"2026-03-07T10:00:00Z\", \"committer_name\": \"Priya Testwell\", \"committer_email\": \"priya.t@example.com\", \"committed_date\": \"2026-03-07T10:00:00Z\", \"trailers\": {}, \"web_url\": \"https://gitlab.example.com/robin.q/checkout-tool/-/commit/9999999999999999999999999999999999999999\"}]"
+  }
+ ]
+}

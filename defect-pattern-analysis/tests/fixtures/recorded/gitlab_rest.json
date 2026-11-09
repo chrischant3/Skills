@@ -1,0 +1,756 @@
+{
+ "note": "Synthetic GitLab REST responses. None of these people are real.",
+ "base_url": "https://gitlab.example.com",
+ "project": "group/checkout-service",
+ "project_id": 4321,
+ "since": "2026-01-01",
+ "routes": [
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service",
+   "match": {},
+   "responses": [
+    {
+     "status": 200,
+     "headers": {},
+     "body": {
+      "id": 4321,
+      "name": "checkout-service",
+      "path": "checkout-service",
+      "path_with_namespace": "group/checkout-service",
+      "name_with_namespace": "group / checkout-service",
+      "web_url": "https://gitlab.example.com/group/checkout-service",
+      "http_url_to_repo": "https://gitlab.example.com/group/checkout-service.git",
+      "ssh_url_to_repo": "git@gitlab.example.com:group/checkout-service.git",
+      "namespace": {
+       "id": 4322,
+       "name": "group",
+       "path": "group",
+       "kind": "group",
+       "full_path": "group",
+       "web_url": "https://gitlab.example.com/group"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests",
+   "match": {
+    "page": "1",
+    "state": "merged"
+   },
+   "responses": [
+    {
+     "status": 429,
+     "headers": {
+      "Retry-After": "3"
+     },
+     "body": {
+      "message": "429 Too Many Requests"
+     }
+    },
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": "2"
+     },
+     "body": [
+      {
+       "id": 90012,
+       "iid": 12,
+       "project_id": 4321,
+       "title": "ABC-101 fix address line 2 validation",
+       "description": "Closes ABC-101. cc @priya.t @grace.p",
+       "state": "merged",
+       "created_at": "2026-03-06T09:00:00Z",
+       "updated_at": "2026-03-06T15:00:00Z",
+       "merged_at": "2026-03-06T15:00:00Z",
+       "merged_by": {
+        "id": 502,
+        "username": "tomasz.f",
+        "name": "Tomasz Fakename",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/502/avatar.png",
+        "web_url": "https://gitlab.example.com/tomasz.f"
+       },
+       "merge_user": {
+        "id": 502,
+        "username": "tomasz.f",
+        "name": "Tomasz Fakename",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/502/avatar.png",
+        "web_url": "https://gitlab.example.com/tomasz.f"
+       },
+       "author": {
+        "id": 501,
+        "username": "priya.t",
+        "name": "Priya Testwell",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/501/avatar.png",
+        "web_url": "https://gitlab.example.com/priya.t"
+       },
+       "assignees": [
+        {
+         "id": 501,
+         "username": "priya.t",
+         "name": "Priya Testwell",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/501/avatar.png",
+         "web_url": "https://gitlab.example.com/priya.t"
+        }
+       ],
+       "reviewers": [
+        {
+         "id": 503,
+         "username": "grace.p",
+         "name": "Grace Placeholder",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/503/avatar.png",
+         "web_url": "https://gitlab.example.com/grace.p"
+        }
+       ],
+       "source_branch": "fix/ABC-101-address",
+       "target_branch": "main",
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/merge_requests/12",
+       "references": {
+        "short": "!12",
+        "relative": "!12",
+        "full": "group/checkout-service!12"
+       },
+       "sha": "1212121212121212121212121212121212121212",
+       "merge_commit_sha": "6262626262626262626262626262626262626262"
+      },
+      {
+       "id": 90013,
+       "iid": 13,
+       "project_id": 4321,
+       "title": "ABC-90 old fix",
+       "description": "Merged before the window.",
+       "state": "merged",
+       "created_at": "2025-12-01T09:00:00Z",
+       "updated_at": "2025-12-01T15:00:00Z",
+       "merged_at": "2025-12-01T15:00:00Z",
+       "merged_by": {
+        "id": 505,
+        "username": "dana.s",
+        "name": "Dana Sampleton",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/505/avatar.png",
+        "web_url": "https://gitlab.example.com/dana.s"
+       },
+       "merge_user": {
+        "id": 505,
+        "username": "dana.s",
+        "name": "Dana Sampleton",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/505/avatar.png",
+        "web_url": "https://gitlab.example.com/dana.s"
+       },
+       "author": {
+        "id": 505,
+        "username": "dana.s",
+        "name": "Dana Sampleton",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/505/avatar.png",
+        "web_url": "https://gitlab.example.com/dana.s"
+       },
+       "assignees": [
+        {
+         "id": 505,
+         "username": "dana.s",
+         "name": "Dana Sampleton",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/505/avatar.png",
+         "web_url": "https://gitlab.example.com/dana.s"
+        }
+       ],
+       "reviewers": [],
+       "source_branch": "fix/ABC-90",
+       "target_branch": "main",
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/merge_requests/13",
+       "references": {
+        "short": "!13",
+        "relative": "!13",
+        "full": "group/checkout-service!13"
+       },
+       "sha": "1313131313131313131313131313131313131313",
+       "merge_commit_sha": "6363636363636363636363636363636363636363"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests",
+   "match": {
+    "page": "2",
+    "state": "merged"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "2",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "id": 90014,
+       "iid": 14,
+       "project_id": 4321,
+       "title": "Handle expired sessions",
+       "description": "Thanks Dana Sampleton for pairing.",
+       "state": "merged",
+       "created_at": "2026-04-02T09:00:00Z",
+       "updated_at": "2026-04-02T15:00:00Z",
+       "merged_at": "2026-04-02T15:00:00Z",
+       "merged_by": {
+        "id": 501,
+        "username": "priya.t",
+        "name": "Priya Testwell",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/501/avatar.png",
+        "web_url": "https://gitlab.example.com/priya.t"
+       },
+       "merge_user": {
+        "id": 501,
+        "username": "priya.t",
+        "name": "Priya Testwell",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/501/avatar.png",
+        "web_url": "https://gitlab.example.com/priya.t"
+       },
+       "author": {
+        "id": 504,
+        "username": "seun.m",
+        "name": "Oluwaseun Mockley",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/504/avatar.png",
+        "web_url": "https://gitlab.example.com/seun.m"
+       },
+       "assignees": [
+        {
+         "id": 504,
+         "username": "seun.m",
+         "name": "Oluwaseun Mockley",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/504/avatar.png",
+         "web_url": "https://gitlab.example.com/seun.m"
+        }
+       ],
+       "reviewers": [
+        {
+         "id": 505,
+         "username": "dana.s",
+         "name": "Dana Sampleton",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/505/avatar.png",
+         "web_url": "https://gitlab.example.com/dana.s"
+        },
+        {
+         "id": 502,
+         "username": "tomasz.f",
+         "name": "Tomasz Fakename",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/502/avatar.png",
+         "web_url": "https://gitlab.example.com/tomasz.f"
+        }
+       ],
+       "source_branch": "session-expiry",
+       "target_branch": "main",
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/merge_requests/14",
+       "references": {
+        "short": "!14",
+        "relative": "!14",
+        "full": "group/checkout-service!14"
+       },
+       "sha": "1414141414141414141414141414141414141414",
+       "merge_commit_sha": "6464646464646464646464646464646464646464"
+      },
+      {
+       "id": 90015,
+       "iid": 15,
+       "project_id": 4321,
+       "title": "Session filter tidy-up",
+       "description": "Follow-up.",
+       "state": "merged",
+       "created_at": "2026-04-09T09:00:00Z",
+       "updated_at": "2026-04-09T15:00:00Z",
+       "merged_at": "2026-04-09T15:00:00Z",
+       "merged_by": {
+        "id": 503,
+        "username": "grace.p",
+        "name": "Grace Placeholder",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/503/avatar.png",
+        "web_url": "https://gitlab.example.com/grace.p"
+       },
+       "merge_user": {
+        "id": 503,
+        "username": "grace.p",
+        "name": "Grace Placeholder",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/503/avatar.png",
+        "web_url": "https://gitlab.example.com/grace.p"
+       },
+       "author": {
+        "id": 505,
+        "username": "dana.s",
+        "name": "Dana Sampleton",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/505/avatar.png",
+        "web_url": "https://gitlab.example.com/dana.s"
+       },
+       "assignees": [
+        {
+         "id": 505,
+         "username": "dana.s",
+         "name": "Dana Sampleton",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/505/avatar.png",
+         "web_url": "https://gitlab.example.com/dana.s"
+        }
+       ],
+       "reviewers": [
+        {
+         "id": 504,
+         "username": "seun.m",
+         "name": "Oluwaseun Mockley",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/504/avatar.png",
+         "web_url": "https://gitlab.example.com/seun.m"
+        }
+       ],
+       "source_branch": "fix/abc-102-session-filter",
+       "target_branch": "main",
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/merge_requests/15",
+       "references": {
+        "short": "!15",
+        "relative": "!15",
+        "full": "group/checkout-service!15"
+       },
+       "sha": "1515151515151515151515151515151515151515",
+       "merge_commit_sha": "6565656565656565656565656565656565656565"
+      },
+      {
+       "id": 90016,
+       "iid": 16,
+       "project_id": 4321,
+       "title": "Update README",
+       "description": "Docs only; mentions UTF-8 and release v1-2.",
+       "state": "merged",
+       "created_at": "2026-04-20T09:00:00Z",
+       "updated_at": "2026-04-20T15:00:00Z",
+       "merged_at": "2026-04-20T15:00:00Z",
+       "merged_by": {
+        "id": 504,
+        "username": "seun.m",
+        "name": "Oluwaseun Mockley",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/504/avatar.png",
+        "web_url": "https://gitlab.example.com/seun.m"
+       },
+       "merge_user": {
+        "id": 504,
+        "username": "seun.m",
+        "name": "Oluwaseun Mockley",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/504/avatar.png",
+        "web_url": "https://gitlab.example.com/seun.m"
+       },
+       "author": {
+        "id": 503,
+        "username": "grace.p",
+        "name": "Grace Placeholder",
+        "state": "active",
+        "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/503/avatar.png",
+        "web_url": "https://gitlab.example.com/grace.p"
+       },
+       "assignees": [
+        {
+         "id": 503,
+         "username": "grace.p",
+         "name": "Grace Placeholder",
+         "state": "active",
+         "avatar_url": "https://gitlab.example.com/uploads/-/system/user/avatar/503/avatar.png",
+         "web_url": "https://gitlab.example.com/grace.p"
+        }
+       ],
+       "reviewers": [],
+       "source_branch": "docs/readme",
+       "target_branch": "main",
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/merge_requests/16",
+       "references": {
+        "short": "!16",
+        "relative": "!16",
+        "full": "group/checkout-service!16"
+       },
+       "sha": "1616161616161616161616161616161616161616",
+       "merge_commit_sha": "6666666666666666666666666666666666666666"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/12/commits",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": "2"
+     },
+     "body": [
+      {
+       "id": "1111111111111111111111111111111111111111",
+       "short_id": "11111111",
+       "title": "Fix null address line",
+       "message": "Fix null address line\n\nABC-101",
+       "author_name": "Priya Testwell",
+       "author_email": "priya.t@example.com",
+       "authored_date": "2026-03-01T10:00:00Z",
+       "committer_name": "Tomasz Fakename",
+       "committer_email": "tomasz.f@example.org",
+       "committed_date": "2026-03-01T10:05:00Z",
+       "trailers": {},
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/commit/1111111111111111111111111111111111111111"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/12/commits",
+   "match": {
+    "page": "2"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "2",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "id": "2222222222222222222222222222222222222222",
+       "short_id": "22222222",
+       "title": "Add address tests",
+       "message": "Add address tests\n\nCo-authored-by: Grace Placeholder <grace.placeholder@example.net>\nSigned-off-by: Priya Testwell <priya.testwell@example.com>",
+       "author_name": "Priya Testwell",
+       "author_email": "priya.t@example.com",
+       "authored_date": "2026-03-01T10:00:00Z",
+       "committer_name": "Priya Testwell",
+       "committer_email": "priya.t@example.org",
+       "committed_date": "2026-03-01T10:05:00Z",
+       "trailers": {
+        "Co-authored-by": "Grace Placeholder <grace.placeholder@example.net>"
+       },
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/commit/2222222222222222222222222222222222222222"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/14/commits",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": "2"
+     },
+     "body": [
+      {
+       "id": "3333333333333333333333333333333333333333",
+       "short_id": "33333333",
+       "title": "Expire sessions on idle",
+       "message": "Expire sessions on idle",
+       "author_name": "Oluwaseun Mockley",
+       "author_email": "seun.m@example.com",
+       "authored_date": "2026-03-01T10:00:00Z",
+       "committer_name": "Oluwaseun Mockley",
+       "committer_email": "seun.m@example.org",
+       "committed_date": "2026-03-01T10:05:00Z",
+       "trailers": {},
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/commit/3333333333333333333333333333333333333333"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/14/commits",
+   "match": {
+    "page": "2"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "2",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "id": "4444444444444444444444444444444444444444",
+       "short_id": "44444444",
+       "title": "Handle expired session",
+       "message": "Handle expired session\n\nRefs ABC-102\n\nHelped-by: Dana Sampleton <dana.sampleton@example.com>",
+       "author_name": "Oluwaseun Mockley",
+       "author_email": "seun.m@example.com",
+       "authored_date": "2026-03-01T10:00:00Z",
+       "committer_name": "Oluwaseun Mockley",
+       "committer_email": "seun.m@example.org",
+       "committed_date": "2026-03-01T10:05:00Z",
+       "trailers": {},
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/commit/4444444444444444444444444444444444444444"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/15/commits",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100"
+     },
+     "body": [
+      {
+       "id": "5555555555555555555555555555555555555555",
+       "short_id": "55555555",
+       "title": "Tidy session filter",
+       "message": "Tidy session filter",
+       "author_name": "Dana Sampleton",
+       "author_email": "dana.s@example.com",
+       "authored_date": "2026-03-01T10:00:00Z",
+       "committer_name": "Dana Sampleton",
+       "committer_email": "dana.s@example.org",
+       "committed_date": "2026-03-01T10:05:00Z",
+       "trailers": {},
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/commit/5555555555555555555555555555555555555555"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/16/commits",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "id": "6666666666666666666666666666666666666666",
+       "short_id": "66666666",
+       "title": "Update README",
+       "message": "Update README",
+       "author_name": "Grace Placeholder",
+       "author_email": "grace.p@example.com",
+       "authored_date": "2026-03-01T10:00:00Z",
+       "committer_name": "Grace Placeholder",
+       "committer_email": "grace.p@example.org",
+       "committed_date": "2026-03-01T10:05:00Z",
+       "trailers": {},
+       "web_url": "https://gitlab.example.com/group/checkout-service/-/commit/6666666666666666666666666666666666666666"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/12/diffs",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": "2"
+     },
+     "body": [
+      {
+       "old_path": "src/checkout/address.py",
+       "new_path": "src/checkout/address.py",
+       "a_mode": "100644",
+       "b_mode": "100644",
+       "diff": "@@ -1 +1 @@\n-# owner: Priya Testwell\n+# owner: team",
+       "new_file": false,
+       "renamed_file": false,
+       "deleted_file": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/12/diffs",
+   "match": {
+    "page": "2"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "2",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "old_path": "tests/checkout/test_address.py",
+       "new_path": "tests/checkout/test_address.py",
+       "a_mode": "100644",
+       "b_mode": "100644",
+       "diff": "@@ +1 @@\n+def test_line_2(): pass",
+       "new_file": false,
+       "renamed_file": false,
+       "deleted_file": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/14/diffs",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "old_path": "services/accounts/session_filter.py",
+       "new_path": "services/accounts/session_filter.py",
+       "a_mode": "100644",
+       "b_mode": "100644",
+       "diff": "@@ +1 @@\n+EXPIRY = 900",
+       "new_file": false,
+       "renamed_file": false,
+       "deleted_file": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/15/diffs",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "old_path": "services/accounts/session_filter.py",
+       "new_path": "services/accounts/session_filter.py",
+       "a_mode": "100644",
+       "b_mode": "100644",
+       "diff": "@@ +1 @@\n+# tidy",
+       "new_file": false,
+       "renamed_file": false,
+       "deleted_file": false
+      },
+      {
+       "old_path": "docs/sessions.md",
+       "new_path": "docs/sessions.md",
+       "a_mode": "100644",
+       "b_mode": "100644",
+       "diff": "@@ +1 @@\n+Notes",
+       "new_file": false,
+       "renamed_file": false,
+       "deleted_file": false
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "method": "GET",
+   "path": "/api/v4/projects/group%2Fcheckout-service/merge_requests/16/diffs",
+   "match": {
+    "page": "1"
+   },
+   "responses": [
+    {
+     "status": 200,
+     "headers": {
+      "X-Page": "1",
+      "X-Per-Page": "100",
+      "X-Next-Page": ""
+     },
+     "body": [
+      {
+       "old_path": "README.md",
+       "new_path": "README.md",
+       "a_mode": "100644",
+       "b_mode": "100644",
+       "diff": "@@ +1 @@\n+Written by Oluwaseun Mockley",
+       "new_file": false,
+       "renamed_file": false,
+       "deleted_file": false
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

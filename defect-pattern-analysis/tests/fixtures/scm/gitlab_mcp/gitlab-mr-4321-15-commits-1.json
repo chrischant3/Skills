@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"5555555555555555555555555555555555555555\", \"short_id\": \"55555555\", \"title\": \"Tidy session filter\", \"message\": \"Tidy session filter\", \"author_name\": \"Dana Sampleton\", \"author_email\": \"dana.s@example.com\", \"authored_date\": \"2026-03-01T10:00:00Z\", \"committer_name\": \"Dana Sampleton\", \"committer_email\": \"dana.s@example.org\", \"committed_date\": \"2026-03-01T10:05:00Z\", \"trailers\": {}, \"web_url\": \"https://gitlab.example.com/group/checkout-service/-/commit/5555555555555555555555555555555555555555\"}]"
+  }
+ ]
+}

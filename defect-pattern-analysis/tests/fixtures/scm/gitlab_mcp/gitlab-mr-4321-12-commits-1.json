@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"1111111111111111111111111111111111111111\", \"short_id\": \"11111111\", \"title\": \"Fix null address line\", \"message\": \"Fix null address line\\n\\nABC-101\", \"author_name\": \"Priya Testwell\", \"author_email\": \"priya.t@example.com\", \"authored_date\": \"2026-03-01T10:00:00Z\", \"committer_name\": \"Tomasz Fakename\", \"committer_email\": \"tomasz.f@example.org\", \"committed_date\": \"2026-03-01T10:05:00Z\", \"trailers\": {}, \"web_url\": \"https://gitlab.example.com/group/checkout-service/-/commit/1111111111111111111111111111111111111111\"}]"
+  }
+ ]
+}

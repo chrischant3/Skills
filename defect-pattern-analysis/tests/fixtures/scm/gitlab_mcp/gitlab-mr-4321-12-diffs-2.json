@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"old_path\": \"tests/checkout/test_address.py\", \"new_path\": \"tests/checkout/test_address.py\", \"a_mode\": \"100644\", \"b_mode\": \"100644\", \"diff\": \"@@ +1 @@\\n+def test_line_2(): pass\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}]"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"old_path\": \"src/checkout/address.py\", \"new_path\": \"src/checkout/address.py\", \"a_mode\": \"100644\", \"b_mode\": \"100644\", \"diff\": \"@@ -1 +1 @@\\n-# owner: Priya Testwell\\n+# owner: team\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}]"
+  }
+ ]
+}
