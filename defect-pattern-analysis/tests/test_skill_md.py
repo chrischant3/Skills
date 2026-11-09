@@ -32,8 +32,23 @@ def test_skill_never_lowers_the_group_threshold():
 
 def test_draft_scripts_with_known_problems_are_marked_not_ready():
     not_ready = SKILL.split("## Not ready yet", 1)[1]
-    for name in ["link_scm.py", "ticket_signals.py", "szz.py"]:
+    for name in ["ticket_signals.py", "szz.py"]:
         assert f"scripts/{name}" in not_ready
+    assert "Azure DevOps" in not_ready
+
+
+def test_gitlab_linking_runs_after_anonymisation_and_before_the_report():
+    workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
+    step = workflow.split("### 5.", 1)[1].split("### 6.", 1)[0]
+    assert "GitLab" in step and "MCP" in step
+    order = ["scripts/scm_fetch.py", "scripts/anonymise.py", "scripts/link_scm.py"]
+    positions = [step.index(name) for name in order]
+    assert positions == sorted(positions)
+    assert "Write the report" in workflow.split("### 6.", 1)[1]
+
+
+def test_skill_names_no_dependency_outside_the_standard_library():
+    assert "`requests`" not in SKILL and "pyyaml" not in SKILL.lower() and "pip install" not in SKILL
 
 
 def test_skill_md_uses_no_em_dashes():
