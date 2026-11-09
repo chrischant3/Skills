@@ -13,11 +13,13 @@ Person detection is structural, not a flat key list:
 - In free text: commit trailers, Jira [~...] mentions, ADF mention nodes and email
   addresses are always removed. Display names, name parts, usernames and account ids
   are removed when they belong to a person found anywhere in the input.
-- @handles are removed only when they match a known person (their username, email
-  local part, a handle built from their name, or a handle that contains one of their
-  name parts). This keeps code such as @Override, @media and logo@2x.png intact. The
-  trade-off: an @handle for someone who never appears as a user anywhere in the input
-  is left alone.
+- Every @handle in prose is removed, whether or not the person appears elsewhere in
+  the input. Code is protected: handles inside fenced blocks, inline code, Jira
+  {code}/{noformat}/{{...}} and ADF code are kept, as are well-known code words
+  (@Override, @media, @Test, ...) and handles used like code (@app.route(...),
+  @types/node). Addresses such as logo@2x.png aren't handles at all. A handle that
+  matches a known person is removed even inside code. The trade-off: an unusual
+  annotation written in prose, outside any code formatting, is removed too.
 
 Pseudonyms are salted with a random per-run salt that is held in memory only, so they
 cannot be reversed or joined across runs. They exist so scripts can count distinct
@@ -55,11 +57,20 @@ PERSON_CHANGELOG_FIELDS = {"assignee", "reporter", "creator"}
 # Changelog fields whose from/to strings are names of Jira entities, not free text.
 ENTITY_CHANGELOG_FIELDS = {"status", "component", "components", "issuetype", "priority", "resolution",
                            "fix version", "fixversions", "version", "labels", "project"}
-# Code words that look like @handles. Never redacted, even if a person's handle matches.
+# Code words that look like @handles: annotations, decorators, CSS and Sass at-rules,
+# doc tags. Never redacted, even in prose and even if a person's handle matches.
 CODE_WORDS = {"override", "media", "import", "keyframes", "font-face", "supports", "charset", "namespace",
               "page", "layer", "container", "test", "param", "return", "returns", "throws", "deprecated",
-              "inject", "autowired", "component", "service", "bean", "property", "staticmethod",
-              "classmethod", "dataclass", "input", "output", "mixin", "include", "extend", "use", "forward"}
+              "inject", "injectable", "autowired", "component", "service", "bean", "entity", "table", "column",
+              "id", "transactional", "before", "after", "beforeeach", "aftereach", "beforeall", "afterall",
+              "mock", "injectmocks", "restcontroller", "controller", "repository", "configuration",
+              "requestmapping", "getmapping", "postmapping", "putmapping", "deletemapping", "pathvariable",
+              "requestbody", "requestparam", "valid", "notnull", "nullable", "nonnull", "suppresswarnings",
+              "functionalinterface", "jsonproperty", "jsonignore", "property", "staticmethod", "classmethod",
+              "dataclass", "abstractmethod", "cached_property", "input", "output", "viewchild", "hostlistener",
+              "ngmodule", "mixin", "include", "extend", "use", "forward", "if", "else", "each", "function",
+              "font-feature-values", "counter-style", "property", "layer", "tailwind", "apply", "see", "since",
+              "link", "type", "typedef", "example", "todo"}
 FILE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp", "pdf", "js", "mjs", "ts", "tsx",
                    "jsx", "css", "scss", "less", "html", "json", "py", "java", "kt", "cs", "go", "rb", "md",
                    "txt", "yml", "yaml", "xml", "lock", "zip", "gz", "jar", "dll"}
@@ -69,6 +80,9 @@ JIRA_MENTION = re.compile(r"\[~accountid:[^\]]*\]|\[~[^\]\s][^\]]*\]", re.IGNORE
 EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.([A-Za-z]{2,24})(?![\w-])")
 PSEUDONYM = re.compile(r"person_[0-9a-f]{12}")
 HANDLE = re.compile(r"(?<![\w@./])@([A-Za-z0-9_](?:[A-Za-z0-9_.\-]*[A-Za-z0-9_])?)")
+# Code regions in plain or wiki text: Markdown fences and inline code, Jira {code}, {noformat} and {{...}}.
+CODE_REGION = re.compile(r"```.*?```|\{code(?::[^}]*)?\}.*?\{code\}|\{noformat\}.*?\{noformat\}|\{\{.*?\}\}|`[^`\n]+`",
+                         re.DOTALL)
 
 
 def _word_alternation(words, flags=0):
@@ -211,22 +225,48 @@ class Anonymiser:
             self._patterns = (_word_alternation(self._literals, re.IGNORECASE), _word_alternation(parts))
         return self._patterns
 
-    def _is_person_handle(self, handle: str) -> bool:
+    def _is_known_handle(self, handle: str) -> bool:
         h = handle.lower()
-        if h in CODE_WORDS:
-            return False
         if h in self._handles:
             return True
         name_parts = {p.lower() for p in self._name_parts} - self._protected - CODE_WORDS
         return any(seg in name_parts for seg in re.split(r"[._\-]", h) if len(seg) >= 3)
 
-    def scrub_text(self, text: str) -> str:
-        """Remove person identifiers from free text, leaving code and file paths intact."""
+    def _handle_replacement(self, match, in_code: bool) -> str:
+        handle = match.group(1)
+        if handle.lower() in CODE_WORDS:
+            return match.group(0)
+        if self._is_known_handle(handle):
+            return PLACEHOLDER
+        following = match.string[match.end():match.end() + 1]
+        if in_code or following in ("(", "/"):
+            return match.group(0)
+        return PLACEHOLDER
+
+    def _scrub_handles(self, text: str, in_code: bool) -> str:
+        if in_code:
+            return HANDLE.sub(lambda m: self._handle_replacement(m, True), text)
+        out, last = [], 0
+        for region in CODE_REGION.finditer(text):
+            out.append(HANDLE.sub(lambda m: self._handle_replacement(m, False), text[last:region.start()]))
+            out.append(HANDLE.sub(lambda m: self._handle_replacement(m, True), region.group(0)))
+            last = region.end()
+        out.append(HANDLE.sub(lambda m: self._handle_replacement(m, False), text[last:]))
+        return "".join(out)
+
+    def scrub_text(self, text: str, in_code: bool = False) -> str:
+        """Remove person identifiers from free text, leaving code and file paths intact.
+
+        Args:
+            text: the text to clean.
+            in_code: True when the whole string is code (such as an ADF code block), so
+                @handles are kept unless they match a known person.
+        """
         literals, name_parts = self._compiled()
         text = TRAILER.sub(TRAILER_PLACEHOLDER, text)
         text = JIRA_MENTION.sub(PLACEHOLDER, text)
         text = EMAIL.sub(lambda m: m.group(0) if m.group(1).lower() in FILE_EXTENSIONS else PLACEHOLDER, text)
-        text = HANDLE.sub(lambda m: PLACEHOLDER if self._is_person_handle(m.group(1)) else m.group(0), text)
+        text = self._scrub_handles(text, in_code)
         if literals:
             text = literals.sub(PLACEHOLDER, text)
         if name_parts:
@@ -258,14 +298,20 @@ class Anonymiser:
             return False
         return any(isinstance(item.get(k), str) and item[k].lower() in self._canonical for k in ("from", "to"))
 
-    def scrub(self, obj):
-        """Return a copy of obj with every person replaced by a pseudonym or placeholder."""
+    def scrub(self, obj, in_code: bool = False):
+        """Return a copy of obj with every person replaced by a pseudonym or placeholder.
+
+        in_code is set internally for ADF code blocks and code-marked text.
+        """
         if isinstance(obj, list):
-            return [self.scrub(v) for v in obj]
+            return [self.scrub(v, in_code) for v in obj]
         if isinstance(obj, str):
-            return self.scrub_text(obj)
+            return self.scrub_text(obj, in_code)
         if not isinstance(obj, dict):
             return obj
+        marks = obj.get("marks") if isinstance(obj.get("marks"), list) else []
+        in_code = in_code or obj.get("type") == "codeBlock" or any(
+            isinstance(m, dict) and m.get("type") == "code" for m in marks)
         if is_person(obj):
             return self._scrub_person(obj)
         if obj.get("type") == "mention" and isinstance(obj.get("attrs"), dict):
@@ -277,7 +323,7 @@ class Anonymiser:
             if k in PERSON_STRING_KEYS and isinstance(v, str):
                 out[k] = self.pseudonym(v)
             else:
-                out[k] = self.scrub(v)
+                out[k] = self.scrub(v, in_code)
         return out
 
 

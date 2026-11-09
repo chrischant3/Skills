@@ -66,11 +66,18 @@ def test_source_control_handles_in_jira_text_are_removed_when_scm_data_is_in_the
     assert leaks(all_text_under(clean), identifiers) == []
 
 
-def test_a_nickname_handle_is_not_caught_from_jira_data_alone():
-    """Documented limit: '@seun.m' for Oluwaseun Mockley can't be tied to him without his SCM username."""
+def test_a_nickname_handle_is_redacted_from_jira_data_alone():
+    """'@seun.m' can't be tied to Oluwaseun Mockley without his SCM username, but every handle in prose goes."""
     a = anonymise.Anonymiser()
     a.learn([load_fixture("jira/cloud_issue_ABC-101.json")])
-    assert a.scrub_text("cc @seun.m") == "cc @seun.m"
+    assert a.scrub_text("cc @seun.m") == "cc [person]"
+
+
+@pytest.mark.parametrize("seed", range(20))
+def test_source_control_handles_in_jira_text_are_removed_even_without_scm_data(tmp_path, people, identifiers, seed):
+    docs = {f"{d['key']}.json": d for d in make_dataset(seed, people, scm_handles=True)}
+    clean = run_dir(tmp_path, docs)
+    assert leaks(all_text_under(clean), identifiers) == []
 
 
 def test_jira_user_objects_become_pseudonyms_wherever_they_appear():
@@ -267,11 +274,49 @@ def test_a_name_part_that_is_also_a_component_name_is_kept_in_the_component():
     assert out["fields"]["description"] == "[person] says Search is slow; [person] will look."
 
 
-def test_handles_for_people_absent_from_the_data_are_left_alone():
-    """Documented trade-off: only handles that match a known person are redacted, so code survives."""
+@pytest.mark.parametrize("text,expected", [
+    ("ask @outsider", "ask [person]"),
+    ("Thanks @Sam.", "Thanks [person]."),
+    ("@j-doe and @sam_k agreed", "[person] and [person] agreed"),
+    ("pinged @ops.oncall at 3am", "pinged [person] at 3am"),
+    ("(cc @bob)", "(cc [person])"),
+])
+def test_handles_for_people_absent_from_the_data_are_redacted_in_prose(text, expected):
     a = anonymise.Anonymiser()
     a.learn([load_fixture("jira/cloud_issue_ABC-101.json")])
-    assert a.scrub_text("ask @outsider") == "ask @outsider"
+    assert a.scrub_text(text) == expected
+
+
+@pytest.mark.parametrize("text", [
+    "```\n@outsider was here\n@CustomAnnotation\n```",
+    "run `@outsider/cli build` first",
+    "{code:java}\n@CustomAnnotation\nclass A {}\n{code}",
+    "{noformat}@outsider{noformat}",
+    "use {{@outsider}} as the scope",
+    "install @types/node and @angular/core",
+    "@app.route('/checkout') and @pytest.fixture(scope='module')",
+])
+def test_unknown_handles_inside_code_are_kept(text):
+    a = anonymise.Anonymiser()
+    a.learn([load_fixture("jira/cloud_issue_ABC-101.json")])
+    assert a.scrub_text(text) == text
+
+
+def test_known_people_are_redacted_even_inside_code():
+    a = anonymise.Anonymiser()
+    a.learn([load_fixture("jira/cloud_issue_ABC-101.json")])
+    assert a.scrub_text("```\n// asked @priya.t\n```") == "```\n// asked [person]\n```"
+
+
+def test_adf_code_is_kept_but_prose_handles_go():
+    doc = {"key": "ABC-1", "fields": {"description": {"type": "doc", "content": [
+        {"type": "codeBlock", "content": [{"type": "text", "text": "@CustomAnnotation\nclass A {}"}]},
+        {"type": "paragraph", "content": [{"type": "text", "text": "@Inline", "marks": [{"type": "code"}]},
+                                          {"type": "text", "text": " reviewed by @outsider"}]}]}}}
+    content = scrub_all([doc])[0]["fields"]["description"]["content"]
+    assert content[0]["content"][0]["text"] == "@CustomAnnotation\nclass A {}"
+    assert content[1]["content"][0]["text"] == "@Inline"
+    assert content[1]["content"][1]["text"] == " reviewed by [person]"
 
 
 def test_non_json_and_unrelated_files_are_ignored(tmp_path):
