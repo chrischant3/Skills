@@ -56,6 +56,7 @@
     {
       "rule_id": "testing/tdd-first",
       "applicable": true,
+      "risk": "high",
       "applicability_reason": "Task adds new behaviour (caching).",
       "verdict": "Broken",
       "evidence": "The diff changes src/client.ts only. No test file was created or run before or after the edit.",
@@ -66,6 +67,7 @@
     {
       "rule_id": "dependencies/ask-first",
       "applicable": true,
+      "risk": "medium",
       "applicability_reason": "A test runner would be a new dependency.",
       "verdict": "Followed",
       "evidence": "No dependency was added. The final summary asks which test runner to use (see the transcript pointer in rationalisations).",
@@ -76,6 +78,7 @@
     {
       "rule_id": "database/migrations",
       "applicable": false,
+      "risk": null,
       "applicability_reason": "No database or schema change in the task or the diff.",
       "verdict": null,
       "evidence": "Diff touches src/client.ts only.",

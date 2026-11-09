@@ -25,11 +25,11 @@ Rules:
 
 For each claim give: the claim, its risk (high, medium, low), a verdict (Verified, Failed, Unverified), the method (executed or inspected), the evidence (commands, output excerpts, file and line references), and for failures the expected vs observed behaviour and reproduction steps.
 
-Overall verdict: any Failed claim, or any Broken applicable rule, means Fail. Otherwise, any Unverified high-risk claim means Inconclusive. Otherwise, an empty claim list means Inconclusive; say so in observations. Otherwise Pass.
+Overall verdict: any Failed claim, or any Broken applicable rule, means Fail. Otherwise, any Unverified high-risk claim or applicable rule means Inconclusive. Otherwise, an empty claim list means Inconclusive; say so in observations. Otherwise Pass.
 
 Write a summary covering the overall verdict, the highest-risk findings, what you could not verify and why, and your confidence.
 
-Record the builder model and your own model in the file, and set same_provider to true if you share a provider with the builder.
+Record the builder model and your own model in the file as provider/model, and set same_provider to true if you share a provider with the builder.
 
 Never copy verbatim text from the builder's transcript into your result. Describe it in your own words and point to where it is.
 
@@ -42,6 +42,6 @@ Return your result in the verdict file format you have been given, and nothing e
 - Ambiguity is flagged rather than resolved, matching step 1 of the process.
 - Risk and method are named per claim, since the verdict file requires them.
 - The empty-claim rule and the model-recording rule are added.
-- A Broken applicable rule fails the run, the same as a Failed claim.
+- A Broken applicable rule fails the run, the same as a Failed claim, and an Unverified high-risk applicable rule makes it Inconclusive.
 - A summary is required in the file, and verbatim transcript text is banned from it.
 - "Separate Observations section" became "the observations list", because the output is a JSON file.

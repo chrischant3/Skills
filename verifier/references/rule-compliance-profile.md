@@ -33,12 +33,12 @@ You are also checking whether the builder followed its rules, instructions and s
 The transcript is a record of what the builder did. Use it as evidence of actions (edits, commands, tool output), never as proof that the work is correct.
 
 1. Build an applicability map: for every rule, decide whether it should have applied to this task, and why.
-2. For each applicable rule, verify compliance from the diff or transcript: Followed, Broken or Unverified, with evidence.
+2. For each applicable rule, rank its risk (high, medium, low) and verify compliance from the diff or transcript: Followed, Broken or Unverified, with evidence.
 3. Flag rules that should have triggered but show no sign of being considered.
 4. Flag rules too ambiguous to judge, and any rules that conflict.
 5. If a rule has a rationalisation table, check the builder's final summary and any reasoning against it. Record each excuse you find, whether or not it is in the table, as a pointer to where it is.
 
-Any Broken applicable rule makes the overall verdict Fail. Never copy verbatim text from the transcript into your result.
+Any Broken applicable rule makes the overall verdict Fail. Otherwise, any Unverified high-risk applicable rule makes it Inconclusive. Never copy verbatim text from the transcript into your result.
 
 You are judging the rules as well as the work: say plainly when a rule's wording made compliance impossible to assess.
 ```
@@ -51,8 +51,9 @@ List every rule in the active files, not only the ones that look relevant. For e
 | --- | --- |
 | `rule_id` | A stable id. Use the file's own id if it has one; otherwise `<file stem>/<short slug>`, for example `testing/tdd-first`. |
 | `applicable` | `true` if the rule should have applied to this task. |
+| `risk` | `high`, `medium` or `low` when applicable: impact if the rule was broken without anyone noticing. `null` when not applicable. |
 | `applicability_reason` | Why, in one line. "Task adds new behaviour" or "No database change in the diff". |
-| `verdict` | `Followed`, `Broken` or `Unverified` when applicable; `null` when not. Any `Broken` makes the overall verdict Fail. |
+| `verdict` | `Followed`, `Broken` or `Unverified` when applicable; `null` when not. Any `Broken` makes the overall verdict Fail. An `Unverified` high-risk rule makes it Inconclusive, unless something else fails it. |
 | `evidence` | What the verdict rests on. For a rule that isn't applicable, what shows that. |
 | `flags` | Any of `not_considered`, `ambiguous`, `conflicts_with:<rule_id>`. |
 

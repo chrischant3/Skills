@@ -36,7 +36,7 @@ Record `builder_model`, `verifier_model` and `same_provider` on every run, witho
 - **Recommended default: a different provider from the builder.** For example, a GPT model builds and a Claude model verifies, or the other way round. Models from different providers are less likely to share training data, habits and blind spots.
 - **Same provider is allowed, with weaker independence.** A common local setup is a smaller model building (for example Claude Haiku or Sonnet) and a larger model from the same family verifying (for example Claude Opus). This still gives a fresh context and a stronger model, but the two may share blind spots, so a Pass carries less weight. Set `same_provider` to `true`.
 - **Same model is not independent.** Don't verify a run with the model that built it. If no independent model is available, record the run as Inconclusive and give the reason in `observations`.
-- Write model ids with their provider where you can (for example `anthropic/claude-opus-x`, `openai/gpt-x`), so a reader can check `same_provider` against them.
+- Write model ids as `<provider>/<model>` (for example `anthropic/claude-opus-x`, `openai/gpt-x`). The provider is the part before the first slash. Use the company that made the model, not a router or harness in front of it. The checker rejects an id with no provider, because `same_provider` can't be checked against it.
 
 A team can make "never the builder's provider" a hard rule in its own harness. This skill records the pairing either way.
 
@@ -68,11 +68,13 @@ With the rule-compliance profile, also build a rule applicability map and check 
 Apply these in order:
 
 1. **Any Failed claim, or any Broken applicable rule, gives Fail.**
-2. **Otherwise, any Unverified high-risk claim gives Inconclusive.** Never Pass.
+2. **Otherwise, any Unverified high-risk claim, or Unverified high-risk applicable rule, gives Inconclusive.** Never Pass.
 3. **Otherwise, an empty claim list gives Inconclusive**, and is flagged in `observations`. Nothing was checked, so nothing can pass.
 4. Otherwise, Pass.
 
-Unverified medium-risk and low-risk claims don't block a Pass, but they must still be listed. Followed, Unverified and not-applicable rules don't change the overall verdict; only a Broken applicable rule does.
+Unverified medium-risk and low-risk claims and rules don't block a Pass, but they must still be listed. Followed and not-applicable rules don't change the overall verdict. Rank applicable rules by risk the same way as claims: impact if the rule was broken without anyone noticing.
+
+**Later versions** may add a Warn outcome (for example, a Broken rule with no claims to check currently gives Fail) and a deeper treatment of rule risk. Neither is part of this version.
 
 Other reasons to record Inconclusive, with the reason in `observations`: no independent model was available, or the verifier's own output failed schema validation. A response that fails validation is never retried until it passes, and never dropped silently.
 
@@ -90,7 +92,15 @@ The `summary` field covers:
 
 **Never put verbatim transcript text in a verdict file.** Verdict files live in repos, and transcripts can hold private data. Describe what the transcript shows in your own words, and point to a place in it (a `location`) instead of quoting it.
 
-After writing the file, repeat the summary in chat with the path to the file and the builder and verifier models.
+Then check the file:
+
+```bash
+python3 <skill>/scripts/check_verdict.py <verdict file> [more files...]
+```
+
+`<skill>` is the folder containing this file. The script needs only `python3` 3.10 or later. It checks everything the schema enforces, plus what a schema can't: that `same_provider` agrees with the model ids. Exit 0 means every file is valid. Otherwise it prints one line per problem; fix them and run it again. Run it on every verdict file you write, and on any you are asked to review.
+
+After writing and checking the file, repeat the summary in chat with the path to the file and the builder and verifier models.
 
 ## Anti-patterns
 
@@ -111,3 +121,4 @@ After writing the file, repeat the summary in chat with the path to the file and
 | `references/rationalisations/test-first.md` | The rule-compliance profile is active and a test-first rule applies. Holds the table of excuses and why they don't hold. |
 | `references/verdict-schema.json` | Writing or validating a verdict file, or you need the exact fields and allowed values. |
 | `references/verdict-example.json` | You want a complete, valid verdict file to copy the shape from. |
+| `scripts/check_verdict.py` | Always, after writing a verdict file. See [Output](#output). |

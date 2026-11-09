@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "verifier/verdict-schema.json",
   "title": "Verifier verdict file",
-  "description": "One file per verification run. The overall verdict rule is enforced, in order: any Failed claim or Broken applicable rule gives Fail; otherwise any Unverified high-risk claim gives Inconclusive; otherwise an empty claim list gives Inconclusive; otherwise Pass. Verdict files never contain verbatim transcript text.",
+  "description": "One file per verification run. The overall verdict rule is enforced, in order: any Failed claim or Broken applicable rule gives Fail; otherwise any Unverified high-risk claim or applicable rule gives Inconclusive; otherwise an empty claim list gives Inconclusive; otherwise Pass. Verdict files never contain verbatim transcript text.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -44,17 +44,19 @@
       "minLength": 1
     },
     "builder_model": {
-      "description": "The model that did the work. Include the provider where possible, for example openai/gpt-x.",
+      "description": "The model that did the work, as <provider>/<model>, for example openai/gpt-x. The provider is the part before the first slash.",
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "pattern": "^[^/]+/.+$"
     },
     "verifier_model": {
-      "description": "The model that verified it. Include the provider where possible, for example anthropic/claude-opus-x.",
+      "description": "The model that verified it, as <provider>/<model>, for example anthropic/claude-opus-x. The provider is the part before the first slash.",
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "pattern": "^[^/]+/.+$"
     },
     "same_provider": {
-      "description": "true when the builder and verifier models come from the same provider. Independence is weaker when true.",
+      "description": "true when the providers of builder_model and verifier_model (the part before the first slash) are the same. Independence is weaker when true.",
       "type": "boolean"
     },
     "profile": {
@@ -130,7 +132,7 @@
       }
     },
     {
-      "description": "No fail condition, but an Unverified high-risk claim, gives Inconclusive.",
+      "description": "No fail condition, but an Unverified high-risk claim or applicable rule, gives Inconclusive.",
       "if": {
         "allOf": [
           {
@@ -139,13 +141,7 @@
             }
           },
           {
-            "properties": {
-              "claims": {
-                "contains": {
-                  "$ref": "#/$defs/unverifiedHighRiskClaim"
-                }
-              }
-            }
+            "$ref": "#/$defs/inconclusiveCondition"
           }
         ]
       },
@@ -184,7 +180,7 @@
       }
     },
     {
-      "description": "Otherwise Pass: no fail condition, at least one claim, none Unverified and high-risk.",
+      "description": "Otherwise Pass: no fail or inconclusive condition, and at least one claim.",
       "if": {
         "allOf": [
           {
@@ -193,14 +189,14 @@
             }
           },
           {
+            "not": {
+              "$ref": "#/$defs/inconclusiveCondition"
+            }
+          },
+          {
             "properties": {
               "claims": {
-                "minItems": 1,
-                "not": {
-                  "contains": {
-                    "$ref": "#/$defs/unverifiedHighRiskClaim"
-                  }
-                }
+                "minItems": 1
               }
             }
           }
@@ -360,6 +356,7 @@
       "required": [
         "rule_id",
         "applicable",
+        "risk",
         "applicability_reason",
         "verdict",
         "evidence",
@@ -371,6 +368,15 @@
         },
         "applicable": {
           "type": "boolean"
+        },
+        "risk": {
+          "description": "Impact if the rule was broken unnoticed. high, medium or low when applicable; null when not.",
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            null
+          ]
         },
         "applicability_reason": {
           "$ref": "#/$defs/text"
@@ -411,12 +417,22 @@
               "Broken",
               "Unverified"
             ]
+          },
+          "risk": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
           }
         }
       },
       "else": {
         "properties": {
           "verdict": {
+            "const": null
+          },
+          "risk": {
             "const": null
           }
         }
@@ -551,6 +567,48 @@
           "minLength": 1
         }
       }
+    },
+    "unverifiedHighRiskRule": {
+      "type": "object",
+      "required": [
+        "applicable",
+        "verdict",
+        "risk"
+      ],
+      "properties": {
+        "applicable": {
+          "const": true
+        },
+        "verdict": {
+          "const": "Unverified"
+        },
+        "risk": {
+          "const": "high"
+        }
+      }
+    },
+    "inconclusiveCondition": {
+      "description": "Any Unverified high-risk claim or applicable rule.",
+      "anyOf": [
+        {
+          "properties": {
+            "claims": {
+              "contains": {
+                "$ref": "#/$defs/unverifiedHighRiskClaim"
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "rules": {
+              "contains": {
+                "$ref": "#/$defs/unverifiedHighRiskRule"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
