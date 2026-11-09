@@ -152,6 +152,8 @@ Skip this step if the user has no GitLab repos to link. It needs `clean/` from s
 
 Copy `<skill>/scm.yaml` into the run folder and edit it. Each GitLab repo needs `platform: gitlab`, `url` and `project` (the group and project path), and can set `team` and `key_pattern`, a regular expression for the team's way of writing issue keys. Without one, the standard Jira key format is used. Use single quotes around patterns. Keys are normalised, so `ABC_123`, `abc 123` and `ABC-123` all count as `ABC-123` when the pattern allows them. Azure DevOps entries are accepted but skipped for now.
 
+`scm.yaml` uses a strict part of YAML, read without any extra library: top-level `key: value` settings, one `repos:` list whose items start `- platform: ...` with each further setting on its own line, lined up under the first, comments, and plain, whole-number, `'single-quoted'` or `"double-quoted"` values. Put regular expressions in single quotes. Anything else is refused with the file name and line number rather than misread: tabs, anchors and aliases, tags, flow collections (`[...]` or `{...}`), multi-line strings, duplicate keys, unknown settings, settings with no value, and plain values YAML would read as something other than text (such as `yes`, `null` or `1.5`; quote them). If the scripts report a line, fix that line and run again.
+
 The window starts at the earliest defect in `clean/`, so it follows the run's own time window. Get the date with:
 
 ```bash

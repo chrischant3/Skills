@@ -74,3 +74,10 @@ def test_skill_states_the_work_not_people_stance():
 def test_skill_lists_component_attribution_as_an_open_question():
     later = SKILL.split("## Later versions", 1)[1]
     assert "several components" in later
+
+
+def test_skill_documents_the_yaml_subset_scm_yaml_may_use():
+    step = SKILL.split("### 5.", 1)[1].split("### 6.", 1)[0]
+    subset = step.split("`scm.yaml` uses a strict part of YAML", 1)[1].split("\n\n", 1)[0]
+    for word in ["single quotes", "tabs", "anchors", "flow", "multi-line", "duplicate", "line number"]:
+        assert word in subset, word

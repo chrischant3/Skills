@@ -59,10 +59,15 @@ class SourceControlAdapter(ABC):
     Attributes:
         platform: the name used in scm.yaml, such as "gitlab".
         required_fields: scm.yaml fields every repo on this platform must set.
+        optional_fields: further scm.yaml fields this platform understands.
     """
 
     platform: str = ""
     required_fields: tuple[str, ...] = ()
+    optional_fields: tuple[str, ...] = ()
+
+    def check_field(self, key: str, value) -> None:
+        """Raise ValueError if value isn't allowed for the optional field key."""
 
     @abstractmethod
     def repo_name(self, repo: dict) -> str:
@@ -123,3 +128,16 @@ def required_fields(platform: str) -> tuple[str, ...]:
     if platform in PLANNED:
         return PLANNED[platform]
     return adapter_for(platform).required_fields
+
+
+def optional_fields(platform: str) -> tuple[str, ...]:
+    """Further scm.yaml fields a repo on platform may set (none for planned platforms)."""
+    return () if platform in PLANNED else adapter_for(platform).optional_fields
+
+
+def check_optional_field(platform: str, key: str, value, line: int) -> None:
+    """Check an optional field's value, raising ValueError naming the line."""
+    try:
+        adapter_for(platform).check_field(key, value)
+    except ValueError as err:
+        raise ValueError(f"line {line}: {err}") from None
