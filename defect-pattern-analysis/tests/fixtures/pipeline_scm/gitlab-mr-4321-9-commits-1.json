@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"4321009000000000000000000000000000000000\", \"short_id\": \"43210090\", \"title\": \"Work for ABC-509\", \"message\": \"Work for ABC-509\\n\\nCo-authored-by: Grace Placeholder <grace.placeholder@example.net>\", \"author_name\": \"Dana Sampleton\", \"author_email\": \"dana.sampleton@example.com\", \"committer_name\": \"Dana Sampleton\", \"committer_email\": \"dana.sampleton@example.com\", \"trailers\": {}}]"
+  }
+ ]
+}

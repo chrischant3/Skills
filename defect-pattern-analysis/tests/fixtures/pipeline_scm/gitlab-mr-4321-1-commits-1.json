@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"4321001000000000000000000000000000000000\", \"short_id\": \"43210010\", \"title\": \"Work for ABC-500\", \"message\": \"Work for ABC-500\\n\\nCo-authored-by: Dana Sampleton <dana.sampleton@example.com>\", \"author_name\": \"Tomasz Fakename\", \"author_email\": \"t.fakename@example.org\", \"committer_name\": \"Tomasz Fakename\", \"committer_email\": \"t.fakename@example.org\", \"trailers\": {}}]"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"commitId\": \"303aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"author\": {\"name\": \"Oluwaseun Mockley\", \"email\": \"o.mockley@example.com\", \"date\": \"2026-03-01T10:00:00Z\"}, \"committer\": {\"name\": \"Oluwaseun Mockley\", \"email\": \"o.mockley@example.com\", \"date\": \"2026-03-01T10:00:00Z\"}, \"comment\": \"Work for ABC_518\\n\\nSigned-off-by: Oluwaseun Mockley <o.mockley@example.com>\"}]"
+  }
+ ]
+}

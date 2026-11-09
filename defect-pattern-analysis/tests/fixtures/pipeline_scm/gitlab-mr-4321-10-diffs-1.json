@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"old_path\": \"src/payments/refund.py\", \"new_path\": \"src/payments/refund.py\", \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}, {\"old_path\": \"docs/payments.md\", \"new_path\": \"docs/payments.md\", \"diff\": \"@@ -1 +1 @@\\n-old\\n+new\", \"new_file\": false, \"renamed_file\": false, \"deleted_file\": false}]"
+  }
+ ]
+}

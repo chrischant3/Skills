@@ -1,0 +1,16 @@
+min_group_size: 5
+repos:
+  - platform: gitlab
+    url: https://gitlab.example.com
+    project: group/checkout-service
+    team: Checkout
+    namespace: group
+  - platform: gitlab
+    url: https://gitlab.example.com
+    project: robin.q/checkout-tool
+  - platform: azure
+    org: example-org
+    project: Accounts
+    repo: accounts-api
+    team: Accounts
+    key_pattern: 'ABC[-_ ]?\d+'

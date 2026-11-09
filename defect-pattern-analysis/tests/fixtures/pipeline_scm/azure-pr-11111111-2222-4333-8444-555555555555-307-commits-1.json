@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"commitId\": \"307aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"author\": {\"name\": \"Grace Placeholder\", \"email\": \"grace.placeholder@example.net\", \"date\": \"2026-03-01T10:00:00Z\"}, \"committer\": {\"name\": \"Grace Placeholder\", \"email\": \"grace.placeholder@example.net\", \"date\": \"2026-03-01T10:00:00Z\"}, \"comment\": \"Work for ABC_522\\n\\nSigned-off-by: Grace Placeholder <grace.placeholder@example.net>\"}]"
+  }
+ ]
+}

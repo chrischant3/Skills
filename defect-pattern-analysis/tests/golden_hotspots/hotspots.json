@@ -1,0 +1,45 @@
+{
+  "settings": {
+    "min_group_size": 5,
+    "depth": 2,
+    "since": "2026-01-10",
+    "count_rule": "distinct defects whose linked changes touched a file in the directory; files, commits and changes are not counted, and a defect counts once in each directory its fix touched"
+  },
+  "suppressed_marker": "suppressed",
+  "summary": {
+    "defects_with_files": 24
+  },
+  "directories": [
+    {
+      "repo": "group/checkout-service",
+      "platform": "gitlab",
+      "directory": "src/checkout",
+      "defects": 9
+    },
+    {
+      "repo": "Accounts/accounts-api",
+      "platform": "azure",
+      "directory": "src/Accounts",
+      "defects": 8
+    },
+    {
+      "repo": "group/checkout-service",
+      "platform": "gitlab",
+      "directory": "tests/checkout",
+      "defects": 8
+    },
+    {
+      "repo": "Accounts/accounts-api",
+      "platform": "azure",
+      "directory": "tests/Accounts.Tests",
+      "defects": 6
+    },
+    {
+      "repo": "[person]/checkout-tool",
+      "platform": "gitlab",
+      "directory": "notes/[person]",
+      "defects": 5
+    }
+  ],
+  "suppressed_directories": 4
+}

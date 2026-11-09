@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"commitId\": \"309aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"author\": {\"name\": \"Dana Sampleton\", \"email\": \"dana.sampleton@example.com\", \"date\": \"2026-03-01T10:00:00Z\"}, \"committer\": {\"name\": \"Dana Sampleton\", \"email\": \"dana.sampleton@example.com\", \"date\": \"2026-03-01T10:00:00Z\"}, \"comment\": \"Work for ABC_523\\n\\nSigned-off-by: Dana Sampleton <dana.sampleton@example.com>\"}]"
+  }
+ ]
+}

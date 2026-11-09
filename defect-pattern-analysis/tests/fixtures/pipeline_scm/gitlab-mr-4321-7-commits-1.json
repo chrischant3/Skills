@@ -1,0 +1,8 @@
+{
+ "content": [
+  {
+   "type": "text",
+   "text": "[{\"id\": \"4321007000000000000000000000000000000000\", \"short_id\": \"43210070\", \"title\": \"Work for ABC-507\", \"message\": \"Work for ABC-507\\n\\nCo-authored-by: Priya Testwell <priya.testwell@example.com>\", \"author_name\": \"Grace Placeholder\", \"author_email\": \"grace.placeholder@example.net\", \"committer_name\": \"Grace Placeholder\", \"committer_email\": \"grace.placeholder@example.net\", \"trailers\": {}}]"
+  }
+ ]
+}
