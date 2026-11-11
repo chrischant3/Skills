@@ -14,7 +14,11 @@ import pytest
 import suppress
 
 COMBOS = [(), ("team",), ("type",), ("period",), ("team", "type"), ("type", "period")]
-TABLES = {"by_team": (("team",), "type"), "by_type": (("type",), "period"), "teams": (("team",), None)}
+TABLES = {
+    "by_team": (("team",), "type"),
+    "by_type": (("type",), "period"),
+    "teams": (("team",), None),
+}
 
 
 def records_with_group_sizes(sizes: dict[str, int]) -> list[dict]:
@@ -22,8 +26,13 @@ def records_with_group_sizes(sizes: dict[str, int]) -> list[dict]:
     out = []
     for team, n in sizes.items():
         for i in range(n):
-            out.append({"team": team, "type": ["function_logic", "checking_validation"][i % 2],
-                        "period": ["2026-01", "2026-02"][i % 2]})
+            out.append(
+                {
+                    "team": team,
+                    "type": ["function_logic", "checking_validation"][i % 2],
+                    "period": ["2026-01", "2026-02"][i % 2],
+                }
+            )
     return out
 
 
@@ -36,12 +45,21 @@ def write(tmp_path, records, k, tables=TABLES):
 def published_counts(tmp_path) -> dict[str, list]:
     """Every count cell from every output format."""
     data = json.loads((tmp_path / "aggregate.json").read_text())
-    from_json = [v for t in data["tables"].values() for row in t["rows"] for v in [*row["values"].values(), row["total"]]]
+    from_json = [
+        v
+        for t in data["tables"].values()
+        for row in t["rows"]
+        for v in [*row["values"].values(), row["total"]]
+    ]
     from_csv = []
     for path in tmp_path.glob("*.csv"):
         with path.open() as fh:
             for row in csv.DictReader(fh):
-                from_csv += [v for k, v in row.items() if k not in ("team", "type", "period", "theme") and v]
+                from_csv += [
+                    v
+                    for k, v in row.items()
+                    if k not in ("team", "type", "period", "theme") and v
+                ]
     from_md = []
     lines = (tmp_path / "tables.md").read_text().splitlines()
     for line, following in zip(lines, lines[1:] + [""]):
@@ -63,11 +81,19 @@ def derivable(pub) -> set:
             unknown = [m for m in members if m not in known]
             if len(unknown) == 1:
                 m = unknown[0]
-                known[m] = (known[parent] - sum(known[c] for c in children if c != m)) if m != parent \
+                known[m] = (
+                    (known[parent] - sum(known[c] for c in children if c != m))
+                    if m != parent
                     else sum(known[c] for c in children)
+                )
                 recovered.add(m)
                 changed = True
-            elif unknown and parent in known and len(unknown) == known[parent] - sum(known[c] for c in children if c in known):
+            elif (
+                unknown
+                and parent in known
+                and len(unknown)
+                == known[parent] - sum(known[c] for c in children if c in known)
+            ):
                 for m in unknown:
                     known[m] = 1
                     recovered.add(m)
@@ -76,6 +102,7 @@ def derivable(pub) -> set:
 
 
 # --- min_group_size ----------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("value", [1, 2, 3, 4, 0, -5])
 def test_thresholds_below_five_are_refused(value):
@@ -101,6 +128,7 @@ def test_publish_refuses_a_low_threshold():
 
 # --- groups of 1 to 6, at every allowed threshold, in every format ----------------------------
 
+
 @pytest.mark.parametrize("k", [5, 6, 7])
 @pytest.mark.parametrize("fmt", ["json", "csv", "md"])
 def test_no_count_below_threshold_appears_in_any_format(tmp_path, k, fmt):
@@ -113,7 +141,9 @@ def test_no_count_below_threshold_appears_in_any_format(tmp_path, k, fmt):
 def test_only_teams_at_or_above_threshold_are_named(tmp_path, k, visible):
     write(tmp_path, records_with_group_sizes({f"T{n}": n for n in range(1, 7)}), k)
     for name in [f"T{n}" for n in range(1, 7)]:
-        shown = any(re.search(rf"\b{name}\b", p.read_text()) for p in tmp_path.iterdir())
+        shown = any(
+            re.search(rf"\b{name}\b", p.read_text()) for p in tmp_path.iterdir()
+        )
         assert shown == (name in visible), name
 
 
@@ -134,6 +164,7 @@ def test_a_dataset_smaller_than_the_threshold_publishes_no_counts(tmp_path):
 
 # --- no working it out by subtraction -------------------------------------------------------
 
+
 def test_a_single_small_group_cannot_be_found_by_subtracting_from_the_total():
     pub = suppress.publish(records_with_group_sizes({"A": 8, "B": 2}), COMBOS, 5)
     assert pub.value(frozenset({("team", "B")})) == suppress.SUPPRESSED
@@ -141,15 +172,23 @@ def test_a_single_small_group_cannot_be_found_by_subtracting_from_the_total():
 
 
 def test_two_groups_of_one_cannot_be_pinned_by_their_sum():
-    pub = suppress.publish(records_with_group_sizes({"A": 9, "B": 1, "C": 1}), COMBOS, 5)
+    pub = suppress.publish(
+        records_with_group_sizes({"A": 9, "B": 1, "C": 1}), COMBOS, 5
+    )
     assert derivable(pub) == set()
 
 
 @pytest.mark.parametrize("seed", range(60))
 def test_random_datasets_leak_nothing_by_subtraction(seed):
     rng = random.Random(seed)
-    records = [{"team": rng.choice("ABCDE"), "type": rng.choice(["logic", "data", "ux", "timing"]),
-                "period": rng.choice(["2026-01", "2026-02", "2026-03"])} for _ in range(rng.randint(3, 60))]
+    records = [
+        {
+            "team": rng.choice("ABCDE"),
+            "type": rng.choice(["logic", "data", "ux", "timing"]),
+            "period": rng.choice(["2026-01", "2026-02", "2026-03"]),
+        }
+        for _ in range(rng.randint(3, 60))
+    ]
     k = rng.choice([5, 6, 7])
     pub = suppress.publish(records, COMBOS, k)
     assert all(pub.cells[c] >= k for c in pub.cells if c not in pub.suppressed)
@@ -157,6 +196,7 @@ def test_random_datasets_leak_nothing_by_subtraction(seed):
 
 
 # --- every output goes through the suppression step --------------------------------------------
+
 
 def test_a_table_outside_the_suppressed_groupings_is_refused():
     pub = suppress.publish(records_with_group_sizes({"A": 6}), COMBOS, 5)
@@ -172,12 +212,21 @@ def test_settings_cannot_carry_extra_counts(tmp_path):
 
 def test_scalar_counts_from_outside_the_records_are_suppressed_too():
     pub = suppress.publish(records_with_group_sizes({"A": 6}), COMBOS, 5)
-    assert pub.scalar(3) == suppress.SUPPRESSED and pub.scalar(0) == 0 and pub.scalar(12) == 12
+    assert (
+        pub.scalar(3) == suppress.SUPPRESSED
+        and pub.scalar(0) == 0
+        and pub.scalar(12) == 12
+    )
 
 
 def test_visible_counts_are_correct(tmp_path):
     write(tmp_path, records_with_group_sizes({"A": 6, "B": 7}), 5)
-    teams = {r["labels"]["team"]: r["total"] for r in json.loads((tmp_path / "aggregate.json").read_text())["tables"]["teams"]["rows"]}
+    teams = {
+        r["labels"]["team"]: r["total"]
+        for r in json.loads((tmp_path / "aggregate.json").read_text())["tables"][
+            "teams"
+        ]["rows"]
+    }
     assert teams == {"A": 6, "B": 7}
 
 
@@ -210,9 +259,15 @@ def test_the_same_records_are_suppressed_the_same_way_in_every_run():
     import subprocess
     import sys
     from conftest import ROOT
+
     results = set()
     for seed in range(8):
-        done = subprocess.run([sys.executable, "-c", DETERMINISM_PROBE, str(ROOT / "scripts")], capture_output=True,
-                              text=True, check=True, env={"PYTHONHASHSEED": str(seed)})
+        done = subprocess.run(
+            [sys.executable, "-c", DETERMINISM_PROBE, str(ROOT / "scripts")],
+            capture_output=True,
+            text=True,
+            check=True,
+            env={"PYTHONHASHSEED": str(seed)},
+        )
         results.add(done.stdout)
     assert len(results) == 1

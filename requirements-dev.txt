@@ -1,0 +1,8 @@
+# Tools for working on the skills: tests, coverage, lint and format. Pinned so CI, the
+# pre-push hook and local runs agree (standards rule 1). The skills' own scripts use only
+# the standard library, plus openpyxl for .xlsx in requirements-to-tests.
+pytest==9.2.0
+pytest-cov==7.1.0
+ruff==0.17.4
+openpyxl==3.1.5
+fpdf2==2.8.9

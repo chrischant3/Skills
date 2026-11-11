@@ -25,8 +25,10 @@ from pathlib import Path
 
 DEFAULT_MIN_GROUP_SIZE = 5
 SUPPRESSED = "suppressed"
-SUPPRESSED_NOTE = ("{n} {groups} suppressed: each had fewer than {k} defects, or was hidden so that a "
-                   "small group can't be worked out from the totals.")
+SUPPRESSED_NOTE = (
+    "{n} {groups} suppressed: each had fewer than {k} defects, or was hidden so that a "
+    "small group can't be worked out from the totals."
+)
 # Settings are configuration, not results. Only these may be numbers.
 NUMERIC_SETTINGS = {"min_group_size"}
 
@@ -44,8 +46,10 @@ def validate_min_group_size(value=None) -> int:
     if isinstance(value, bool) or not isinstance(value, int):
         raise ValueError(f"min_group_size must be a whole number, got {value!r}")
     if value < DEFAULT_MIN_GROUP_SIZE:
-        raise ValueError(f"min_group_size must be at least {DEFAULT_MIN_GROUP_SIZE} so small groups stay "
-                         f"hidden; got {value}. Use a higher value for small teams, never a lower one.")
+        raise ValueError(
+            f"min_group_size must be at least {DEFAULT_MIN_GROUP_SIZE} so small groups stay "
+            f"hidden; got {value}. Use a higher value for small teams, never a lower one."
+        )
     return value
 
 
@@ -89,9 +93,14 @@ class Publication:
         lines = []
         for parent_combo in self._ordered_combos:
             for child_combo in self._ordered_combos:
-                if len(child_combo) == len(parent_combo) + 1 and parent_combo < child_combo:
+                if (
+                    len(child_combo) == len(parent_combo) + 1
+                    and parent_combo < child_combo
+                ):
                     for parent in self._by_combo[parent_combo]:
-                        children = [c for c in self._by_combo[child_combo] if parent <= c]
+                        children = [
+                            c for c in self._by_combo[child_combo] if parent <= c
+                        ]
                         lines.append((parent, sorted(children, key=sorted)))
         return lines
 
@@ -104,8 +113,13 @@ class Publication:
             for parent, children in self.lines:
                 members = [parent, *children]
                 if self._line_is_exposed(parent, children, hidden):
-                    candidates = [m for m in members if m not in hidden and self.cells[m] > 0]
-                    pick = min(candidates, key=lambda m: (self.cells[m], m == parent, sorted(m)))
+                    candidates = [
+                        m for m in members if m not in hidden and self.cells[m] > 0
+                    ]
+                    pick = min(
+                        candidates,
+                        key=lambda m: (self.cells[m], m == parent, sorted(m)),
+                    )
                     hidden.add(pick)
                     changed = True
         return hidden
@@ -117,12 +131,16 @@ class Publication:
         hidden_children = [c for c in children if c in hidden]
         if parent in hidden or not hidden_children:
             return False
-        hidden_sum = self.cells[parent] - sum(self.cells[c] for c in children if c not in hidden)
+        hidden_sum = self.cells[parent] - sum(
+            self.cells[c] for c in children if c not in hidden
+        )
         return hidden_sum == len(hidden_children)
 
     def _check_combo(self, combo) -> None:
         if frozenset(combo) not in self.combos:
-            raise ValueError(f"{sorted(combo)} is not a published grouping; add it to the groupings passed to publish()")
+            raise ValueError(
+                f"{sorted(combo)} is not a published grouping; add it to the groupings passed to publish()"
+            )
 
     def value(self, key: frozenset):
         """The published count for a cell: a number, or SUPPRESSED."""
@@ -156,7 +174,10 @@ class Publication:
         if col_dim:
             self._check_combo(row_dims + (col_dim,))
         rows, hidden_rows = [], 0
-        for key in sorted(self._by_combo[frozenset(row_dims)], key=lambda k: [dict(k)[d] for d in row_dims]):
+        for key in sorted(
+            self._by_combo[frozenset(row_dims)],
+            key=lambda k: [dict(k)[d] for d in row_dims],
+        ):
             if key in self.suppressed:
                 hidden_rows += 1
                 continue
@@ -170,12 +191,22 @@ class Publication:
         columns = sorted({c for r in rows for c in r["values"]})
         hidden_columns = 0
         if col_dim and frozenset({col_dim}) in self.combos:
-            visible = [c for c in columns if self.value(frozenset({(col_dim, c)})) != SUPPRESSED]
+            visible = [
+                c
+                for c in columns
+                if self.value(frozenset({(col_dim, c)})) != SUPPRESSED
+            ]
             hidden_columns, columns = len(columns) - len(visible), visible
         for r in rows:
             r["values"] = {c: r["values"].get(c, 0) for c in columns}
-        return {"row_dims": list(row_dims), "column_dim": col_dim, "columns": columns,
-                "rows": rows, "suppressed_rows": hidden_rows, "suppressed_columns": hidden_columns}
+        return {
+            "row_dims": list(row_dims),
+            "column_dim": col_dim,
+            "columns": columns,
+            "rows": rows,
+            "suppressed_rows": hidden_rows,
+            "suppressed_columns": hidden_columns,
+        }
 
 
 def publish(records, combos, min_group_size=None) -> Publication:
@@ -196,11 +227,19 @@ def _note(n: int, k: int) -> str:
 
 def _check_settings(settings: dict) -> None:
     for key, value in settings.items():
-        if isinstance(value, (int, float)) and not isinstance(value, bool) and key not in NUMERIC_SETTINGS:
-            raise ValueError(f"setting {key!r} is a number; counts must go through the Publication, not settings")
+        if (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and key not in NUMERIC_SETTINGS
+        ):
+            raise ValueError(
+                f"setting {key!r} is a number; counts must go through the Publication, not settings"
+            )
 
 
-def write_outputs(pub: Publication, tables: dict, out_dir, settings: dict | None = None) -> None:
+def write_outputs(
+    pub: Publication, tables: dict, out_dir, settings: dict | None = None
+) -> None:
     """Write aggregate.json, one CSV per table and tables.md, all from the suppressed cells.
 
     Args:
@@ -216,27 +255,53 @@ def write_outputs(pub: Publication, tables: dict, out_dir, settings: dict | None
     out_dir.mkdir(parents=True, exist_ok=True)
     built = {name: pub.table(rows, col) for name, (rows, col) in tables.items()}
 
-    (out_dir / "aggregate.json").write_text(json.dumps(
-        {"settings": settings, "suppressed_marker": SUPPRESSED, "summary": pub.summary, "tables": built},
-        indent=2) + "\n", encoding="utf-8")
+    (out_dir / "aggregate.json").write_text(
+        json.dumps(
+            {
+                "settings": settings,
+                "suppressed_marker": SUPPRESSED,
+                "summary": pub.summary,
+                "tables": built,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     for name, table in built.items():
         with (out_dir / f"{name}.csv").open("w", newline="", encoding="utf-8") as fh:
             writer = csv.writer(fh, lineterminator="\n")
             writer.writerow([*table["row_dims"], *table["columns"], "total"])
             for row in table["rows"]:
-                writer.writerow([*row["labels"].values(), *row["values"].values(), row["total"]])
+                writer.writerow(
+                    [*row["labels"].values(), *row["values"].values(), row["total"]]
+                )
             hidden = table["suppressed_rows"] + table["suppressed_columns"]
             if hidden:
-                writer.writerow([_note(hidden, pub.min_group_size)]
-                                + [""] * (len(table["row_dims"]) - 1 + len(table["columns"]) + 1))
+                writer.writerow(
+                    [_note(hidden, pub.min_group_size)]
+                    + [""] * (len(table["row_dims"]) - 1 + len(table["columns"]) + 1)
+                )
 
-    md = ["# Defect counts", "", f"Groups with fewer than {pub.min_group_size} defects are suppressed.", ""]
+    md = [
+        "# Defect counts",
+        "",
+        f"Groups with fewer than {pub.min_group_size} defects are suppressed.",
+        "",
+    ]
     if pub.summary:
-        md += ["## Summary", ""] + [f"- {k}: {v}" for k, v in pub.summary.items()] + [""]
+        md += (
+            ["## Summary", ""] + [f"- {k}: {v}" for k, v in pub.summary.items()] + [""]
+        )
     for name, table in built.items():
         header = [*table["row_dims"], *table["columns"], "total"]
-        md += [f"## {name}", "", "| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
+        md += [
+            f"## {name}",
+            "",
+            "| " + " | ".join(header) + " |",
+            "|" + "---|" * len(header),
+        ]
         for row in table["rows"]:
             cells = [*row["labels"].values(), *row["values"].values(), row["total"]]
             md.append("| " + " | ".join(str(c) for c in cells) + " |")

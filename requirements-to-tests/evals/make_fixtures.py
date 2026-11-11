@@ -27,45 +27,70 @@ def _p(text, style=None):
 
 
 def _tbl(rows):
-    return "<w:tbl>" + "".join(
-        "<w:tr>" + "".join(f"<w:tc>{_p(c)}</w:tc>" for c in r) + "</w:tr>" for r in rows) + "</w:tbl>"
+    return (
+        "<w:tbl>"
+        + "".join(
+            "<w:tr>" + "".join(f"<w:tc>{_p(c)}</w:tc>" for c in r) + "</w:tr>"
+            for r in rows
+        )
+        + "</w:tbl>"
+    )
 
 
 def clinic_docx():
-    body = "".join([
-        _p("MyClinic Patient Portal - Requirements Specification v0.3", "Title"),
-        _p("1 Introduction", "Heading1"),
-        _p("MyClinic runs 14 GP surgeries. The portal lets registered patients book appointments, see their records and message their clinician. It will be available on the public internet."),
-        _p("2 Booking", "Heading1"),
-        _p("BK-1 Patients can book an appointment with any available clinician up to 4 weeks ahead."),
-        _p("BK-2 Patients can cancel an appointment up to 24 hours before it starts."),
-        _p("BK-3 The system will send a reminder by SMS the day before."),
-        _p("3 Patient records", "Heading1"),
-        _p("REC-1 Patients can view their test results and medication list."),
-        _p("REC-2 Patients can download their records."),
-        _p("REC-3 Clinicians can view patient records."),
-        _p("4 Security", "Heading1"),
-        _p("SEC-1 The system shall be secure and follow industry best practice."),
-        _p("SEC-2 Accounts are locked after 5 failed login attempts."),
-        _p("SEC-3 Passwords must be strong."),
-        _p("SEC-4 Administrators can see all data in order to support users."),
-        _p("5 Performance and availability", "Heading1"),
-        _p("The following table lists the performance requirements."),
-        _tbl([["ID", "Requirement", "Priority"],
-              ["PERF-1", "The portal must be fast.", "High"],
-              ["PERF-2", "The system should support up to 500 users.", "High"],
-              ["PERF-3", "Availability of 99.9%.", "Medium"]]),
-        _p("6 Data", "Heading1"),
-        _p("DATA-1 Patient data will be handled in line with GDPR."),
-        _p("DATA-2 Data is deleted when it is no longer needed."),
-        _p("DATA-3 Backups are taken nightly."),
-        _p("DATA-4 Test results are imported every 15 minutes from the lab system."),
-        _p("7 Assumptions", "Heading1"),
-        _p("A-1 Only registered patients will use the portal, and clinic staff are trusted, so detailed audit logging is not required."),
-    ])
+    body = "".join(
+        [
+            _p("MyClinic Patient Portal - Requirements Specification v0.3", "Title"),
+            _p("1 Introduction", "Heading1"),
+            _p(
+                "MyClinic runs 14 GP surgeries. The portal lets registered patients book appointments, see their records and message their clinician. It will be available on the public internet."
+            ),
+            _p("2 Booking", "Heading1"),
+            _p(
+                "BK-1 Patients can book an appointment with any available clinician up to 4 weeks ahead."
+            ),
+            _p(
+                "BK-2 Patients can cancel an appointment up to 24 hours before it starts."
+            ),
+            _p("BK-3 The system will send a reminder by SMS the day before."),
+            _p("3 Patient records", "Heading1"),
+            _p("REC-1 Patients can view their test results and medication list."),
+            _p("REC-2 Patients can download their records."),
+            _p("REC-3 Clinicians can view patient records."),
+            _p("4 Security", "Heading1"),
+            _p("SEC-1 The system shall be secure and follow industry best practice."),
+            _p("SEC-2 Accounts are locked after 5 failed login attempts."),
+            _p("SEC-3 Passwords must be strong."),
+            _p("SEC-4 Administrators can see all data in order to support users."),
+            _p("5 Performance and availability", "Heading1"),
+            _p("The following table lists the performance requirements."),
+            _tbl(
+                [
+                    ["ID", "Requirement", "Priority"],
+                    ["PERF-1", "The portal must be fast.", "High"],
+                    ["PERF-2", "The system should support up to 500 users.", "High"],
+                    ["PERF-3", "Availability of 99.9%.", "Medium"],
+                ]
+            ),
+            _p("6 Data", "Heading1"),
+            _p("DATA-1 Patient data will be handled in line with GDPR."),
+            _p("DATA-2 Data is deleted when it is no longer needed."),
+            _p("DATA-3 Backups are taken nightly."),
+            _p(
+                "DATA-4 Test results are imported every 15 minutes from the lab system."
+            ),
+            _p("7 Assumptions", "Heading1"),
+            _p(
+                "A-1 Only registered patients will use the portal, and clinic staff are trusted, so detailed audit logging is not required."
+            ),
+        ]
+    )
     path = OUT / "myclinic-portal-spec-v0.3.docx"
     with zipfile.ZipFile(path, "w") as z:
-        z.writestr("word/document.xml", f'<?xml version="1.0"?><w:document {W}><w:body>{body}</w:body></w:document>')
+        z.writestr(
+            "word/document.xml",
+            f'<?xml version="1.0"?><w:document {W}><w:body>{body}</w:body></w:document>',
+        )
     return path
 
 
@@ -122,20 +147,98 @@ NFR-D4 A payout, once confirmed, is never processed twice.
 
 def crm_xlsx():
     rows = [
-        ("MIG-01", "Migration", "All customer records are migrated from the legacy CRM to the new CRM.", "Must", "Data team"),
-        ("MIG-02", "Migration", "No data is lost during migration.", "Must", "Data team"),
-        ("MIG-03", "Migration", "Duplicate customers are merged.", "Should", "Data team"),
-        ("MIG-04", "Migration", "The migration is completed over a single weekend.", "Must", "PMO"),
-        ("MIG-05", "Migration", "Legacy CRM remains available read-only for 90 days after go-live.", "Should", "IT Ops"),
-        ("DAT-01", "Data protection", "Marketing consent flags are carried across.", "Must", "DPO"),
-        ("DAT-02", "Data protection", "Customers inactive for more than 6 years are not migrated.", "Must", "DPO"),
-        ("DAT-03", "Data protection", "Sales users only see customers in their own region.", "Must", "Sales Ops"),
-        ("DAT-04", "Data protection", "Customer records can be exported on request.", "Could", "DPO"),
-        ("REP-01", "Reporting", "Month-end revenue reports match the legacy reports.", "Must", "Finance"),
+        (
+            "MIG-01",
+            "Migration",
+            "All customer records are migrated from the legacy CRM to the new CRM.",
+            "Must",
+            "Data team",
+        ),
+        (
+            "MIG-02",
+            "Migration",
+            "No data is lost during migration.",
+            "Must",
+            "Data team",
+        ),
+        (
+            "MIG-03",
+            "Migration",
+            "Duplicate customers are merged.",
+            "Should",
+            "Data team",
+        ),
+        (
+            "MIG-04",
+            "Migration",
+            "The migration is completed over a single weekend.",
+            "Must",
+            "PMO",
+        ),
+        (
+            "MIG-05",
+            "Migration",
+            "Legacy CRM remains available read-only for 90 days after go-live.",
+            "Should",
+            "IT Ops",
+        ),
+        (
+            "DAT-01",
+            "Data protection",
+            "Marketing consent flags are carried across.",
+            "Must",
+            "DPO",
+        ),
+        (
+            "DAT-02",
+            "Data protection",
+            "Customers inactive for more than 6 years are not migrated.",
+            "Must",
+            "DPO",
+        ),
+        (
+            "DAT-03",
+            "Data protection",
+            "Sales users only see customers in their own region.",
+            "Must",
+            "Sales Ops",
+        ),
+        (
+            "DAT-04",
+            "Data protection",
+            "Customer records can be exported on request.",
+            "Could",
+            "DPO",
+        ),
+        (
+            "REP-01",
+            "Reporting",
+            "Month-end revenue reports match the legacy reports.",
+            "Must",
+            "Finance",
+        ),
         ("ACC-01", "Access", "Users sign in with company SSO.", "Must", "IT Ops"),
-        ("PER-01", "Performance", "Search response times are the same or better than the legacy CRM.", "Should", "Sales Ops"),
-        ("PER-02", "Performance", "The system supports all 350 sales users.", "Must", "Sales Ops"),
-        ("INT-01", "Integration", "Orders from the web shop appear in the CRM within 5 minutes.", "Should", "IT Ops"),
+        (
+            "PER-01",
+            "Performance",
+            "Search response times are the same or better than the legacy CRM.",
+            "Should",
+            "Sales Ops",
+        ),
+        (
+            "PER-02",
+            "Performance",
+            "The system supports all 350 sales users.",
+            "Must",
+            "Sales Ops",
+        ),
+        (
+            "INT-01",
+            "Integration",
+            "Orders from the web shop appear in the CRM within 5 minutes.",
+            "Should",
+            "IT Ops",
+        ),
     ]
     wb = openpyxl.Workbook()
     ws = wb.active

@@ -30,7 +30,15 @@ import clean_data
 
 CONFIDENCE_FLOOR = 0.6
 UNCLASSIFIED = "unclassified"
-FIELDS = {"key", "defect_type", "trigger", "escape_stage", "confidence", "theme", "reason"}
+FIELDS = {
+    "key",
+    "defect_type",
+    "trigger",
+    "escape_stage",
+    "confidence",
+    "theme",
+    "reason",
+}
 THEME_MAX = 80
 REASON_MAX = 200
 UNSAFE_TEXT = [
@@ -48,18 +56,35 @@ def load_taxonomy(path) -> dict:
     """
     text = Path(path).read_text(encoding="utf-8")
     version = re.search(r"^# Defect taxonomy (v\S+)", text, re.M)
-    sections = dict(re.findall(r"^## ([^\n(]+?)\s*(?:\([^)]*\))?\n(.*?)(?=^## |\Z)", text, re.M | re.S))
+    sections = dict(
+        re.findall(
+            r"^## ([^\n(]+?)\s*(?:\([^)]*\))?\n(.*?)(?=^## |\Z)", text, re.M | re.S
+        )
+    )
     types = re.findall(r"^- ([a-z_]+):", sections.get("Defect type", ""), re.M)
-    listed = lambda name: [v.strip() for v in sections.get(name, "").strip().split(",") if v.strip()]  # noqa: E731
-    taxonomy = {"version": version.group(1) if version else None, "defect_type": types,
-                "trigger": listed("Trigger"), "escape_stage": listed("Escape stage")}
-    if not taxonomy["version"] or not all(taxonomy[k] for k in ("defect_type", "trigger", "escape_stage")):
+    listed = lambda name: [  # noqa: E731
+        v.strip() for v in sections.get(name, "").strip().split(",") if v.strip()
+    ]
+    taxonomy = {
+        "version": version.group(1) if version else None,
+        "defect_type": types,
+        "trigger": listed("Trigger"),
+        "escape_stage": listed("Escape stage"),
+    }
+    if not taxonomy["version"] or not all(
+        taxonomy[k] for k in ("defect_type", "trigger", "escape_stage")
+    ):
         raise ValueError(f"could not read the taxonomy from {path}")
     return taxonomy
 
 
 def _one_line(value, limit) -> bool:
-    return isinstance(value, str) and value.strip() != "" and "\n" not in value and len(value.strip()) <= limit
+    return (
+        isinstance(value, str)
+        and value.strip() != ""
+        and "\n" not in value
+        and len(value.strip()) <= limit
+    )
 
 
 def _unsafe(value: str) -> str | None:
@@ -69,25 +94,37 @@ def _unsafe(value: str) -> str | None:
 def _check_record(rec, taxonomy, summaries) -> tuple[dict | None, list[str]]:
     key = rec.get("key") if isinstance(rec, dict) else None
     if not isinstance(rec, dict) or not isinstance(key, str):
-        return None, [f"record {rec!r}: each record must be an object with a string key"]
+        return None, [
+            f"record {rec!r}: each record must be an object with a string key"
+        ]
     errors = []
     extra = sorted(set(rec) - FIELDS)
     if extra:
         errors.append(f"{key}: fields {extra} are not allowed; only {sorted(FIELDS)}")
     conf = rec.get("confidence")
-    if isinstance(conf, bool) or not isinstance(conf, (int, float)) or not 0 <= conf <= 1:
+    if (
+        isinstance(conf, bool)
+        or not isinstance(conf, (int, float))
+        or not 0 <= conf <= 1
+    ):
         errors.append(f"{key}: confidence must be a number from 0 to 1, got {conf!r}")
         conf = None
     for field in ("defect_type", "trigger", "escape_stage"):
         value = rec.get(field)
         allowed = taxonomy[field] + ([UNCLASSIFIED] if field == "defect_type" else [])
         if value is not None and value not in allowed:
-            errors.append(f"{key}: {field} {value!r} is not in taxonomy {taxonomy['version']}")
-    unclassified = rec.get("defect_type") == UNCLASSIFIED or (conf is not None and conf < CONFIDENCE_FLOOR)
+            errors.append(
+                f"{key}: {field} {value!r} is not in taxonomy {taxonomy['version']}"
+            )
+    unclassified = rec.get("defect_type") == UNCLASSIFIED or (
+        conf is not None and conf < CONFIDENCE_FLOOR
+    )
     reason, theme = rec.get("reason"), rec.get("theme")
     if unclassified:
         if not _one_line(reason, REASON_MAX):
-            errors.append(f"{key}: unclassified tickets need a one-line reason of at most {REASON_MAX} characters")
+            errors.append(
+                f"{key}: unclassified tickets need a one-line reason of at most {REASON_MAX} characters"
+            )
         elif _unsafe(reason):
             errors.append(f"{key}: reason contains {_unsafe(reason)}")
     else:
@@ -95,21 +132,36 @@ def _check_record(rec, taxonomy, summaries) -> tuple[dict | None, list[str]]:
             if rec.get(field) is None:
                 errors.append(f"{key}: {field} is required for a classified ticket")
         if not _one_line(theme, THEME_MAX):
-            errors.append(f"{key}: theme must be one line of 1 to {THEME_MAX} characters")
+            errors.append(
+                f"{key}: theme must be one line of 1 to {THEME_MAX} characters"
+            )
         elif _unsafe(theme):
             errors.append(f"{key}: theme contains {_unsafe(theme)}")
-        elif summaries.get(key) and theme.strip().lower() == summaries[key].strip().lower():
-            errors.append(f"{key}: theme copies the ticket summary; describe it in your own words")
-        if reason is not None and (not _one_line(reason, REASON_MAX) or _unsafe(reason)):
-            errors.append(f"{key}: reason must be one safe line of at most {REASON_MAX} characters")
+        elif (
+            summaries.get(key)
+            and theme.strip().lower() == summaries[key].strip().lower()
+        ):
+            errors.append(
+                f"{key}: theme copies the ticket summary; describe it in your own words"
+            )
+        if reason is not None and (
+            not _one_line(reason, REASON_MAX) or _unsafe(reason)
+        ):
+            errors.append(
+                f"{key}: reason must be one safe line of at most {REASON_MAX} characters"
+            )
     if errors:
         return None, errors
-    return {"key": key, "status": UNCLASSIFIED if unclassified else "classified",
-            "defect_type": rec.get("defect_type") if not unclassified else None,
-            "theme": " ".join(theme.split()) if not unclassified else None,
-            "trigger": rec.get("trigger") if not unclassified else None,
-            "escape_stage": rec.get("escape_stage") if not unclassified else None,
-            "confidence": conf, "reason": reason.strip() if isinstance(reason, str) else None}, []
+    return {
+        "key": key,
+        "status": UNCLASSIFIED if unclassified else "classified",
+        "defect_type": rec.get("defect_type") if not unclassified else None,
+        "theme": " ".join(theme.split()) if not unclassified else None,
+        "trigger": rec.get("trigger") if not unclassified else None,
+        "escape_stage": rec.get("escape_stage") if not unclassified else None,
+        "confidence": conf,
+        "reason": reason.strip() if isinstance(reason, str) else None,
+    }, []
 
 
 def validate(records, issue_keys, taxonomy, summaries=None) -> tuple[dict, list[str]]:
@@ -154,15 +206,24 @@ def _read_records(source: Path) -> list:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Validate classifications against the taxonomy.")
+    ap = argparse.ArgumentParser(
+        description="Validate classifications against the taxonomy."
+    )
     ap.add_argument("classifications", help="a JSON file, or a folder of them")
     ap.add_argument("--issues", default="clean")
     ap.add_argument("--taxonomy", default=str(DEFAULT_TAXONOMY))
     ap.add_argument("--out", default="work/classified.json")
     a = ap.parse_args(argv)
     issues = clean_data.load_clean_issues(a.issues)
-    summaries = {i["key"]: clean_data.text_of(i["fields"].get("summary")) for i in issues}
-    result, errors = validate(_read_records(Path(a.classifications)), list(summaries), load_taxonomy(a.taxonomy), summaries)
+    summaries = {
+        i["key"]: clean_data.text_of(i["fields"].get("summary")) for i in issues
+    }
+    result, errors = validate(
+        _read_records(Path(a.classifications)),
+        list(summaries),
+        load_taxonomy(a.taxonomy),
+        summaries,
+    )
     if errors:
         print(f"{len(errors)} problem(s); nothing written:", file=sys.stderr)
         for e in errors:
@@ -172,7 +233,9 @@ def main(argv=None) -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     n_un = sum(r["status"] == UNCLASSIFIED for r in result["records"])
-    print(f"Validated {len(result['records'])} classifications ({n_un} unclassified) -> {out}")
+    print(
+        f"Validated {len(result['records'])} classifications ({n_un} unclassified) -> {out}"
+    )
     return 0
 
 

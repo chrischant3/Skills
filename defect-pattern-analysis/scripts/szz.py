@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
 """Usage: szz.py --links clean/links.json --clones clones/ --issues clean/ --out clean/szz.json"""
-import argparse, json, re, subprocess
+
+import argparse
+import json
+import re
+import subprocess
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
 
 COMMENT = re.compile(r"^\s*(#|//|/\*|\*|--)")
 
+
 def git(repo, *args):
-    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True).stdout
+    return subprocess.run(
+        ["git", "-C", str(repo), *args], capture_output=True, text=True
+    ).stdout
+
 
 def changed_lines(repo, sha):
     """Old-side line numbers removed/modified by a commit, per file."""
@@ -28,6 +36,7 @@ def changed_lines(repo, sha):
             old_line += 1
     return out
 
+
 def blame(repo, sha, path, lines):
     args = ["blame", "--porcelain", "-w"]
     if (Path(repo) / ".git-blame-ignore-revs").exists():
@@ -36,14 +45,15 @@ def blame(repo, sha, path, lines):
         args += ["-L", f"{n},{n}"]
     raw = git(repo, *args, f"{sha}^", "--", path)
     commits, times = set(), {}
-    for l in raw.splitlines():
-        m = re.match(r"^([0-9a-f]{40}) ", l)
+    for line in raw.splitlines():
+        m = re.match(r"^([0-9a-f]{40}) ", line)
         if m:
             cur = m.group(1)
             commits.add(cur)
-        elif l.startswith("committer-time "):
-            times[cur] = int(l.split()[1])
+        elif line.startswith("committer-time "):
+            times[cur] = int(line.split()[1])
     return {c: times.get(c) for c in commits}
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -56,7 +66,9 @@ def main():
     dir_counts, lags, per_issue = Counter(), [], {}
     for key, changes in links.items():
         issue = json.loads(Path(a.issues, f"{key}.json").read_text())
-        reported = datetime.fromisoformat(issue["fields"]["created"].replace("Z", "+00:00")).timestamp()
+        reported = datetime.fromisoformat(
+            issue["fields"]["created"].replace("Z", "+00:00")
+        ).timestamp()
         introducers = {}
         for ch in changes:
             repo = Path(a.clones, ch["repo"].split("/")[-1])
@@ -77,11 +89,14 @@ def main():
     out = {
         "estimate_note": "SZZ output is an estimate. Treat hotspots as prompts for conversation, not facts.",
         "introduction_hotspots": dir_counts.most_common(25),
-        "median_days_introduced_to_reported": lags[len(lags)//2] if lags else None,
+        "median_days_introduced_to_reported": lags[len(lags) // 2] if lags else None,
         "per_issue_dirs": per_issue,
     }
     Path(a.out).write_text(json.dumps(out, indent=2))
-    print(f"SZZ traced {sum(1 for v in per_issue.values() if v)}/{len(links)} linked defects")
+    print(
+        f"SZZ traced {sum(1 for v in per_issue.values() if v)}/{len(links)} linked defects"
+    )
+
 
 if __name__ == "__main__":
     main()

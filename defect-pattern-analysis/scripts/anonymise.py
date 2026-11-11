@@ -60,50 +60,210 @@ ISSUE_KEY = re.compile(r"[A-Z][A-Z0-9_]*-\d+")
 # Any of these keys marks a dict as a person: Jira Cloud and Data Center users, GitLab
 # users, Azure DevOps identities (which may carry only an id, descriptor and imageUrl)
 # and git author/committer objects.
-PERSON_MARKER_KEYS = {"accountId", "emailAddress", "email", "uniqueName", "username", "displayName", "descriptor",
-                      "imageUrl"}
+PERSON_MARKER_KEYS = {
+    "accountId",
+    "emailAddress",
+    "email",
+    "uniqueName",
+    "username",
+    "displayName",
+    "descriptor",
+    "imageUrl",
+}
 # Values that identify a person, learnt so they can be removed from free text too.
-PERSON_ID_KEYS = ("accountId", "key", "username", "uniqueName", "name", "emailAddress", "email", "displayName", "id",
-                  "path", "full_path", "descriptor")
+PERSON_ID_KEYS = (
+    "accountId",
+    "key",
+    "username",
+    "uniqueName",
+    "name",
+    "emailAddress",
+    "email",
+    "displayName",
+    "id",
+    "path",
+    "full_path",
+    "descriptor",
+)
 # Non-identifying facts on a person object that analysis may need.
 PERSON_SAFE_KEYS = {"vote", "isRequired", "hasDeclined", "isFlagged", "date", "kind"}
 # Flat string fields that hold a person in GitLab and git exports.
-PERSON_STRING_KEYS = {"author_name", "author_email", "committer_name", "committer_email",
-                      "authorName", "authorEmail", "committerName", "committerEmail"}
+PERSON_STRING_KEYS = {
+    "author_name",
+    "author_email",
+    "committer_name",
+    "committer_email",
+    "authorName",
+    "authorEmail",
+    "committerName",
+    "committerEmail",
+}
 # GitLab commit fields that hold parsed trailers ({"Co-authored-by": "Name <email>"}).
 TRAILER_FIELDS = {"trailers", "extended_trailers"}
 PERSON_CHANGELOG_FIELDS = {"assignee", "reporter", "creator"}
 # Changelog fields whose from/to strings are names of Jira entities, not free text.
-ENTITY_CHANGELOG_FIELDS = {"status", "component", "components", "issuetype", "priority", "resolution",
-                           "fix version", "fixversions", "version", "labels", "project"}
+ENTITY_CHANGELOG_FIELDS = {
+    "status",
+    "component",
+    "components",
+    "issuetype",
+    "priority",
+    "resolution",
+    "fix version",
+    "fixversions",
+    "version",
+    "labels",
+    "project",
+}
 # Code words that look like @handles: annotations, decorators, CSS and Sass at-rules,
 # doc tags. Never redacted, even in prose and even if a person's handle matches.
-CODE_WORDS = {"override", "media", "import", "keyframes", "font-face", "supports", "charset", "namespace",
-              "page", "layer", "container", "test", "param", "return", "returns", "throws", "deprecated",
-              "inject", "injectable", "autowired", "component", "service", "bean", "entity", "table", "column",
-              "id", "transactional", "before", "after", "beforeeach", "aftereach", "beforeall", "afterall",
-              "mock", "injectmocks", "restcontroller", "controller", "repository", "configuration",
-              "requestmapping", "getmapping", "postmapping", "putmapping", "deletemapping", "pathvariable",
-              "requestbody", "requestparam", "valid", "notnull", "nullable", "nonnull", "suppresswarnings",
-              "functionalinterface", "jsonproperty", "jsonignore", "property", "staticmethod", "classmethod",
-              "dataclass", "abstractmethod", "cached_property", "input", "output", "viewchild", "hostlistener",
-              "ngmodule", "mixin", "include", "extend", "use", "forward", "if", "else", "each", "function",
-              "font-feature-values", "counter-style", "property", "layer", "tailwind", "apply", "see", "since",
-              "link", "type", "typedef", "example", "todo"}
-FILE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp", "pdf", "js", "mjs", "ts", "tsx",
-                   "jsx", "css", "scss", "less", "html", "json", "py", "java", "kt", "cs", "go", "rb", "md",
-                   "txt", "yml", "yaml", "xml", "lock", "zip", "gz", "jar", "dll"}
+CODE_WORDS = {
+    "override",
+    "media",
+    "import",
+    "keyframes",
+    "font-face",
+    "supports",
+    "charset",
+    "namespace",
+    "page",
+    "layer",
+    "container",
+    "test",
+    "param",
+    "return",
+    "returns",
+    "throws",
+    "deprecated",
+    "inject",
+    "injectable",
+    "autowired",
+    "component",
+    "service",
+    "bean",
+    "entity",
+    "table",
+    "column",
+    "id",
+    "transactional",
+    "before",
+    "after",
+    "beforeeach",
+    "aftereach",
+    "beforeall",
+    "afterall",
+    "mock",
+    "injectmocks",
+    "restcontroller",
+    "controller",
+    "repository",
+    "configuration",
+    "requestmapping",
+    "getmapping",
+    "postmapping",
+    "putmapping",
+    "deletemapping",
+    "pathvariable",
+    "requestbody",
+    "requestparam",
+    "valid",
+    "notnull",
+    "nullable",
+    "nonnull",
+    "suppresswarnings",
+    "functionalinterface",
+    "jsonproperty",
+    "jsonignore",
+    "property",
+    "staticmethod",
+    "classmethod",
+    "dataclass",
+    "abstractmethod",
+    "cached_property",
+    "input",
+    "output",
+    "viewchild",
+    "hostlistener",
+    "ngmodule",
+    "mixin",
+    "include",
+    "extend",
+    "use",
+    "forward",
+    "if",
+    "else",
+    "each",
+    "function",
+    "font-feature-values",
+    "counter-style",
+    "property",
+    "layer",
+    "tailwind",
+    "apply",
+    "see",
+    "since",
+    "link",
+    "type",
+    "typedef",
+    "example",
+    "todo",
+}
+FILE_EXTENSIONS = {
+    "png",
+    "jpg",
+    "jpeg",
+    "gif",
+    "svg",
+    "webp",
+    "ico",
+    "bmp",
+    "pdf",
+    "js",
+    "mjs",
+    "ts",
+    "tsx",
+    "jsx",
+    "css",
+    "scss",
+    "less",
+    "html",
+    "json",
+    "py",
+    "java",
+    "kt",
+    "cs",
+    "go",
+    "rb",
+    "md",
+    "txt",
+    "yml",
+    "yaml",
+    "xml",
+    "lock",
+    "zip",
+    "gz",
+    "jar",
+    "dll",
+}
 
-TRAILER = re.compile(r"(?im)^[ \t]*(signed-off-by|co-authored-by|co-developed-by|reviewed-by|acked-by|tested-by|"
-                     r"reported-by|approved-by|helped-by|suggested-by):.*$")
+TRAILER = re.compile(
+    r"(?im)^[ \t]*(signed-off-by|co-authored-by|co-developed-by|reviewed-by|acked-by|tested-by|"
+    r"reported-by|approved-by|helped-by|suggested-by):.*$"
+)
 # Azure DevOps writes an @mention as @<identity GUID>; a GUID is never code, so it always goes.
-AZURE_MENTION = re.compile(r"@<[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}>")
+AZURE_MENTION = re.compile(
+    r"@<[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}>"
+)
 JIRA_MENTION = re.compile(r"\[~accountid:[^\]]*\]|\[~[^\]\s][^\]]*\]", re.IGNORECASE)
-EMAIL = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.([A-Za-z]{2,24})(?![\w-])")
+EMAIL = re.compile(
+    r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.([A-Za-z]{2,24})(?![\w-])"
+)
 HANDLE = re.compile(r"(?<![\w@./])@([A-Za-z0-9_](?:[A-Za-z0-9_.\-]*[A-Za-z0-9_])?)")
 # Code regions in plain or wiki text: Markdown fences and inline code, Jira {code}, {noformat} and {{...}}.
-CODE_REGION = re.compile(r"```.*?```|\{code(?::[^}]*)?\}.*?\{code\}|\{noformat\}.*?\{noformat\}|\{\{.*?\}\}|`[^`\n]+`",
-                         re.DOTALL)
+CODE_REGION = re.compile(
+    r"```.*?```|\{code(?::[^}]*)?\}.*?\{code\}|\{noformat\}.*?\{noformat\}|\{\{.*?\}\}|`[^`\n]+`",
+    re.DOTALL,
+)
 
 
 def _word_alternation(words, flags=0):
@@ -111,7 +271,9 @@ def _word_alternation(words, flags=0):
     ordered = sorted({w for w in words if w}, key=len, reverse=True)
     if not ordered:
         return None
-    return re.compile(r"(?<![\w])(?:" + "|".join(re.escape(w) for w in ordered) + r")(?![\w])", flags)
+    return re.compile(
+        r"(?<![\w])(?:" + "|".join(re.escape(w) for w in ordered) + r")(?![\w])", flags
+    )
 
 
 def _already_clean(value: str) -> bool:
@@ -127,7 +289,11 @@ def is_person(obj) -> bool:
 
 
 def _person_values(obj: dict) -> list[str]:
-    return [str(obj[k]) for k in PERSON_ID_KEYS if isinstance(obj.get(k), (str, int)) and str(obj[k]).strip()]
+    return [
+        str(obj[k])
+        for k in PERSON_ID_KEYS
+        if isinstance(obj.get(k), (str, int)) and str(obj[k]).strip()
+    ]
 
 
 class Anonymiser:
@@ -138,11 +304,13 @@ class Anonymiser:
     """
 
     def __init__(self):
-        self._identifiers: set[str] = set()     # lower-case identifiers of known people
-        self._literals: set[str] = set()        # removed as whole words, any case
-        self._name_parts: set[str] = set()      # capitalised name parts, removed case-sensitively
-        self._handles: set[str] = set()         # lower-case @handles
-        self._protected: set[str] = set()       # lower-case words from Jira entity names
+        self._identifiers: set[str] = set()  # lower-case identifiers of known people
+        self._literals: set[str] = set()  # removed as whole words, any case
+        self._name_parts: set[str] = (
+            set()
+        )  # capitalised name parts, removed case-sensitively
+        self._handles: set[str] = set()  # lower-case @handles
+        self._protected: set[str] = set()  # lower-case words from Jira entity names
         self._patterns = None
 
     # --- learning --------------------------------------------------------------------
@@ -161,8 +329,11 @@ class Anonymiser:
         if not isinstance(obj, dict):
             return
         if is_person(obj):
-            self._add_person(_person_values(obj), obj.get("displayName") or obj.get("name"),
-                             learn_name=obj.get("accountType") != "app")
+            self._add_person(
+                _person_values(obj),
+                obj.get("displayName") or obj.get("name"),
+                learn_name=obj.get("accountType") != "app",
+            )
             return
         if obj.get("type") == "mention" and isinstance(obj.get("attrs"), dict):
             attrs = obj["attrs"]
@@ -170,8 +341,16 @@ class Anonymiser:
             self._add_person([str(v) for v in (attrs.get("id"), text) if v], text)
             return
         for role in ("author", "committer"):
-            values = [obj[k] for k in (f"{role}_name", f"{role}_email", f"{role}Name", f"{role}Email")
-                      if isinstance(obj.get(k), str)]
+            values = [
+                obj[k]
+                for k in (
+                    f"{role}_name",
+                    f"{role}_email",
+                    f"{role}Name",
+                    f"{role}Email",
+                )
+                if isinstance(obj.get(k), str)
+            ]
             if values:
                 self._add_person(values, values[0])
         if "field" in obj and ("fromString" in obj or "toString" in obj):
@@ -188,7 +367,9 @@ class Anonymiser:
 
     def add_identifiers(self, values) -> None:
         """Treat each value (such as the owner of a personal repo) as a person to remove, however short."""
-        for v in (str(v) for v in values if str(v).strip() and not _already_clean(str(v))):
+        for v in (
+            str(v) for v in values if str(v).strip() and not _already_clean(str(v))
+        ):
             self._identifiers.add(v.lower())
             self._literals.add(v)
             self._handles.add(v.lower())
@@ -210,12 +391,16 @@ class Anonymiser:
     def _protect(self, name: str) -> None:
         self._protected.update(w.lower() for w in re.findall(r"[\w'-]+", name))
 
-    def _add_person(self, values: list[str], display: str | None, learn_name: bool = True) -> None:
+    def _add_person(
+        self, values: list[str], display: str | None, learn_name: bool = True
+    ) -> None:
         values = [v for v in values if v.strip() and not _already_clean(v)]
         if not values:
             return
         # A domain account such as EXAMPLE\rquill is also written as plain rquill.
-        values += [v.rsplit("\\", 1)[1] for v in values if "\\" in v and v.rsplit("\\", 1)[1]]
+        values += [
+            v.rsplit("\\", 1)[1] for v in values if "\\" in v and v.rsplit("\\", 1)[1]
+        ]
         for v in values:
             self._identifiers.add(v.lower())
             # A bare number (such as a GitLab user id) means nothing in prose, and removing it
@@ -237,8 +422,18 @@ class Anonymiser:
         low = [p.lower() for p in capitalised]
         if len(low) >= 2:
             first, last = low[0], low[-1]
-            self._handles.update({f"{first}.{last}", f"{first}{last}", f"{first}_{last}", f"{first}-{last}",
-                                  f"{first[0]}{last}", f"{first[0]}.{last}", f"{first}{last[0]}", f"{first}.{last[0]}"})
+            self._handles.update(
+                {
+                    f"{first}.{last}",
+                    f"{first}{last}",
+                    f"{first}_{last}",
+                    f"{first}-{last}",
+                    f"{first[0]}{last}",
+                    f"{first[0]}.{last}",
+                    f"{first}{last[0]}",
+                    f"{first}.{last[0]}",
+                }
+            )
         self._handles.update(low)
 
     # --- scrubbing -------------------------------------------------------------------
@@ -246,14 +441,19 @@ class Anonymiser:
     def _compiled(self):
         if self._patterns is None:
             parts = {p for p in self._name_parts if p.lower() not in self._protected}
-            self._patterns = (_word_alternation(self._literals, re.IGNORECASE), _word_alternation(parts))
+            self._patterns = (
+                _word_alternation(self._literals, re.IGNORECASE),
+                _word_alternation(parts),
+            )
         return self._patterns
 
     def _is_known_handle(self, handle: str) -> bool:
         h = handle.lower()
         if h in self._handles:
             return True
-        name_parts = {p.lower() for p in self._name_parts} - self._protected - CODE_WORDS
+        name_parts = (
+            {p.lower() for p in self._name_parts} - self._protected - CODE_WORDS
+        )
         return any(seg in name_parts for seg in re.split(r"[._\-]", h) if len(seg) >= 3)
 
     def _handle_replacement(self, match, in_code: bool) -> str:
@@ -262,7 +462,7 @@ class Anonymiser:
             return match.group(0)
         if self._is_known_handle(handle):
             return PLACEHOLDER
-        following = match.string[match.end():match.end() + 1]
+        following = match.string[match.end() : match.end() + 1]
         if in_code or following in ("(", "/"):
             return match.group(0)
         return PLACEHOLDER
@@ -272,10 +472,19 @@ class Anonymiser:
             return HANDLE.sub(lambda m: self._handle_replacement(m, True), text)
         out, last = [], 0
         for region in CODE_REGION.finditer(text):
-            out.append(HANDLE.sub(lambda m: self._handle_replacement(m, False), text[last:region.start()]))
-            out.append(HANDLE.sub(lambda m: self._handle_replacement(m, True), region.group(0)))
+            out.append(
+                HANDLE.sub(
+                    lambda m: self._handle_replacement(m, False),
+                    text[last : region.start()],
+                )
+            )
+            out.append(
+                HANDLE.sub(lambda m: self._handle_replacement(m, True), region.group(0))
+            )
             last = region.end()
-        out.append(HANDLE.sub(lambda m: self._handle_replacement(m, False), text[last:]))
+        out.append(
+            HANDLE.sub(lambda m: self._handle_replacement(m, False), text[last:])
+        )
         return "".join(out)
 
     def scrub_text(self, text: str, in_code: bool = False) -> str:
@@ -290,7 +499,12 @@ class Anonymiser:
         text = TRAILER.sub(TRAILER_PLACEHOLDER, text)
         text = JIRA_MENTION.sub(PLACEHOLDER, text)
         text = AZURE_MENTION.sub(f"@<{PLACEHOLDER}>", text)
-        text = EMAIL.sub(lambda m: m.group(0) if m.group(1).lower() in FILE_EXTENSIONS else PLACEHOLDER, text)
+        text = EMAIL.sub(
+            lambda m: (
+                m.group(0) if m.group(1).lower() in FILE_EXTENSIONS else PLACEHOLDER
+            ),
+            text,
+        )
         text = self._scrub_handles(text, in_code)
         if literals:
             text = literals.sub(PLACEHOLDER, text)
@@ -318,7 +532,10 @@ class Anonymiser:
             return True
         if field in ENTITY_CHANGELOG_FIELDS:
             return False
-        return any(isinstance(item.get(k), str) and item[k].lower() in self._identifiers for k in ("from", "to"))
+        return any(
+            isinstance(item.get(k), str) and item[k].lower() in self._identifiers
+            for k in ("from", "to")
+        )
 
     def scrub(self, obj, in_code: bool = False):
         """Return a copy of obj with every person replaced by the [person] placeholder.
@@ -332,13 +549,20 @@ class Anonymiser:
         if not isinstance(obj, dict):
             return obj
         marks = obj.get("marks") if isinstance(obj.get("marks"), list) else []
-        in_code = in_code or obj.get("type") == "codeBlock" or any(
-            isinstance(m, dict) and m.get("type") == "code" for m in marks)
+        in_code = (
+            in_code
+            or obj.get("type") == "codeBlock"
+            or any(isinstance(m, dict) and m.get("type") == "code" for m in marks)
+        )
         if is_person(obj):
             return self._scrub_person(obj)
         if obj.get("type") == "mention" and isinstance(obj.get("attrs"), dict):
             return {"type": "mention", "attrs": {"text": PLACEHOLDER}}
-        if "field" in obj and ("fromString" in obj or "toString" in obj) and self._is_person_item(obj):
+        if (
+            "field" in obj
+            and ("fromString" in obj or "toString" in obj)
+            and self._is_person_item(obj)
+        ):
             return self._scrub_changelog_item(obj)
         is_diff = "new_path" in obj or "old_path" in obj
         out = {}
@@ -348,7 +572,9 @@ class Anonymiser:
             elif k in TRAILER_FIELDS and isinstance(v, dict):
                 out[k] = {name: PLACEHOLDER for name in v}
             elif k == "diff" and is_diff and isinstance(v, str):
-                out[k] = DIFF_PLACEHOLDER  # only paths are needed; diff text can name people
+                out[k] = (
+                    DIFF_PLACEHOLDER  # only paths are needed; diff text can name people
+                )
             else:
                 out[k] = self.scrub(v, in_code)
         return out
@@ -367,10 +593,19 @@ def decode_mcp_result(doc):
             return decode_mcp_result(json.loads(doc))
         except ValueError:
             return doc
-    if not (isinstance(doc, dict) and isinstance(doc.get("content"), list) and doc["content"]):
+    if not (
+        isinstance(doc, dict)
+        and isinstance(doc.get("content"), list)
+        and doc["content"]
+    ):
         return doc
     blocks = doc["content"]
-    if not all(isinstance(b, dict) and b.get("type") == "text" and isinstance(b.get("text"), str) for b in blocks):
+    if not all(
+        isinstance(b, dict)
+        and b.get("type") == "text"
+        and isinstance(b.get("text"), str)
+        for b in blocks
+    ):
         return doc
     try:
         values = [json.loads(b["text"]) for b in blocks]
@@ -388,10 +623,19 @@ def mark(doc):
 
 def is_marked(doc) -> bool:
     """True if doc was written by anonymise.py."""
-    return isinstance(doc, dict) and isinstance(doc.get(MARKER_KEY), dict) and doc[MARKER_KEY].get("by") == MARKER["by"]
+    return (
+        isinstance(doc, dict)
+        and isinstance(doc.get(MARKER_KEY), dict)
+        and doc[MARKER_KEY].get("by") == MARKER["by"]
+    )
 
 
-def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None, scm_config: dict | None = None) -> int:
+def anonymise_dir(
+    in_dir,
+    out_dir,
+    anonymiser: Anonymiser | None = None,
+    scm_config: dict | None = None,
+) -> int:
     """Anonymise every *.json file in in_dir into out_dir. Returns the number of files written.
 
     Jira issues, in any shape jira_normalise understands (MCP results or REST files), are
@@ -408,7 +652,9 @@ def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None, scm_con
     """
     in_dir, out_dir = Path(in_dir), Path(out_dir)
     if in_dir.resolve() == out_dir.resolve():
-        raise ValueError("clean output must go to a different folder from the raw input")
+        raise ValueError(
+            "clean output must go to a different folder from the raw input"
+        )
     manifest, docs = None, []
     for path in sorted(p for p in in_dir.glob("*.json") if p.is_file()):
         doc = decode_mcp_result(json.loads(path.read_text(encoding="utf-8")))
@@ -416,13 +662,19 @@ def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None, scm_con
             manifest = doc
         else:
             docs.append((path, doc))
-    scm_files = [path.name for path, _ in docs if scm_adapter.is_source_control_file(path.name)]
+    scm_files = [
+        path.name for path, _ in docs if scm_adapter.is_source_control_file(path.name)
+    ]
     if scm_files and scm_config is None:
-        raise ValueError(f"{in_dir} holds source control data ({', '.join(scm_files[:3])}, ...); pass its scm.yaml "
-                         "with --scm-config so repos in personal namespaces lose the username")
+        raise ValueError(
+            f"{in_dir} holds source control data ({', '.join(scm_files[:3])}, ...); pass its scm.yaml "
+            "with --scm-config so repos in personal namespaces lose the username"
+        )
     anonymiser = anonymiser or Anonymiser()
     if scm_files:
-        anonymiser.add_identifiers(scm_adapter.personal_owners(scm_config, {p.name: d for p, d in docs}))
+        anonymiser.add_identifiers(
+            scm_adapter.personal_owners(scm_config, {p.name: d for p, d in docs})
+        )
     anonymiser.learn([doc for _, doc in docs])
 
     jira_issues, others = [], []
@@ -445,7 +697,10 @@ def anonymise_dir(in_dir, out_dir, anonymiser: Anonymiser | None = None, scm_con
         _write(out_dir / path.name, mark(anonymiser.scrub(doc)))
         written += 1
     if issues:
-        _write(out_dir / INGEST_REPORT, mark(anonymiser.scrub(jira_normalise.ingest_report(issues, manifest))))
+        _write(
+            out_dir / INGEST_REPORT,
+            mark(anonymiser.scrub(jira_normalise.ingest_report(issues, manifest))),
+        )
         written += 1
     return written
 
@@ -455,10 +710,14 @@ def _write(path: Path, doc) -> None:
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Remove every person identifier before analysis.")
+    ap = argparse.ArgumentParser(
+        description="Remove every person identifier before analysis."
+    )
     ap.add_argument("raw_dir")
     ap.add_argument("clean_dir")
-    ap.add_argument("--scm-config", help="scm.yaml; required when raw/ holds source control data")
+    ap.add_argument(
+        "--scm-config", help="scm.yaml; required when raw/ holds source control data"
+    )
     a = ap.parse_args(argv)
     try:
         config = scm_config.load_config(a.scm_config) if a.scm_config else None

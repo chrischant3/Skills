@@ -36,8 +36,18 @@ def person_identifiers(people) -> set[str]:
     """Collect names, name parts, emails, account ids, usernames and handles for the given people."""
     found = set()
     for p in people:
-        found.update({p["display_name"], p["email"], p["account_id"], p["dc_username"], p["dc_key"],
-                      p["scm_username"], p["ado_unique_name"], p["ado_id"]})
+        found.update(
+            {
+                p["display_name"],
+                p["email"],
+                p["account_id"],
+                p["dc_username"],
+                p["dc_key"],
+                p["scm_username"],
+                p["ado_unique_name"],
+                p["ado_id"],
+            }
+        )
         found.update(part for part in p["display_name"].split() if len(part) >= 3)
     found.update(load_fixture("people.json")["customer_emails"])
     return found
@@ -45,4 +55,6 @@ def person_identifiers(people) -> set[str]:
 
 def all_text_under(path: Path) -> str:
     """Concatenate every file under path, so a leak anywhere is found."""
-    return "\n".join(p.read_text(encoding="utf-8") for p in sorted(path.rglob("*")) if p.is_file())
+    return "\n".join(
+        p.read_text(encoding="utf-8") for p in sorted(path.rglob("*")) if p.is_file()
+    )

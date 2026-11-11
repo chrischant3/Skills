@@ -23,12 +23,42 @@ from datetime import datetime
 from pathlib import Path
 
 TOP_LEVEL_FIELDS = [
-    "run_id", "date", "repo", "task", "builder_model", "verifier_model", "same_provider", "profile",
-    "reasoning_available", "overall_verdict", "summary", "claims", "rules", "observations", "audit",
+    "run_id",
+    "date",
+    "repo",
+    "task",
+    "builder_model",
+    "verifier_model",
+    "same_provider",
+    "profile",
+    "reasoning_available",
+    "overall_verdict",
+    "summary",
+    "claims",
+    "rules",
+    "observations",
+    "audit",
 ]
 OPTIONAL_TOP_LEVEL_FIELDS = ["rationalisations"]
-CLAIM_FIELDS = ["claim", "risk", "verdict", "method", "evidence", "expected", "observed", "repro"]
-RULE_FIELDS = ["rule_id", "applicable", "risk", "applicability_reason", "verdict", "evidence", "flags"]
+CLAIM_FIELDS = [
+    "claim",
+    "risk",
+    "verdict",
+    "method",
+    "evidence",
+    "expected",
+    "observed",
+    "repro",
+]
+RULE_FIELDS = [
+    "rule_id",
+    "applicable",
+    "risk",
+    "applicability_reason",
+    "verdict",
+    "evidence",
+    "flags",
+]
 RATIONALISATION_FIELDS = ["rule_id", "location", "source", "table_entry", "new"]
 LOCATION_FIELDS = ["transcript_id", "message_index", "part_id"]
 
@@ -84,7 +114,9 @@ class Checker:
         if value is None and nullable:
             return
         if not is_text(value):
-            self.add(path, "must be a non-empty string" + (" or null" if nullable else ""))
+            self.add(
+                path, "must be a non-empty string" + (" or null" if nullable else "")
+            )
 
     def choice(self, obj, key, path, allowed):
         if key in obj and obj[key] not in allowed:
@@ -121,9 +153,15 @@ def check_claim(c, claim, path):
     if verdict == "Failed":
         for key in ("expected", "observed", "repro"):
             if key in claim and not is_text(claim[key]):
-                c.add(f"{path}.{key}", "a Failed claim must say what was expected, observed and how to reproduce it")
+                c.add(
+                    f"{path}.{key}",
+                    "a Failed claim must say what was expected, observed and how to reproduce it",
+                )
     if verdict in ("Verified", "Failed") and claim.get("method", "missing") is None:
-        c.add(f"{path}.method", f"a {verdict} claim must say how it was checked (executed or inspected)")
+        c.add(
+            f"{path}.method",
+            f"a {verdict} claim must say how it was checked (executed or inspected)",
+        )
 
 
 def check_rule(c, rule, path):
@@ -136,7 +174,10 @@ def check_rule(c, rule, path):
     flags = c.items(rule, "flags", f"{path}.flags")
     for i, flag in enumerate(flags):
         if not isinstance(flag, str) or not FLAG_PATTERN.match(flag):
-            c.add(f"{path}.flags[{i}]", f"is {flag!r}; must be not_considered, ambiguous or conflicts_with:<rule_id>")
+            c.add(
+                f"{path}.flags[{i}]",
+                f"is {flag!r}; must be not_considered, ambiguous or conflicts_with:<rule_id>",
+            )
     if len(set(map(json.dumps, flags))) != len(flags):
         c.add(f"{path}.flags", "must not repeat a flag")
     if rule.get("applicable") is True:
@@ -158,17 +199,27 @@ def check_rationalisation(c, entry, path):
     if entry.get("new") is True and entry.get("table_entry") is not None:
         c.add(f"{path}.table_entry", "must be null when the excuse is new")
     if entry.get("new") is False and not is_text(entry.get("table_entry")):
-        c.add(f"{path}.table_entry", "must name the matching table entry when the excuse is not new")
+        c.add(
+            f"{path}.table_entry",
+            "must name the matching table entry when the excuse is not new",
+        )
     if "location" in entry:
         location = entry["location"]
         loc_path = f"{path}.location"
         if c.fields(location, loc_path, LOCATION_FIELDS):
-            c.text(location, "transcript_id", f"{loc_path}.transcript_id", nullable=True)
+            c.text(
+                location, "transcript_id", f"{loc_path}.transcript_id", nullable=True
+            )
             c.text(location, "part_id", f"{loc_path}.part_id", nullable=True)
             index = location.get("message_index")
-            valid_index = index is None or (isinstance(index, int) and not isinstance(index, bool) and index >= 0)
+            valid_index = index is None or (
+                isinstance(index, int) and not isinstance(index, bool) and index >= 0
+            )
             if not valid_index:
-                c.add(f"{loc_path}.message_index", "must be a non-negative integer or null")
+                c.add(
+                    f"{loc_path}.message_index",
+                    "must be a non-negative integer or null",
+                )
 
 
 def expected_overall_verdict(claims, rules):
@@ -186,7 +237,10 @@ def expected_overall_verdict(claims, rules):
             return "Inconclusive", f"claim {i} is Unverified and high-risk"
     for rule in rules:
         if rule.get("verdict") == "Unverified" and rule.get("risk") == "high":
-            return "Inconclusive", f"rule {rule.get('rule_id')!r} is Unverified and high-risk"
+            return (
+                "Inconclusive",
+                f"rule {rule.get('rule_id')!r} is Unverified and high-risk",
+            )
     if not claims:
         return "Inconclusive", "the claim list is empty"
     return "Pass", "no claim or rule failed or is high-risk and unverified"
@@ -202,13 +256,23 @@ def check_providers(c, data):
             continue
         providers[key] = provider_of(data[key])
         if providers[key] is None:
-            c.add(key, f"{data[key]!r} has no provider prefix; write it as <provider>/<model>")
+            c.add(
+                key,
+                f"{data[key]!r} has no provider prefix; write it as <provider>/<model>",
+            )
     same = data.get("same_provider")
-    if len(providers) == 2 and None not in providers.values() and isinstance(same, bool):
+    if (
+        len(providers) == 2
+        and None not in providers.values()
+        and isinstance(same, bool)
+    ):
         actual = providers["builder_model"] == providers["verifier_model"]
         if same != actual:
-            c.add("same_provider", f"is {str(same).lower()}, but the model ids name providers "
-                  f"{providers['builder_model']!r} and {providers['verifier_model']!r}")
+            c.add(
+                "same_provider",
+                f"is {str(same).lower()}, but the model ids name providers "
+                f"{providers['builder_model']!r} and {providers['verifier_model']!r}",
+            )
 
 
 def check_date(c, data):
@@ -250,14 +314,23 @@ def check_verdict(data):
     for i, rule in enumerate(rules):
         check_rule(c, rule, f"rules[{i}]")
     if "rationalisations" in data:
-        for i, entry in enumerate(c.items(data, "rationalisations", "rationalisations")):
+        for i, entry in enumerate(
+            c.items(data, "rationalisations", "rationalisations")
+        ):
             check_rationalisation(c, entry, f"rationalisations[{i}]")
 
-    if data.get("overall_verdict") in OVERALL_VERDICTS and "claims" in data and "rules" in data:
+    if (
+        data.get("overall_verdict") in OVERALL_VERDICTS
+        and "claims" in data
+        and "rules" in data
+    ):
         expected, reason = expected_overall_verdict(claims, rules)
         if data["overall_verdict"] != expected:
-            c.add("overall_verdict", f"is {data['overall_verdict']!r}, but the verdict rule gives "
-                  f"{expected!r} because {reason}")
+            c.add(
+                "overall_verdict",
+                f"is {data['overall_verdict']!r}, but the verdict rule gives "
+                f"{expected!r} because {reason}",
+            )
     return c.problems
 
 
