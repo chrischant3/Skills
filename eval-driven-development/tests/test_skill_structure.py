@@ -71,6 +71,14 @@ def test_the_gate_recommends_several_models_and_scores_per_model():
     assert re.search(r"scores separately", gate) and re.search(r"Never average", gate)
 
 
+def test_the_gate_step_links_to_the_guide_on_reading_scores():
+    gate = section("The Loop").split("### 5.", 1)[1]
+    assert "(references/reading-scores.md)" in gate
+    guide = (SKILL_DIR / "references/reading-scores.md").read_text(encoding="utf-8")
+    for topic in ["Gain over no skill", "Spread across models", "Run-to-run consistency"]:
+        assert topic in guide
+
+
 def test_the_skill_states_both_pass_marks():
     assert re.search(r"0\.8 per case.*1\.0 for safety cases", SKILL)
 

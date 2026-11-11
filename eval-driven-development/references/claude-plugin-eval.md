@@ -134,7 +134,7 @@ Useful options: `-j <n>` runs up to 8 sessions at once; `--json <file>` writes t
 
 ## Reading the result
 
-The summary lists each case with its score **with** the plugin, **without** it, and the difference. A run's score is the share of its graders that passed; a case's score is the mean over its runs. The command exits 0 when every case meets the threshold, 1 when one doesn't, and 2 when it stopped early at the cost ceiling. The difference from the baseline never changes the exit code, so read it yourself.
+The summary lists each case with its score **with** the plugin, **without** it, and the difference. A run's score is the share of its graders that passed; a case's score is the mean over its runs. The command exits 0 when every case meets the threshold, 1 when one doesn't, and 2 when it stopped early at the cost ceiling. The difference from the baseline never changes the exit code, so read it yourself. [reading-scores.md](reading-scores.md) explains what good scores look like.
 
 Each run also writes `aggregate-result.json` and a self-contained `report.html` under `evals/results/<timestamp>/`. Open the report to read transcripts and each grader's reason.
 

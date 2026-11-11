@@ -90,7 +90,7 @@ Before merging, run the whole suite the way it will be judged.
 - **Before publishing, run the suite on several models.** People install a skill and use it with whatever model they have, so a skill that passes on one model may fail on another. Ask the user which models to run, offering the provider's main models together as the first option (for Claude: Opus, Sonnet and Haiku). Run each model separately with the same cases and pass mark.
 - **Record each model's scores separately**, in a results table with one column per model, and keep it with the change description or release notes. Never average models together; a skill that fails on one model fails for everyone using it.
 - Set a cost ceiling on every run.
-- Report the scores, the difference from the baseline and the cost as they are. Where the skill scores the same as or worse than the baseline, say so. That case is telling you the skill isn't earning its place there.
+- Report the scores, the difference from the baseline and the cost as they are. Where the skill scores the same as or worse than the baseline, say so. That case is telling you the skill isn't earning its place there. See [references/reading-scores.md](references/reading-scores.md) for what good scores look like.
 - Re-run the whole suite whenever the instructions, the model or the structure changes.
 
 ## When an Eval Fails
