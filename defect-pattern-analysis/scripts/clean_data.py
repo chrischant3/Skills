@@ -17,8 +17,10 @@ import jira_normalise
 def _load_marked(path: Path):
     doc = json.loads(path.read_text(encoding="utf-8"))
     if not anonymise.is_marked(doc):
-        raise ValueError(f"{path} was not written by anonymise.py. Run anonymise.py on raw data first "
-                         "and point this script at its output.")
+        raise ValueError(
+            f"{path} was not written by anonymise.py. Run anonymise.py on raw data first "
+            "and point this script at its output."
+        )
     return doc
 
 
@@ -61,7 +63,14 @@ def text_of(value) -> str:
         if kind == "hardBreak":
             return "\n"
         inner = text_of(value.get("content", []))
-        if kind in ("paragraph", "heading", "codeBlock", "blockquote", "listItem", "rule"):
+        if kind in (
+            "paragraph",
+            "heading",
+            "codeBlock",
+            "blockquote",
+            "listItem",
+            "rule",
+        ):
             return inner + "\n"
         return inner
     return str(value)
@@ -90,6 +99,10 @@ def earliest_created(issues) -> str | None:
 
     Source control linking starts its window here, so it follows the run's own time window.
     """
-    dates = [str(i["fields"].get("created"))[:10] for i in issues if isinstance(i["fields"].get("created"), str)]
+    dates = [
+        str(i["fields"].get("created"))[:10]
+        for i in issues
+        if isinstance(i["fields"].get("created"), str)
+    ]
     dates = [d for d in dates if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)]
     return min(dates) if dates else None

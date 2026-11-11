@@ -12,8 +12,14 @@ KEYS = ["ABC-1", "ABC-2", "ABC-3"]
 
 
 def record(key="ABC-1", **overrides):
-    base = {"key": key, "defect_type": "checking_validation", "trigger": "customer_report",
-            "escape_stage": "automated_test", "confidence": 0.8, "theme": "Missing null checks on optional fields"}
+    base = {
+        "key": key,
+        "defect_type": "checking_validation",
+        "trigger": "customer_report",
+        "escape_stage": "automated_test",
+        "confidence": 0.8,
+        "theme": "Missing null checks on optional fields",
+    }
     base.update(overrides)
     return base
 
@@ -28,9 +34,14 @@ def all_three(**overrides_for_first):
 
 def test_taxonomy_is_read_from_the_reference_file():
     assert TAXONOMY["version"] == "v1"
-    assert len(TAXONOMY["defect_type"]) == 9 and "checking_validation" in TAXONOMY["defect_type"]
+    assert (
+        len(TAXONOMY["defect_type"]) == 9
+        and "checking_validation" in TAXONOMY["defect_type"]
+    )
     assert TAXONOMY["trigger"][0] == "unit_test" and len(TAXONOMY["trigger"]) == 8
-    assert TAXONOMY["escape_stage"][-1] == "release" and len(TAXONOMY["escape_stage"]) == 7
+    assert (
+        TAXONOMY["escape_stage"][-1] == "release" and len(TAXONOMY["escape_stage"]) == 7
+    )
 
 
 def test_valid_records_are_accepted():
@@ -40,8 +51,15 @@ def test_valid_records_are_accepted():
     assert result["taxonomy_version"] == "v1"
 
 
-@pytest.mark.parametrize("field,value", [("defect_type", "logic"), ("trigger", "gut_feel"),
-                                         ("escape_stage", "nobody"), ("defect_type", "Checking_Validation")])
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("defect_type", "logic"),
+        ("trigger", "gut_feel"),
+        ("escape_stage", "nobody"),
+        ("defect_type", "Checking_Validation"),
+    ],
+)
 def test_values_outside_the_taxonomy_are_rejected(field, value):
     _, errors = check(all_three(**{field: value}))
     assert len(errors) == 1 and "ABC-1" in errors[0] and field in errors[0]
@@ -49,10 +67,17 @@ def test_values_outside_the_taxonomy_are_rejected(field, value):
 
 @pytest.mark.parametrize("confidence", [0.0, 0.3, 0.59])
 def test_low_confidence_goes_to_unclassified_with_its_reason(confidence):
-    result, errors = check(all_three(confidence=confidence, reason="No repro steps or expected result given."))
+    result, errors = check(
+        all_three(
+            confidence=confidence, reason="No repro steps or expected result given."
+        )
+    )
     assert errors == []
     first = result["records"][0]
-    assert first["status"] == "unclassified" and first["reason"] == "No repro steps or expected result given."
+    assert (
+        first["status"] == "unclassified"
+        and first["reason"] == "No repro steps or expected result given."
+    )
 
 
 def test_exactly_point_six_is_confident_enough():
@@ -66,8 +91,16 @@ def test_low_confidence_without_a_reason_is_rejected():
 
 
 def test_explicitly_unclassified_needs_only_a_reason():
-    result, errors = check(all_three(defect_type="unclassified", trigger=None, escape_stage=None, theme=None,
-                                     confidence=0.2, reason="Description is empty."))
+    result, errors = check(
+        all_three(
+            defect_type="unclassified",
+            trigger=None,
+            escape_stage=None,
+            theme=None,
+            confidence=0.2,
+            reason="Description is empty.",
+        )
+    )
     assert errors == [] and result["records"][0]["status"] == "unclassified"
 
 
@@ -90,17 +123,31 @@ def test_fields_outside_the_schema_are_rejected_so_people_cannot_be_smuggled_in(
     assert len(errors) == 1 and "assignee" in errors[0]
 
 
-@pytest.mark.parametrize("theme", ["", "   ", "x" * 81, "Two\nlines", "Asked @someone about it",
-                                   "Raised by a.person@example.com", "Mentioned [~someone]",
-                                   "Work by [person]"])
+@pytest.mark.parametrize(
+    "theme",
+    [
+        "",
+        "   ",
+        "x" * 81,
+        "Two\nlines",
+        "Asked @someone about it",
+        "Raised by a.person@example.com",
+        "Mentioned [~someone]",
+        "Work by [person]",
+    ],
+)
 def test_unsafe_or_unusable_themes_are_rejected(theme):
     _, errors = check(all_three(theme=theme))
     assert len(errors) == 1 and "theme" in errors[0]
 
 
 def test_a_theme_copied_from_the_ticket_summary_is_rejected():
-    _, errors = vc.validate(all_three(theme="Checkout fails when address line 2 is empty"), KEYS, TAXONOMY,
-                            summaries={"ABC-1": "Checkout fails when address line 2 is empty"})
+    _, errors = vc.validate(
+        all_three(theme="Checkout fails when address line 2 is empty"),
+        KEYS,
+        TAXONOMY,
+        summaries={"ABC-1": "Checkout fails when address line 2 is empty"},
+    )
     assert len(errors) == 1 and "own words" in errors[0]
 
 
@@ -113,8 +160,15 @@ def test_cli_writes_nothing_when_there_are_errors(tmp_path, capsys):
     clean = tmp_path / "clean"
     clean.mkdir()
     for key in KEYS:
-        (clean / f"{key}.json").write_text(json.dumps({"_anonymised": {"by": "anonymise.py", "version": 2},
-                                                       "key": key, "fields": {"summary": "s"}}))
+        (clean / f"{key}.json").write_text(
+            json.dumps(
+                {
+                    "_anonymised": {"by": "anonymise.py", "version": 2},
+                    "key": key,
+                    "fields": {"summary": "s"},
+                }
+            )
+        )
     inbox = tmp_path / "classifications"
     inbox.mkdir()
     (inbox / "batch-001.json").write_text(json.dumps(all_three(defect_type="nonsense")))

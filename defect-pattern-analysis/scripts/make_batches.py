@@ -19,9 +19,11 @@ from pathlib import Path
 import clean_data
 
 TAXONOMY = "references/taxonomy.md"
-RESPONSE_SHAPE = ("A JSON list with one object per ticket: key, defect_type, trigger, escape_stage, confidence "
-                  "(0 to 1), theme (your own words, never copied ticket text), reason (one line; required when "
-                  "confidence is below 0.6 or defect_type is unclassified). Values must come from the taxonomy.")
+RESPONSE_SHAPE = (
+    "A JSON list with one object per ticket: key, defect_type, trigger, escape_stage, confidence "
+    "(0 to 1), theme (your own words, never copied ticket text), reason (one line; required when "
+    "confidence is below 0.6 or defect_type is unclassified). Values must come from the taxonomy."
+)
 
 
 def _trim(text: str, limit: int) -> tuple[str, bool]:
@@ -34,7 +36,12 @@ def _trim(text: str, limit: int) -> tuple[str, bool]:
     return f"{text[:head]}\n[... {cut} characters trimmed ...]\n{text[-tail:]}", True
 
 
-def ticket_for_claude(issue: dict, field_chars: int = 4000, comment_chars: int = 800, max_comments: int = 12) -> dict:
+def ticket_for_claude(
+    issue: dict,
+    field_chars: int = 4000,
+    comment_chars: int = 800,
+    max_comments: int = 12,
+) -> dict:
     """Return the trimmed, person-free view of one issue that Claude classifies."""
     f = issue["fields"]
     name = lambda v: (v or {}).get("name") if isinstance(v, dict) else None  # noqa: E731
@@ -47,7 +54,11 @@ def ticket_for_claude(issue: dict, field_chars: int = 4000, comment_chars: int =
         texts.append(text)
     if len(texts) > max_comments:
         keep = max_comments // 2
-        texts = texts[:keep] + [f"[{len(texts) - 2 * keep} comments omitted]"] + texts[-keep:]
+        texts = (
+            texts[:keep]
+            + [f"[{len(texts) - 2 * keep} comments omitted]"]
+            + texts[-keep:]
+        )
         trimmed = True
     return {
         "key": issue["key"],
@@ -55,7 +66,9 @@ def ticket_for_claude(issue: dict, field_chars: int = 4000, comment_chars: int =
         "issue_type": name(f.get("issuetype")),
         "status": name(f.get("status")),
         "priority": name(f.get("priority")),
-        "components": [c.get("name") for c in f.get("components") or [] if isinstance(c, dict)],
+        "components": [
+            c.get("name") for c in f.get("components") or [] if isinstance(c, dict)
+        ],
         "labels": list(f.get("labels") or []),
         "resolution": name(f.get("resolution")),
         "created": f.get("created"),
@@ -67,7 +80,9 @@ def ticket_for_claude(issue: dict, field_chars: int = 4000, comment_chars: int =
     }
 
 
-def make_batches(issues, max_tickets: int = 20, max_chars: int = 40000, **trim) -> list[list[dict]]:
+def make_batches(
+    issues, max_tickets: int = 20, max_chars: int = 40000, **trim
+) -> list[list[dict]]:
     """Group tickets into batches of at most max_tickets and roughly max_chars of JSON each.
 
     A single ticket bigger than max_chars gets a batch of its own.
@@ -86,19 +101,33 @@ def make_batches(issues, max_tickets: int = 20, max_chars: int = 40000, **trim) 
     return batches
 
 
-def write_batches(clean_dir, out_dir, max_tickets: int = 20, max_chars: int = 40000) -> int:
+def write_batches(
+    clean_dir, out_dir, max_tickets: int = 20, max_chars: int = 40000
+) -> int:
     """Write batch-NNN.json files for every issue in clean_dir. Returns the number of batches."""
-    batches = make_batches(clean_data.load_clean_issues(clean_dir), max_tickets, max_chars)
+    batches = make_batches(
+        clean_data.load_clean_issues(clean_dir), max_tickets, max_chars
+    )
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     for n, tickets in enumerate(batches, start=1):
-        doc = {"batch": n, "of": len(batches), "taxonomy": TAXONOMY, "respond_with": RESPONSE_SHAPE, "tickets": tickets}
-        (out_dir / f"batch-{n:03d}.json").write_text(json.dumps(doc, indent=2), encoding="utf-8")
+        doc = {
+            "batch": n,
+            "of": len(batches),
+            "taxonomy": TAXONOMY,
+            "respond_with": RESPONSE_SHAPE,
+            "tickets": tickets,
+        }
+        (out_dir / f"batch-{n:03d}.json").write_text(
+            json.dumps(doc, indent=2), encoding="utf-8"
+        )
     return len(batches)
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Batch anonymised defects for classification.")
+    ap = argparse.ArgumentParser(
+        description="Batch anonymised defects for classification."
+    )
     ap.add_argument("clean_dir")
     ap.add_argument("batch_dir")
     ap.add_argument("--max-tickets", type=int, default=20)

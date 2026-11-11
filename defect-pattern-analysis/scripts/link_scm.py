@@ -71,13 +71,19 @@ def link(config: dict, clean_dir, since: str | None = None) -> dict:
     for repo in config["repos"]:
         platform = repo["platform"]
         if not scm_adapter.is_ready(platform):
-            skipped.append({"repo": _label(repo), "platform": platform, "reason": "not ready yet"})
+            skipped.append(
+                {"repo": _label(repo), "platform": platform, "reason": "not ready yet"}
+            )
             continue
         adapter = scm_adapter.adapter_for(platform)
         name = adapter.repo_name(repo, documents)
         if name in coverage:
-            raise ValueError(f"two repos have the same name {name!r}; each repo must be listed once")
-        matcher = scm_keys.KeyMatcher(repo.get("key_pattern") or config.get("default_key_pattern"), projects)
+            raise ValueError(
+                f"two repos have the same name {name!r}; each repo must be listed once"
+            )
+        matcher = scm_keys.KeyMatcher(
+            repo.get("key_pattern") or config.get("default_key_pattern"), projects
+        )
         scanned, linked, repo_defects = 0, 0, set()
         for change in adapter.changes(documents, repo):
             if not (change.merged_at or "")[:10] >= since:
@@ -88,18 +94,44 @@ def link(config: dict, clean_dir, since: str | None = None) -> dict:
                 linked += 1
             for key in keys:
                 repo_defects.add(key)
-                _add_change(defects.setdefault(key, {"repos": [], "changes": [], "commits": [], "files": []}), change)
-        coverage[name] = {"platform": platform, "team": repo.get("team"), "changes_scanned": scanned,
-                          "changes_linked": linked, "defects_linked": len(repo_defects)}
-    ordered = {k: defects[k] for k in sorted(defects, key=lambda k: (k.split("-")[0], int(k.split("-")[1])))}
-    return {"since": since, "defects_total": len(defect_keys), "defects_linked": len(ordered), "repos": coverage,
-            "skipped": skipped, "defects": ordered}
+                _add_change(
+                    defects.setdefault(
+                        key, {"repos": [], "changes": [], "commits": [], "files": []}
+                    ),
+                    change,
+                )
+        coverage[name] = {
+            "platform": platform,
+            "team": repo.get("team"),
+            "changes_scanned": scanned,
+            "changes_linked": linked,
+            "defects_linked": len(repo_defects),
+        }
+    ordered = {
+        k: defects[k]
+        for k in sorted(defects, key=lambda k: (k.split("-")[0], int(k.split("-")[1])))
+    }
+    return {
+        "since": since,
+        "defects_total": len(defect_keys),
+        "defects_linked": len(ordered),
+        "repos": coverage,
+        "skipped": skipped,
+        "defects": ordered,
+    }
 
 
 def _add_change(entry: dict, change) -> None:
     if change.repo not in entry["repos"]:
         entry["repos"].append(change.repo)
-    entry["changes"].append({"repo": change.repo, "kind": change.kind, "id": change.id, "merged_at": change.merged_at})
+    entry["changes"].append(
+        {
+            "repo": change.repo,
+            "kind": change.kind,
+            "id": change.id,
+            "merged_at": change.merged_at,
+        }
+    )
     for commit in change.commits:
         if commit["id"] not in entry["commits"]:
             entry["commits"].append(commit["id"])
@@ -118,27 +150,55 @@ def write_coverage(links: dict, out_dir, min_group_size=None) -> None:
         min_group_size: threshold (default 5; below 5 is refused).
     """
     size = suppress.validate_min_group_size(min_group_size)
-    records = [{"repo": d["repos"][0] if len(d["repos"]) == 1 else MULTIPLE_REPOS} for d in links["defects"].values()]
+    records = [
+        {"repo": d["repos"][0] if len(d["repos"]) == 1 else MULTIPLE_REPOS}
+        for d in links["defects"].values()
+    ]
     pub = suppress.publish(records, [(), ("repo",)], size)
     pub.add_scalar("defects_in_run", links["defects_total"])
     pub.add_cell("defects_linked", frozenset())
     linked, total = pub.summary["defects_linked"], pub.summary["defects_in_run"]
-    rate = round(linked / total, 3) if isinstance(linked, int) and isinstance(total, int) and total else suppress.SUPPRESSED
+    rate = (
+        round(linked / total, 3)
+        if isinstance(linked, int) and isinstance(total, int) and total
+        else suppress.SUPPRESSED
+    )
     summary = {**pub.summary, "defect_link_rate": rate}
 
-    rows = [{"repo": name, "team": cov.get("team"), "changes_scanned": pub.scalar(cov["changes_scanned"]),
-             "changes_linked": pub.scalar(cov["changes_linked"]),
-             "defects_linked": pub.value(frozenset({("repo", name)}))} for name, cov in links["repos"].items()]
+    rows = [
+        {
+            "repo": name,
+            "team": cov.get("team"),
+            "changes_scanned": pub.scalar(cov["changes_scanned"]),
+            "changes_linked": pub.scalar(cov["changes_linked"]),
+            "defects_linked": pub.value(frozenset({("repo", name)})),
+        }
+        for name, cov in links["repos"].items()
+    ]
     if any(r["repo"] == MULTIPLE_REPOS for r in records):
-        rows.append({"repo": MULTIPLE_REPOS, "team": None, "changes_scanned": "", "changes_linked": "",
-                     "defects_linked": pub.value(frozenset({("repo", MULTIPLE_REPOS)}))})
+        rows.append(
+            {
+                "repo": MULTIPLE_REPOS,
+                "team": None,
+                "changes_scanned": "",
+                "changes_linked": "",
+                "defects_linked": pub.value(frozenset({("repo", MULTIPLE_REPOS)})),
+            }
+        )
     hidden = sum(r["defects_linked"] == suppress.SUPPRESSED for r in rows)
 
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    doc = {"settings": {"min_group_size": size, "since": links["since"]}, "suppressed_marker": suppress.SUPPRESSED,
-           "summary": summary, "repos": rows, "skipped": links["skipped"]}
-    (out_dir / "scm_coverage.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    doc = {
+        "settings": {"min_group_size": size, "since": links["since"]},
+        "suppressed_marker": suppress.SUPPRESSED,
+        "summary": summary,
+        "repos": rows,
+        "skipped": links["skipped"],
+    }
+    (out_dir / "scm_coverage.json").write_text(
+        json.dumps(doc, indent=2) + "\n", encoding="utf-8"
+    )
 
     columns = ["repo", "team", "changes_scanned", "changes_linked", "defects_linked"]
     with (out_dir / "scm_coverage.csv").open("w", newline="", encoding="utf-8") as fh:
@@ -147,30 +207,59 @@ def write_coverage(links: dict, out_dir, min_group_size=None) -> None:
         for row in rows:
             writer.writerow([row[c] if row[c] is not None else "" for c in columns])
 
-    md = ["# Source control link coverage", "", f"Changes merged on or after {links['since']}. "
-          f"Groups with fewer than {size} defects are suppressed.", "", "## Summary", ""]
-    md += [f"- {k}: {v}" for k, v in summary.items()] + ["", "## Repos", "",
-                                                         "| " + " | ".join(columns) + " |", "|" + "---|" * len(columns)]
-    md += ["| " + " | ".join("" if row[c] is None else str(row[c]) for c in columns) + " |" for row in rows]
+    md = [
+        "# Source control link coverage",
+        "",
+        f"Changes merged on or after {links['since']}. "
+        f"Groups with fewer than {size} defects are suppressed.",
+        "",
+        "## Summary",
+        "",
+    ]
+    md += [f"- {k}: {v}" for k, v in summary.items()] + [
+        "",
+        "## Repos",
+        "",
+        "| " + " | ".join(columns) + " |",
+        "|" + "---|" * len(columns),
+    ]
+    md += [
+        "| " + " | ".join("" if row[c] is None else str(row[c]) for c in columns) + " |"
+        for row in rows
+    ]
     if hidden:
-        md += ["", suppress.SUPPRESSED_NOTE.format(n=hidden, groups="group" if hidden == 1 else "groups", k=size)]
+        md += [
+            "",
+            suppress.SUPPRESSED_NOTE.format(
+                n=hidden, groups="group" if hidden == 1 else "groups", k=size
+            ),
+        ]
     if links["skipped"]:
-        md += ["", "## Not linked yet", ""] + [f"- {s['repo']} ({s['platform']}): {s['reason']}" for s in links["skipped"]]
+        md += ["", "## Not linked yet", ""] + [
+            f"- {s['repo']} ({s['platform']}): {s['reason']}" for s in links["skipped"]
+        ]
     (out_dir / "scm_coverage.md").write_text("\n".join(md) + "\n", encoding="utf-8")
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Link defects to merged changes and report coverage per repo.")
+    ap = argparse.ArgumentParser(
+        description="Link defects to merged changes and report coverage per repo."
+    )
     ap.add_argument("--config", default="scm.yaml")
     ap.add_argument("--issues", default="clean")
     ap.add_argument("--work", default="work/scm_links.json")
     ap.add_argument("--out", default="out")
-    ap.add_argument("--since", help="ISO date the window starts on (default: the earliest defect in clean/)")
+    ap.add_argument(
+        "--since",
+        help="ISO date the window starts on (default: the earliest defect in clean/)",
+    )
     ap.add_argument("--min-group-size", type=int, default=None)
     a = ap.parse_args(argv)
     try:
         config = scm_config.load_config(a.config)
-        size = suppress.validate_min_group_size(a.min_group_size or config.get("min_group_size"))
+        size = suppress.validate_min_group_size(
+            a.min_group_size or config.get("min_group_size")
+        )
         links = link(config, a.issues, a.since)
     except ValueError as err:
         print(f"error: {err}", file=sys.stderr)
@@ -179,8 +268,10 @@ def main(argv=None) -> int:
     work.parent.mkdir(parents=True, exist_ok=True)
     work.write_text(json.dumps(links, indent=2) + "\n", encoding="utf-8")
     write_coverage(links, a.out, size)
-    print(f"Linked {links['defects_linked']} of {links['defects_total']} defects since {links['since']}. "
-          f"Links -> {work}, coverage -> {a.out}/scm_coverage.md")
+    print(
+        f"Linked {links['defects_linked']} of {links['defects_total']} defects since {links['since']}. "
+        f"Links -> {work}, coverage -> {a.out}/scm_coverage.md"
+    )
     for s in links["skipped"]:
         print(f"Skipped {s['repo']} ({s['platform']}): {s['reason']}")
     return 0

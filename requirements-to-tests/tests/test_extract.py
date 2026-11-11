@@ -36,7 +36,10 @@ def _docx(body: str, tmp_path: Path) -> Path:
 
     out = tmp_path / "doc.docx"
     with zipfile.ZipFile(out, "w") as z:
-        z.writestr("word/document.xml", f'<?xml version="1.0"?><w:document {W}><w:body>{body}</w:body></w:document>')
+        z.writestr(
+            "word/document.xml",
+            f'<?xml version="1.0"?><w:document {W}><w:body>{body}</w:body></w:document>',
+        )
     return out
 
 
@@ -44,14 +47,22 @@ def _pdf(pages: list[str], tmp_path: Path) -> Path:
     """Write a minimal text PDF; each page string may hold several lines (no external tools)."""
     if not shutil.which("pdftotext"):
         pytest.skip("pdftotext not available")
-    objs = ["<< /Type /Catalog /Pages 2 0 R >>", None, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"]
+    objs = [
+        "<< /Type /Catalog /Pages 2 0 R >>",
+        None,
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ]
     kids = []
     for text in pages:
         shown = " T* ".join(f"({line}) Tj" for line in text.split("\n"))
         stream = f"BT /F1 11 Tf 14 TL 72 720 Td {shown} ET".encode()
-        objs.append(f"<< /Length {len(stream)} >>\nstream\n{stream.decode()}\nendstream")
-        objs.append(f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents {len(objs)} 0 R "
-                    "/Resources << /Font << /F1 3 0 R >> >> >>")
+        objs.append(
+            f"<< /Length {len(stream)} >>\nstream\n{stream.decode()}\nendstream"
+        )
+        objs.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents {len(objs)} 0 R "
+            "/Resources << /Font << /F1 3 0 R >> >> >>"
+        )
         kids.append(f"{len(objs)} 0 R")
     objs[1] = f"<< /Type /Pages /Kids [{' '.join(kids)}] /Count {len(kids)} >>"
     out, offsets = b"%PDF-1.4\n", []
@@ -84,7 +95,12 @@ def test_docx_blocks_carry_section_and_paragraph_locators(tmp_path):
 
 
 def test_docx_tables_are_kept_as_rows(tmp_path):
-    doc = _docx(_table([["ID", "Requirement"], ["NFR-1", "Search responds in under 2 seconds"]]), tmp_path)
+    doc = _docx(
+        _table(
+            [["ID", "Requirement"], ["NFR-1", "Search responds in under 2 seconds"]]
+        ),
+        tmp_path,
+    )
     text = "\n".join(b["text"] for b in extract.extract(doc))
     assert "NFR-1" in text and "under 2 seconds" in text
     row = next(b for b in extract.extract(doc) if "NFR-1" in b["text"])
@@ -92,7 +108,10 @@ def test_docx_tables_are_kept_as_rows(tmp_path):
 
 
 def test_pdf_blocks_are_located_by_page(tmp_path):
-    doc = _pdf(["Records are retained for seven years.", "Data is encrypted at rest."], tmp_path)
+    doc = _pdf(
+        ["Records are retained for seven years.", "Data is encrypted at rest."],
+        tmp_path,
+    )
     blocks = extract.extract(doc)
     assert next(b for b in blocks if "seven years" in b["text"])["loc"] == "p1"
     assert next(b for b in blocks if "encrypted" in b["text"])["loc"] == "p2"
@@ -108,17 +127,29 @@ def test_docx_bold_short_paragraph_is_treated_as_heading_when_unstyled(tmp_path)
 
 
 def test_pdf_lines_starting_with_requirement_ids_become_separate_blocks(tmp_path):
-    doc = _pdf(["2. Performance\nNFR-P1 Respond in under 300 ms.\nNFR-P2 Batch completes before 06:00.\n"
-                "and funds arrive the same day."], tmp_path)
+    doc = _pdf(
+        [
+            "2. Performance\nNFR-P1 Respond in under 300 ms.\nNFR-P2 Batch completes before 06:00.\n"
+            "and funds arrive the same day."
+        ],
+        tmp_path,
+    )
     texts = [b["text"] for b in extract.extract(doc)]
     assert "NFR-P1 Respond in under 300 ms." in texts
-    assert "NFR-P2 Batch completes before 06:00. and funds arrive the same day." in texts
+    assert (
+        "NFR-P2 Batch completes before 06:00. and funds arrive the same day." in texts
+    )
 
 
 def test_pdf_wrapped_line_starting_with_a_number_stays_in_its_paragraph(tmp_path):
-    doc = _pdf(["NFR-A2 Restore within 1 hour with no more than\n15 minutes of data loss."], tmp_path)
+    doc = _pdf(
+        ["NFR-A2 Restore within 1 hour with no more than\n15 minutes of data loss."],
+        tmp_path,
+    )
     texts = [b["text"] for b in extract.extract(doc)]
-    assert texts == ["NFR-A2 Restore within 1 hour with no more than 15 minutes of data loss."]
+    assert texts == [
+        "NFR-A2 Restore within 1 hour with no more than 15 minutes of data loss."
+    ]
 
 
 def test_xlsx_rows_are_labelled_with_headers_and_sheet_row(tmp_path):
@@ -140,7 +171,9 @@ def test_xlsx_rows_are_labelled_with_headers_and_sheet_row(tmp_path):
 
 def test_plain_text_and_markdown_are_located_by_line(tmp_path):
     path = tmp_path / "reqs.md"
-    path.write_text("# Scope\n\nUsers must be able to export their data.\n", encoding="utf-8")
+    path.write_text(
+        "# Scope\n\nUsers must be able to export their data.\n", encoding="utf-8"
+    )
     blocks = extract.extract(path)
     export = next(b for b in blocks if "export" in b["text"])
     assert export["loc"].startswith("L")
@@ -153,8 +186,13 @@ def test_unsupported_extension_raises_clear_error(tmp_path):
         extract.extract(path)
 
 
-def test_cli_writes_source_md_and_manifest_with_scanned_page_warning(tmp_path, monkeypatch):
-    blocks = [{"loc": "p1", "text": "Real text on page one."}, {"loc": "p2", "text": ""}]
+def test_cli_writes_source_md_and_manifest_with_scanned_page_warning(
+    tmp_path, monkeypatch
+):
+    blocks = [
+        {"loc": "p1", "text": "Real text on page one."},
+        {"loc": "p2", "text": ""},
+    ]
     monkeypatch.setattr(extract, "extract", lambda p: blocks)
     src = tmp_path / "in.pdf"
     src.write_bytes(b"%PDF")
@@ -165,4 +203,6 @@ def test_cli_writes_source_md_and_manifest_with_scanned_page_warning(tmp_path, m
     assert "[p1] Real text on page one." in source_md
     manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["blocks"] == 2
-    assert any("p2" in w for w in manifest["warnings"]), "empty PDF page should be flagged as possibly scanned"
+    assert any("p2" in w for w in manifest["warnings"]), (
+        "empty PDF page should be flagged as possibly scanned"
+    )

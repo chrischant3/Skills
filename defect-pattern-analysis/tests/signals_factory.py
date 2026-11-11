@@ -16,18 +16,51 @@ from datetime import datetime, timedelta, timezone
 
 PROJECT = "ABC"
 AC_FIELD = "customfield_10010"
-TEAM_SIZES = {"Payments": 30, "Accounts": 20, "Search": 6, "Web": 5, "Mobile": 4, "Notifications": 3,
-              "Billing": 2, "Checkout": 1}
+TEAM_SIZES = {
+    "Payments": 30,
+    "Accounts": 20,
+    "Search": 6,
+    "Web": 5,
+    "Mobile": 4,
+    "Notifications": 3,
+    "Billing": 2,
+    "Checkout": 1,
+}
 SMALL_TEAMS = ["Mobile", "Notifications", "Billing", "Checkout"]
 PATHS = {
     "straight": ["To Do", "In Progress", "In Review", "In Test", "Done"],
-    "reopen": ["To Do", "In Progress", "In Review", "In Test", "Done", "In Progress", "In Test", "Done"],
-    "backward": ["To Do", "In Progress", "In Review", "In Progress", "In Review", "In Test", "Done", "Closed"],
+    "reopen": [
+        "To Do",
+        "In Progress",
+        "In Review",
+        "In Test",
+        "Done",
+        "In Progress",
+        "In Test",
+        "Done",
+    ],
+    "backward": [
+        "To Do",
+        "In Progress",
+        "In Review",
+        "In Progress",
+        "In Review",
+        "In Test",
+        "Done",
+        "Closed",
+    ],
     "never_started": ["To Do", "Done"],
     "open": ["To Do", "In Progress", "In Review"],
     "no_history": [],
 }
-PATH_WEIGHTS = {"straight": 5, "reopen": 2, "backward": 2, "never_started": 1, "open": 1, "no_history": 1}
+PATH_WEIGHTS = {
+    "straight": 5,
+    "reopen": 2,
+    "backward": 2,
+    "never_started": 1,
+    "open": 1,
+    "no_history": 1,
+}
 CONFIG = """# Synthetic board for ticket signal tests.
 acceptance_criteria_field: customfield_10010
 acceptance_criteria_name: Acceptance Criteria
@@ -66,10 +99,19 @@ REMARKS = [
 
 def _user(person: dict, cloud: bool) -> dict:
     if cloud:
-        return {"accountId": person["account_id"], "emailAddress": person["email"],
-                "displayName": person["display_name"], "active": True}
-    return {"name": person["dc_username"], "key": person["dc_key"], "emailAddress": person["email"],
-            "displayName": person["display_name"], "active": True}
+        return {
+            "accountId": person["account_id"],
+            "emailAddress": person["email"],
+            "displayName": person["display_name"],
+            "active": True,
+        }
+    return {
+        "name": person["dc_username"],
+        "key": person["dc_key"],
+        "emailAddress": person["email"],
+        "displayName": person["display_name"],
+        "active": True,
+    }
 
 
 def _stamp(moment: datetime) -> str:
@@ -85,7 +127,9 @@ def _description(rng: random.Random, person: dict) -> str:
     if rng.random() < 0.5:
         parts.append("Environment: staging, Chrome 120.")
     if rng.random() < 0.3:
-        parts.append("Acceptance criteria: given an empty basket when it loads then the total is zero.")
+        parts.append(
+            "Acceptance criteria: given an empty basket when it loads then the total is zero."
+        )
     return "\n".join(parts)
 
 
@@ -99,29 +143,82 @@ def make_issue(rng: random.Random, number: int, team: str, people: list[dict]) -
     histories, moment = [], created
     for n, (frm, to) in enumerate(zip(statuses, statuses[1:])):
         moment += timedelta(hours=rng.randint(1, 48))
-        histories.append({"id": f"{number}-s{n}", "author": pick(), "created": _stamp(moment),
-                          "items": [{"field": "status", "fieldtype": "jira", "fieldId": "status",
-                                     "from": "1", "fromString": frm, "to": "2", "toString": to}]})
+        histories.append(
+            {
+                "id": f"{number}-s{n}",
+                "author": pick(),
+                "created": _stamp(moment),
+                "items": [
+                    {
+                        "field": "status",
+                        "fieldtype": "jira",
+                        "fieldId": "status",
+                        "from": "1",
+                        "fromString": frm,
+                        "to": "2",
+                        "toString": to,
+                    }
+                ],
+            }
+        )
         if to == "In Progress" and n == 0 and rng.random() < 0.4:
             edit_at = moment + timedelta(hours=1)
-            field = rng.choice([("description", "description"), ("Acceptance Criteria", AC_FIELD)])
-            histories.append({"id": f"{number}-e{n}", "author": pick(), "created": _stamp(edit_at),
-                              "items": [{"field": field[0], "fieldtype": "jira", "fieldId": field[1],
-                                         "fromString": "old text", "toString": "new text"}]})
+            field = rng.choice(
+                [("description", "description"), ("Acceptance Criteria", AC_FIELD)]
+            )
+            histories.append(
+                {
+                    "id": f"{number}-e{n}",
+                    "author": pick(),
+                    "created": _stamp(edit_at),
+                    "items": [
+                        {
+                            "field": field[0],
+                            "fieldtype": "jira",
+                            "fieldId": field[1],
+                            "fromString": "old text",
+                            "toString": "new text",
+                        }
+                    ],
+                }
+            )
     a, b = rng.sample(people, 2)
-    histories.append({"id": f"{number}-a", "author": pick(), "created": _stamp(created),
-                      "items": [{"field": "assignee", "fieldtype": "jira", "fieldId": "assignee",
-                                 "from": a["dc_username"], "fromString": a["display_name"],
-                                 "to": b["dc_username"], "toString": b["display_name"]}]})
+    histories.append(
+        {
+            "id": f"{number}-a",
+            "author": pick(),
+            "created": _stamp(created),
+            "items": [
+                {
+                    "field": "assignee",
+                    "fieldtype": "jira",
+                    "fieldId": "assignee",
+                    "from": a["dc_username"],
+                    "fromString": a["display_name"],
+                    "to": b["dc_username"],
+                    "toString": b["display_name"],
+                }
+            ],
+        }
+    )
     rng.shuffle(histories)
     comments = []
     for n in range(rng.randint(0, 5)):
         person = rng.choice(people)
         template = rng.choice(QUESTIONS if rng.random() < 0.3 else REMARKS)
-        comments.append({"id": f"{number}-c{n}", "author": pick(), "created": _stamp(created),
-                         "body": template.format(name=person["display_name"].split()[0],
-                                                 mention=f"[~{person['dc_username']}]" if not cloud
-                                                 else f"[~accountid:{person['account_id']}]")})
+        comments.append(
+            {
+                "id": f"{number}-c{n}",
+                "author": pick(),
+                "created": _stamp(created),
+                "body": template.format(
+                    name=person["display_name"].split()[0],
+                    mention=f"[~{person['dc_username']}]"
+                    if not cloud
+                    else f"[~accountid:{person['account_id']}]",
+                ),
+            }
+        )
     changelog_total = len(histories) + (3 if number % 11 == 5 else 0)
     comment_total = len(comments) + (2 if number % 13 == 7 else 0)
     fields = {
@@ -131,17 +228,39 @@ def make_issue(rng: random.Random, number: int, team: str, people: list[dict]) -
         "components": [{"id": "100", "name": team}],
         "project": {"id": "1", "key": PROJECT, "name": "Alpha Billing"},
         "created": _stamp(created),
-        "assignee": pick(), "reporter": pick(), "creator": pick(),
+        "assignee": pick(),
+        "reporter": pick(),
+        "creator": pick(),
         "description": _description(rng, rng.choice(people)),
-        "issuelinks": [{"type": {"name": "Relates"}, "outwardIssue": {"key": f"{PROJECT}-{900 + k}"}}
-                       for k in range(rng.randint(0, 3))],
-        "comment": {"comments": comments, "total": comment_total, "maxResults": len(comments), "startAt": 0},
+        "issuelinks": [
+            {
+                "type": {"name": "Relates"},
+                "outwardIssue": {"key": f"{PROJECT}-{900 + k}"},
+            }
+            for k in range(rng.randint(0, 3))
+        ],
+        "comment": {
+            "comments": comments,
+            "total": comment_total,
+            "maxResults": len(comments),
+            "startAt": 0,
+        },
     }
     if rng.random() < 0.4:
-        fields[AC_FIELD] = f"Given a basket when {rng.choice(people)['display_name']} pays then the total is right."
-    return {"id": str(number), "key": f"{PROJECT}-{number}", "fields": fields,
-            "changelog": {"startAt": 0, "total": changelog_total, "maxResults": len(histories),
-                          "histories": histories}}
+        fields[AC_FIELD] = (
+            f"Given a basket when {rng.choice(people)['display_name']} pays then the total is right."
+        )
+    return {
+        "id": str(number),
+        "key": f"{PROJECT}-{number}",
+        "fields": fields,
+        "changelog": {
+            "startAt": 0,
+            "total": changelog_total,
+            "maxResults": len(histories),
+            "histories": histories,
+        },
+    }
 
 
 def make_dataset(people: list[dict], seed: int = 7) -> list[dict]:
@@ -162,24 +281,59 @@ def make_links(issues: list[dict], seed: int = 7) -> dict:
     for issue in issues:
         if rng.random() < 0.25:
             continue
-        repos = ["group/checkout-service"] + (["Accounts/accounts-api"] if rng.random() < 0.3 else [])
-        files = [{"repo": rng.choice(repos), "path": f"src/module{n}/file{n}.py"} for n in range(rng.randint(1, 12))]
-        changes = [{"repo": r, "kind": "merge_request", "id": str(rng.randint(1, 500)), "merged_at": "2026-06-01T00:00:00Z"}
-                   for r in repos for _ in range(rng.randint(1, 2))]
-        defects[issue["key"]] = {"repos": repos, "changes": changes,
-                                 "commits": [f"{rng.getrandbits(40):010x}" for _ in range(rng.randint(1, 6))],
-                                 "files": files}
-    repos = {"group/checkout-service": {"platform": "gitlab", "team": None, "changes_scanned": 60,
-                                        "changes_linked": 30, "defects_linked": 30}}
-    return {"since": "2026-01-01", "defects_total": len(issues), "defects_linked": len(defects), "repos": repos,
-            "skipped": [], "defects": defects}
+        repos = ["group/checkout-service"] + (
+            ["Accounts/accounts-api"] if rng.random() < 0.3 else []
+        )
+        files = [
+            {"repo": rng.choice(repos), "path": f"src/module{n}/file{n}.py"}
+            for n in range(rng.randint(1, 12))
+        ]
+        changes = [
+            {
+                "repo": r,
+                "kind": "merge_request",
+                "id": str(rng.randint(1, 500)),
+                "merged_at": "2026-06-01T00:00:00Z",
+            }
+            for r in repos
+            for _ in range(rng.randint(1, 2))
+        ]
+        defects[issue["key"]] = {
+            "repos": repos,
+            "changes": changes,
+            "commits": [
+                f"{rng.getrandbits(40):010x}" for _ in range(rng.randint(1, 6))
+            ],
+            "files": files,
+        }
+    repos = {
+        "group/checkout-service": {
+            "platform": "gitlab",
+            "team": None,
+            "changes_scanned": 60,
+            "changes_linked": 30,
+            "defects_linked": 30,
+        }
+    }
+    return {
+        "since": "2026-01-01",
+        "defects_total": len(issues),
+        "defects_linked": len(defects),
+        "repos": repos,
+        "skipped": [],
+        "defects": defects,
+    }
 
 
 def write_raw(raw_dir, people: list[dict], seed: int = 7) -> list[dict]:
     """Write the dataset to raw_dir as one MCP-style search page plus a manifest. Returns the issues."""
     issues = make_dataset(people, seed)
     raw_dir.mkdir(parents=True, exist_ok=True)
-    (raw_dir / "mcp-page-1.json").write_text(json.dumps({"issues": issues, "total": len(issues)}), encoding="utf-8")
-    (raw_dir / "_manifest.json").write_text(json.dumps({"source": "mcp", "jql": "project = ABC",
-                                                        "matched": len(issues)}), encoding="utf-8")
+    (raw_dir / "mcp-page-1.json").write_text(
+        json.dumps({"issues": issues, "total": len(issues)}), encoding="utf-8"
+    )
+    (raw_dir / "_manifest.json").write_text(
+        json.dumps({"source": "mcp", "jql": "project = ABC", "matched": len(issues)}),
+        encoding="utf-8",
+    )
     return issues

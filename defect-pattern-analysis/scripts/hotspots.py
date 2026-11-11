@@ -38,8 +38,10 @@ import suppress
 
 DEFAULT_DEPTH = 2
 ROOT = "(root)"
-COUNT_RULE = ("distinct defects whose linked changes touched a file in the directory; files, commits and changes "
-              "are not counted, and a defect counts once in each directory its fix touched")
+COUNT_RULE = (
+    "distinct defects whose linked changes touched a file in the directory; files, commits and changes "
+    "are not counted, and a defect counts once in each directory its fix touched"
+)
 # The () and ("repo",) cells count defect-directory pairs. They are never published; they
 # give secondary suppression the sums it protects (a partition of the pairs), so a hidden
 # directory always has company in its repo.
@@ -63,12 +65,20 @@ def build_records(links: dict, depth: int = DEFAULT_DEPTH) -> list[dict]:
     """One record per (defect, repo, directory) its fix touched, so each directory counts each defect once."""
     records = []
     for defect in links["defects"].values():
-        touched = {(f["repo"], directory_of(f["path"], depth)) for f in defect.get("files") or []}
-        records += [{"repo": repo, "directory": directory} for repo, directory in sorted(touched)]
+        touched = {
+            (f["repo"], directory_of(f["path"], depth))
+            for f in defect.get("files") or []
+        }
+        records += [
+            {"repo": repo, "directory": directory}
+            for repo, directory in sorted(touched)
+        ]
     return records
 
 
-def write_hotspots(links: dict, out_dir, depth: int = DEFAULT_DEPTH, min_group_size=None) -> None:
+def write_hotspots(
+    links: dict, out_dir, depth: int = DEFAULT_DEPTH, min_group_size=None
+) -> None:
     """Write out/hotspots.json, .csv and .md, with every count suppressed by suppress.py.
 
     Args:
@@ -82,23 +92,49 @@ def write_hotspots(links: dict, out_dir, depth: int = DEFAULT_DEPTH, min_group_s
     size = suppress.validate_min_group_size(min_group_size)
     depth = validate_depth(depth)
     pub = suppress.publish(build_records(links, depth), GROUPINGS, size)
-    pub.add_scalar("defects_with_files", sum(bool(d.get("files")) for d in links["defects"].values()))
+    pub.add_scalar(
+        "defects_with_files",
+        sum(bool(d.get("files")) for d in links["defects"].values()),
+    )
     table = pub.table(("repo", "directory"))
     platforms = {name: repo.get("platform") for name, repo in links["repos"].items()}
-    rows = sorted(({"repo": r["labels"]["repo"], "platform": platforms.get(r["labels"]["repo"]),
-                    "directory": r["labels"]["directory"], "defects": r["total"]} for r in table["rows"]),
-                  key=lambda r: (-r["defects"], r["repo"].lower(), r["directory"].lower()))
+    rows = sorted(
+        (
+            {
+                "repo": r["labels"]["repo"],
+                "platform": platforms.get(r["labels"]["repo"]),
+                "directory": r["labels"]["directory"],
+                "defects": r["total"],
+            }
+            for r in table["rows"]
+        ),
+        key=lambda r: (-r["defects"], r["repo"].lower(), r["directory"].lower()),
+    )
     hidden = table["suppressed_rows"]
 
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    settings = {"min_group_size": size, "depth": depth, "since": links.get("since"), "count_rule": COUNT_RULE}
-    doc = {"settings": settings, "suppressed_marker": suppress.SUPPRESSED, "summary": pub.summary,
-           "directories": rows, "suppressed_directories": hidden}
-    (out_dir / "hotspots.json").write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+    settings = {
+        "min_group_size": size,
+        "depth": depth,
+        "since": links.get("since"),
+        "count_rule": COUNT_RULE,
+    }
+    doc = {
+        "settings": settings,
+        "suppressed_marker": suppress.SUPPRESSED,
+        "summary": pub.summary,
+        "directories": rows,
+        "suppressed_directories": hidden,
+    }
+    (out_dir / "hotspots.json").write_text(
+        json.dumps(doc, indent=2) + "\n", encoding="utf-8"
+    )
 
     columns = ["repo", "platform", "directory", "defects"]
-    note = suppress.SUPPRESSED_NOTE.format(n=hidden, groups="group" if hidden == 1 else "groups", k=size)
+    note = suppress.SUPPRESSED_NOTE.format(
+        n=hidden, groups="group" if hidden == 1 else "groups", k=size
+    )
     with (out_dir / "hotspots.csv").open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh, lineterminator="\n")
         writer.writerow(columns)
@@ -107,13 +143,25 @@ def write_hotspots(links: dict, out_dir, depth: int = DEFAULT_DEPTH, min_group_s
         if hidden:
             writer.writerow([note, "", "", ""])
 
-    md = ["# Fix hotspots by directory", "",
-          f"Each count is the number of defects whose fixes touched the directory (folders cut to depth {depth}), "
-          f"from changes merged on or after {links.get('since')}. A defect counts once per directory, however many "
-          "files or commits its fix had, and once in each directory it touched, so the counts don't add up to the "
-          f"number of defects. Groups with fewer than {size} defects are suppressed.", "", "## Summary", ""]
+    md = [
+        "# Fix hotspots by directory",
+        "",
+        f"Each count is the number of defects whose fixes touched the directory (folders cut to depth {depth}), "
+        f"from changes merged on or after {links.get('since')}. A defect counts once per directory, however many "
+        "files or commits its fix had, and once in each directory it touched, so the counts don't add up to the "
+        f"number of defects. Groups with fewer than {size} defects are suppressed.",
+        "",
+        "## Summary",
+        "",
+    ]
     md += [f"- {k}: {v}" for k, v in pub.summary.items()]
-    md += ["", "## Directories", "", "| " + " | ".join(columns) + " |", "|" + "---|" * len(columns)]
+    md += [
+        "",
+        "## Directories",
+        "",
+        "| " + " | ".join(columns) + " |",
+        "|" + "---|" * len(columns),
+    ]
     md += ["| " + " | ".join(str(row[c]) for c in columns) + " |" for row in rows]
     if hidden:
         md += ["", note]
@@ -121,15 +169,29 @@ def write_hotspots(links: dict, out_dir, depth: int = DEFAULT_DEPTH, min_group_s
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Count defects per directory their fixes touched, with small groups suppressed.")
+    ap = argparse.ArgumentParser(
+        description="Count defects per directory their fixes touched, with small groups suppressed."
+    )
     ap.add_argument("--links", default="work/scm_links.json")
     ap.add_argument("--out", default="out")
-    ap.add_argument("--depth", type=int, default=DEFAULT_DEPTH, help="folder levels that name a directory (default 2)")
-    ap.add_argument("--min-group-size", type=int, default=None, help="default 5, or the config's; below 5 is refused")
+    ap.add_argument(
+        "--depth",
+        type=int,
+        default=DEFAULT_DEPTH,
+        help="folder levels that name a directory (default 2)",
+    )
+    ap.add_argument(
+        "--min-group-size",
+        type=int,
+        default=None,
+        help="default 5, or the config's; below 5 is refused",
+    )
     ap.add_argument("--config", help="scm.yaml, for its min_group_size")
     a = ap.parse_args(argv)
     try:
-        configured = scm_config.load_config(a.config).get("min_group_size") if a.config else None
+        configured = (
+            scm_config.load_config(a.config).get("min_group_size") if a.config else None
+        )
         size = suppress.validate_min_group_size(a.min_group_size or configured)
         depth = validate_depth(a.depth)
         links = json.loads(Path(a.links).read_text(encoding="utf-8"))

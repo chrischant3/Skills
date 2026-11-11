@@ -36,9 +36,11 @@ def normalise_key(raw: str) -> str | None:
 
 def _without_urls(text: str) -> str:
     """Replace each URL with the Jira key it links to (for /browse/ links) or a space."""
+
     def keep_jira_link(url):
         found = JIRA_BROWSE.search(url.group(0))
         return f" {found.group(1)} " if found else " "
+
     return URL.sub(keep_jira_link, text)
 
 
@@ -59,10 +61,16 @@ class KeyMatcher:
         if not isinstance(pattern, str) or not pattern.strip():
             raise ValueError("key_pattern must be a non-empty regular expression")
         try:
-            re.compile(pattern)  # on its own first, so wrapping can't hide an unbalanced bracket
-            self._regex = re.compile(rf"(?<![A-Za-z0-9])(?:{pattern})(?![A-Za-z0-9])", re.IGNORECASE)
+            re.compile(
+                pattern
+            )  # on its own first, so wrapping can't hide an unbalanced bracket
+            self._regex = re.compile(
+                rf"(?<![A-Za-z0-9])(?:{pattern})(?![A-Za-z0-9])", re.IGNORECASE
+            )
         except re.error as err:
-            raise ValueError(f"key_pattern {pattern!r} is not a valid regular expression: {err}") from None
+            raise ValueError(
+                f"key_pattern {pattern!r} is not a valid regular expression: {err}"
+            ) from None
         self._projects = {p.upper() for p in projects}
 
     def find(self, text: str | None) -> set[str]:

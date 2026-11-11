@@ -26,8 +26,18 @@ import suppress
 UNCLASSIFIED = "unclassified"
 NO_COMPONENT = "no component"
 MULTIPLE_COMPONENTS = "multiple components"
-GROUPINGS = [(), ("type",), ("type", "theme"), ("period",), ("type", "period"), ("type", "theme", "period"),
-             ("trigger",), ("escape_stage",), ("team",), ("team", "type")]
+GROUPINGS = [
+    (),
+    ("type",),
+    ("type", "theme"),
+    ("period",),
+    ("type", "period"),
+    ("type", "theme", "period"),
+    ("trigger",),
+    ("escape_stage",),
+    ("team",),
+    ("team", "type"),
+]
 TABLES = {
     "types": (("type",), None),
     "type_trend": (("type",), "period"),
@@ -43,12 +53,22 @@ TABLES = {
 def period_of(created: str, period: str) -> str:
     """Return YYYY-MM or YYYY-Qn for a Jira created timestamp (its local date as recorded)."""
     year, month = created[:4], int(created[5:7])
-    return f"{year}-{month:02d}" if period == "month" else f"{year}-Q{(month - 1) // 3 + 1}"
+    return (
+        f"{year}-{month:02d}"
+        if period == "month"
+        else f"{year}-Q{(month - 1) // 3 + 1}"
+    )
 
 
 def team_of(issue: dict) -> str:
     """The issue's team: its single component, or a fixed label for none or several."""
-    names = sorted({c.get("name") for c in issue["fields"].get("components") or [] if isinstance(c, dict) and c.get("name")})
+    names = sorted(
+        {
+            c.get("name")
+            for c in issue["fields"].get("components") or []
+            if isinstance(c, dict) and c.get("name")
+        }
+    )
     if not names:
         return NO_COMPONENT
     return names[0] if len(names) == 1 else MULTIPLE_COMPONENTS
@@ -60,7 +80,10 @@ def _canonical_themes(records) -> dict:
     for r in records:
         if r["status"] != UNCLASSIFIED:
             spellings[(r["defect_type"], r["theme"].lower())][r["theme"]] += 1
-    return {k: sorted(c.items(), key=lambda kv: (-kv[1], kv[0]))[0][0] for k, c in spellings.items()}
+    return {
+        k: sorted(c.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+        for k, c in spellings.items()
+    }
 
 
 def build_records(issues, classified: dict, period: str) -> list[dict]:
@@ -72,25 +95,33 @@ def build_records(issues, classified: dict, period: str) -> list[dict]:
     by_key = {r["key"]: r for r in classified["records"]}
     keys = {i["key"] for i in issues}
     if set(by_key) != keys:
-        raise ValueError("classified.json doesn't match clean/: rerun validate_classifications.py "
-                         f"(missing {len(keys - set(by_key))}, extra {len(set(by_key) - keys)})")
+        raise ValueError(
+            "classified.json doesn't match clean/: rerun validate_classifications.py "
+            f"(missing {len(keys - set(by_key))}, extra {len(set(by_key) - keys)})"
+        )
     themes = _canonical_themes(classified["records"])
     out = []
     for issue in issues:
         r = by_key[issue["key"]]
         done = r["status"] != UNCLASSIFIED
-        out.append({
-            "type": r["defect_type"] if done else UNCLASSIFIED,
-            "theme": themes[(r["defect_type"], r["theme"].lower())] if done else UNCLASSIFIED,
-            "trigger": r["trigger"] if done else UNCLASSIFIED,
-            "escape_stage": r["escape_stage"] if done else UNCLASSIFIED,
-            "team": team_of(issue),
-            "period": period_of(issue["fields"]["created"], period),
-        })
+        out.append(
+            {
+                "type": r["defect_type"] if done else UNCLASSIFIED,
+                "theme": themes[(r["defect_type"], r["theme"].lower())]
+                if done
+                else UNCLASSIFIED,
+                "trigger": r["trigger"] if done else UNCLASSIFIED,
+                "escape_stage": r["escape_stage"] if done else UNCLASSIFIED,
+                "team": team_of(issue),
+                "period": period_of(issue["fields"]["created"], period),
+            }
+        )
     return out
 
 
-def aggregate(clean_dir, classified_path, out_dir, min_group_size=None, period="month") -> suppress.Publication:
+def aggregate(
+    clean_dir, classified_path, out_dir, min_group_size=None, period="month"
+) -> suppress.Publication:
     """Build every suppressed table and write all outputs. Returns the Publication."""
     if period not in ("month", "quarter"):
         raise ValueError("period must be month or quarter")
@@ -106,18 +137,32 @@ def aggregate(clean_dir, classified_path, out_dir, min_group_size=None, period="
     for gap in ("changelog_incomplete", "comments_incomplete"):
         if isinstance(report.get(gap), list):
             pub.add_scalar(f"{gap}_defects", len(report[gap]))
-    suppress.write_outputs(pub, TABLES, out_dir, settings={
-        "taxonomy_version": classified.get("taxonomy_version"), "period": period,
-        "team_rule": "Jira component; several components count once as 'multiple components'"})
+    suppress.write_outputs(
+        pub,
+        TABLES,
+        out_dir,
+        settings={
+            "taxonomy_version": classified.get("taxonomy_version"),
+            "period": period,
+            "team_rule": "Jira component; several components count once as 'multiple components'",
+        },
+    )
     return pub
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Aggregate validated classifications with small-group suppression.")
+    ap = argparse.ArgumentParser(
+        description="Aggregate validated classifications with small-group suppression."
+    )
     ap.add_argument("--classified", default="work/classified.json")
     ap.add_argument("--issues", default="clean")
     ap.add_argument("--out", default="out")
-    ap.add_argument("--min-group-size", type=int, default=None, help="default 5; values below 5 are refused")
+    ap.add_argument(
+        "--min-group-size",
+        type=int,
+        default=None,
+        help="default 5; values below 5 are refused",
+    )
     ap.add_argument("--period", choices=["month", "quarter"], default="month")
     a = ap.parse_args(argv)
     try:

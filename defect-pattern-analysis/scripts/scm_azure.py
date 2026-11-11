@@ -43,7 +43,10 @@ PR_FILE = re.compile(r"azure-prs-[\w.-]*\.json")
 PART_FILE = re.compile(rf"azure-pr-({GUID})-(\d+)-(commits|changes)(?:-[\w.-]+)?\.json")
 COMPLETED = ("completed", 3)
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
-ORG_IN_URL = (re.compile(r"https?://dev\.azure\.com/([^/]+)/", re.I), re.compile(r"https?://([^./]+)\.visualstudio\.com/", re.I))
+ORG_IN_URL = (
+    re.compile(r"https?://dev\.azure\.com/([^/]+)/", re.I),
+    re.compile(r"https?://([^./]+)\.visualstudio\.com/", re.I),
+)
 
 
 class AzureDevOpsClient:
@@ -60,8 +63,16 @@ class AzureDevOpsClient:
         base_url: the service root, https://dev.azure.com by default.
     """
 
-    def __init__(self, org, token, transport=rest_transport.urllib_transport, sleep=time.sleep, max_retries=5,
-                 page_size=PAGE_SIZE, base_url=BASE_URL):
+    def __init__(
+        self,
+        org,
+        token,
+        transport=rest_transport.urllib_transport,
+        sleep=time.sleep,
+        max_retries=5,
+        page_size=PAGE_SIZE,
+        base_url=BASE_URL,
+    ):
         self.root = f"{base_url.rstrip('/')}/{urllib.parse.quote(org, safe='')}"
         self._auth = "Basic " + base64.b64encode(f":{token}".encode()).decode()
         self._transport = transport
@@ -80,15 +91,21 @@ class AzureDevOpsClient:
                 self._sleep(rest_transport.retry_after(resp_headers))
                 continue
             if status >= 400:
-                raise RuntimeError(f"Azure DevOps returned HTTP {status} for GET {path}")
+                raise RuntimeError(
+                    f"Azure DevOps returned HTTP {status} for GET {path}"
+                )
             return json.loads(raw or b"{}"), resp_headers
-        raise RuntimeError(f"Azure DevOps rate limit still in force after {self._max_retries} retries for GET {path}")
+        raise RuntimeError(
+            f"Azure DevOps rate limit still in force after {self._max_retries} retries for GET {path}"
+        )
 
     def skip_pages(self, path, params=None):
         """Yield each page body of a list paged by $top and $skip; a short page is the last."""
         skip = 0
         while True:
-            body, _ = self.get(path, {**(params or {}), "$top": self.page_size, "$skip": skip})
+            body, _ = self.get(
+                path, {**(params or {}), "$top": self.page_size, "$skip": skip}
+            )
             yield body
             count = len(body.get("value") or [])
             if count < self.page_size:
@@ -100,7 +117,9 @@ class AzureDevOpsClient:
         token = None
         while True:
             extra = {"continuationToken": token} if token else {}
-            body, headers = self.get(path, {**(params or {}), "$top": self.page_size, **extra})
+            body, headers = self.get(
+                path, {**(params or {}), "$top": self.page_size, **extra}
+            )
             yield body
             token = rest_transport.header(headers, "x-ms-continuationtoken")
             if not token:
@@ -114,15 +133,29 @@ class AzureDevOpsClient:
             yield body
             if not body.get("nextSkip"):
                 return
-            skip, top = int(body["nextSkip"]), int(body.get("nextTop") or self.page_size)
+            skip, top = (
+                int(body["nextSkip"]),
+                int(body.get("nextTop") or self.page_size),
+            )
 
 
 def _items(doc) -> list:
     """The records a raw or clean document holds, whatever wrapper it arrived in."""
     if isinstance(doc, list):
-        return [x for item in doc for x in (_items(item) if isinstance(item, list) else [item])]
+        return [
+            x
+            for item in doc
+            for x in (_items(item) if isinstance(item, list) else [item])
+        ]
     if isinstance(doc, dict):
-        for key in ("value", "changeEntries", "items", "pullRequests", "commits", "changes"):
+        for key in (
+            "value",
+            "changeEntries",
+            "items",
+            "pullRequests",
+            "commits",
+            "changes",
+        ):
             if isinstance(doc.get(key), list) and "pullRequestId" not in doc:
                 return _items(doc[key])
         return [doc]
@@ -141,10 +174,15 @@ def _org_of(pr: dict) -> str | None:
 
 def _belongs_to(pr: dict, repo: dict) -> bool:
     repository = pr.get("repository") if isinstance(pr.get("repository"), dict) else {}
-    project = repository.get("project") if isinstance(repository.get("project"), dict) else {}
+    project = (
+        repository.get("project") if isinstance(repository.get("project"), dict) else {}
+    )
     if str(repository.get("name", "")).lower() != repo["repo"].lower():
         return False
-    if project.get("name") is not None and str(project["name"]).lower() != repo["project"].lower():
+    if (
+        project.get("name") is not None
+        and str(project["name"]).lower() != repo["project"].lower()
+    ):
         return False
     org = _org_of(pr)
     return org is None or org.lower() == repo["org"].lower()
@@ -153,7 +191,11 @@ def _belongs_to(pr: dict, repo: dict) -> bool:
 def _path(entry) -> str | None:
     """The file path a change entry names, without the leading slash; None for folders."""
     item = entry.get("item") if isinstance(entry, dict) else None
-    if not isinstance(item, dict) or item.get("isFolder") or item.get("gitObjectType") == "tree":
+    if (
+        not isinstance(item, dict)
+        or item.get("isFolder")
+        or item.get("gitObjectType") == "tree"
+    ):
         return None
     path = item.get("path") or entry.get("originalPath")
     return path.lstrip("/") if isinstance(path, str) and path.strip("/") else None
@@ -191,10 +233,15 @@ class AzureDevOpsAdapter(SourceControlAdapter):
             raise ValueError(f"since must be a date like 2026-01-31, got {since!r}")
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
-        base = (f"/{urllib.parse.quote(repo['project'], safe='')}/_apis/git/repositories/"
-                f"{urllib.parse.quote(repo['repo'], safe='')}")
-        listing = {"searchCriteria.status": "completed", "searchCriteria.queryTimeRangeType": "closed",
-                   "searchCriteria.minTime": f"{since}T00:00:00Z"}
+        base = (
+            f"/{urllib.parse.quote(repo['project'], safe='')}/_apis/git/repositories/"
+            f"{urllib.parse.quote(repo['repo'], safe='')}"
+        )
+        listing = {
+            "searchCriteria.status": "completed",
+            "searchCriteria.queryTimeRangeType": "closed",
+            "searchCriteria.minTime": f"{since}T00:00:00Z",
+        }
         changes = written = 0
         for page in client.skip_pages(f"{base}/pullrequests", listing):
             for pr in _items(page):
@@ -204,24 +251,47 @@ class AzureDevOpsAdapter(SourceControlAdapter):
                 rid, pid = pr["repository"]["id"], int(pr["pullRequestId"])
                 _write(out_dir / f"azure-prs-{rid}-{pid}.json", pr)
                 written += 1
-                for n, body in enumerate(client.token_pages(f"{base}/pullRequests/{pid}/commits"), start=1):
+                for n, body in enumerate(
+                    client.token_pages(f"{base}/pullRequests/{pid}/commits"), start=1
+                ):
                     _write(out_dir / f"azure-pr-{rid}-{pid}-commits-{n}.json", body)
                     written += 1
                     for commit in _items(body):
-                        if isinstance(commit, dict) and commit.get("commentTruncated") and commit.get("commitId"):
+                        if (
+                            isinstance(commit, dict)
+                            and commit.get("commentTruncated")
+                            and commit.get("commitId")
+                        ):
                             sha = str(commit["commitId"])
-                            full, _ = client.get(f"{base}/commits/{urllib.parse.quote(sha, safe='')}")
-                            _write(out_dir / f"azure-pr-{rid}-{pid}-commits-full-{sha}.json", full)
+                            full, _ = client.get(
+                                f"{base}/commits/{urllib.parse.quote(sha, safe='')}"
+                            )
+                            _write(
+                                out_dir
+                                / f"azure-pr-{rid}-{pid}-commits-full-{sha}.json",
+                                full,
+                            )
                             written += 1
                 iterations, _ = client.get(f"{base}/pullRequests/{pid}/iterations")
-                last = max((int(i["id"]) for i in _items(iterations) if isinstance(i, dict) and "id" in i), default=None)
+                last = max(
+                    (
+                        int(i["id"])
+                        for i in _items(iterations)
+                        if isinstance(i, dict) and "id" in i
+                    ),
+                    default=None,
+                )
                 if last is not None:
                     path = f"{base}/pullRequests/{pid}/iterations/{last}/changes"
                     for n, body in enumerate(client.change_pages(path), start=1):
                         _write(out_dir / f"azure-pr-{rid}-{pid}-changes-{n}.json", body)
                         written += 1
                 changes += 1
-        return {"repo": self.repo_name(repo, {}), "changes": changes, "files_written": written}
+        return {
+            "repo": self.repo_name(repo, {}),
+            "changes": changes,
+            "files_written": written,
+        }
 
     def changes(self, documents: dict, repo: dict) -> list[Change]:
         prs, commits, files = {}, {}, {}
@@ -239,14 +309,27 @@ class AzureDevOpsAdapter(SourceControlAdapter):
                         files.setdefault(key, []).append(_path(item))
             elif PR_FILE.fullmatch(name):
                 for pr in _items(doc):
-                    if isinstance(pr, dict) and "pullRequestId" in pr and isinstance(pr.get("repository"), dict):
-                        prs.setdefault((str(pr["repository"].get("id", "")).lower(), int(pr["pullRequestId"])), pr)
+                    if (
+                        isinstance(pr, dict)
+                        and "pullRequestId" in pr
+                        and isinstance(pr.get("repository"), dict)
+                    ):
+                        prs.setdefault(
+                            (
+                                str(pr["repository"].get("id", "")).lower(),
+                                int(pr["pullRequestId"]),
+                            ),
+                            pr,
+                        )
         name = self.repo_name(repo, documents)
         out = []
         for key, pr in sorted(prs.items(), key=lambda kv: (kv[0][1], kv[0][0])):
             if pr.get("status") not in COMPLETED or not _belongs_to(pr, repo):
                 continue
-            pr_commits = [*(c for c in pr.get("commits") or [] if isinstance(c, dict)), *commits.get(key, [])]
+            pr_commits = [
+                *(c for c in pr.get("commits") or [] if isinstance(c, dict)),
+                *commits.get(key, []),
+            ]
             unique = {}
             for c in pr_commits:
                 sha = c.get("commitId")
@@ -254,12 +337,24 @@ class AzureDevOpsAdapter(SourceControlAdapter):
                 if sha and (sha not in unique or unique[sha].get("commentTruncated")):
                     unique[sha] = c
             embedded = [_path(c) for c in pr.get("changes") or []]
-            out.append(Change(
-                repo=name, kind="pull_request", id=str(pr["pullRequestId"]), merged_at=pr.get("closedDate"),
-                title=pr.get("title") or "", description=pr.get("description") or "",
-                source_branch=re.sub(r"^refs/heads/", "", pr.get("sourceRefName") or ""),
-                commits=[{"id": sha, "message": c.get("comment") or ""} for sha, c in unique.items()],
-                files=_dedupe([*embedded, *files.get(key, [])])))
+            out.append(
+                Change(
+                    repo=name,
+                    kind="pull_request",
+                    id=str(pr["pullRequestId"]),
+                    merged_at=pr.get("closedDate"),
+                    title=pr.get("title") or "",
+                    description=pr.get("description") or "",
+                    source_branch=re.sub(
+                        r"^refs/heads/", "", pr.get("sourceRefName") or ""
+                    ),
+                    commits=[
+                        {"id": sha, "message": c.get("comment") or ""}
+                        for sha, c in unique.items()
+                    ],
+                    files=_dedupe([*embedded, *files.get(key, [])]),
+                )
+            )
         return out
 
 
