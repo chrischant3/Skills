@@ -8,8 +8,9 @@ description: >-
   group too small to be safe. Use when asked what keeps going wrong, which kinds of defect recur,
   how they escape, or how defect patterns are trending. Can also link defects to GitLab merge
   requests and Azure DevOps pull requests, report link coverage per repo and show which
-  directories fixes land in. Declines any per-person breakdown. Ticket-history signals and
-  estimates of where defects were introduced are planned but not ready yet.
+  directories fixes land in, and can report what ticket history says about
+  clarity, complexity and flow, as three separate groups of signals. Declines any per-person
+  breakdown. Estimates of where defects were introduced are planned but not ready yet.
 ---
 
 # Defect pattern analysis
@@ -17,7 +18,7 @@ description: >-
 Help a team learn from its defects at system level. This version answers one question:
 **what types of defect keep occurring, and how is that changing over time?** It needs Jira only.
 
-If the team uses GitLab or Azure DevOps, it can also link each defect to the merge requests or pull requests that fixed it, report how well defects and changes are linked in each repo, and show which directories fixes land in most (step 5). That answers the first half of a second question, where in the code defects are fixed. Where defects were introduced, and what ticket history says about clarity, complexity and flow, are planned and not ready. Their draft scripts are in `scripts/` but have known problems (see [Not ready yet](#not-ready-yet)). Don't run them on real data.
+If the team uses GitLab or Azure DevOps, it can also link each defect to the merge requests or pull requests that fixed it, report how well defects and changes are linked in each repo, and show which directories fixes land in most (step 5). That answers the first half of a second question, where in the code defects are fixed. Step 6 reads ticket history for signs of unclear work, genuine complexity and flow problems. Where defects were introduced is planned and not ready. Its draft script is in `scripts/` but has known problems (see [Not ready yet](#not-ready-yet)). Don't run it on real data.
 
 `<skill>` below means the folder containing this file. Call scripts by absolute path. Work in a run folder outside any git repository (for example a folder called `defect-runs/2026-11/` in the user's home folder), with `raw/`, `clean/`, `work/` and `out/` inside it.
 
@@ -56,6 +57,7 @@ Ask for anything missing. Don't guess.
 - Minimum group size (default 5; never lower).
 - Whether trends should be by month (default) or quarter. Quarter is better for small teams, because monthly cells are more often suppressed.
 - For step 5 only: the GitLab and Azure DevOps repos to link, and how each team writes issue keys if it isn't the standard `ABC-123` (for example `ABC_123` in branch names).
+- For step 6 only: each project's status names, in workflow order, and which of them mean work started, active work, waiting and done. If acceptance criteria have their own field, its field id (such as `customfield_10010`).
 
 ## Workflow
 
@@ -207,17 +209,48 @@ python3 <skill>/scripts/hotspots.py --links work/scm_links.json --config scm.yam
 
 `out/hotspots.md` (with `.json` and `.csv`) gives, for each repo and directory, the number of defects whose fixes touched a file in that directory. It counts defects, not files or commits, so one large fix counts once, the same as a one-line fix. A defect whose fix touched several directories counts once in each, so the counts don't add up to the number of defects. A directory is the folder path cut to `--depth` parts (default 2, such as `src/checkout`); files at the top of a repo count under `(root)`. Directories with fewer than `min_group_size` defects are suppressed, with enough others in the same repo that they can't be worked out, and are never named. The output holds repo names and paths only, never authors. A path inside a personal-namespace repo shows the owner as `[person]`, as the repo name does.
 
-### 6. Write the report
+### 6. Optional: ticket signals (clarity, complexity and flow)
 
-Write the report from `out/` only: `aggregate.json` and `tables.md`, plus `scm_coverage.md` and `hotspots.md` if step 5 ran. Don't go back to `clean/`, `work/` or the batches for numbers or wording. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group.
+Skip this step if the user only wants defect types. It needs `clean/` from step 2 with complete changelogs and comments (fill the gaps `clean/_ingest.json` lists first, as step 2 says). It uses `work/scm_links.json` if step 5 ran.
+
+Copy `<skill>/signals.yaml` into the run folder and edit it. List every status on each project's board, in workflow order, as one item each with `project`, `status` and `category`. A move to a status listed earlier is a backward move. The categories are:
+- `started`: work begins here, and time here is active. Cycle time starts at the first move into a started status.
+- `active`: work is happening. Time here is active.
+- `waiting`: queued, blocked or waiting for someone. Once work has started, time here is waiting.
+- `done`: finished. Lead and cycle time end at the defect's last move into done from a status that isn't done, so moving from one done status to another doesn't change them.
+
+Each project needs at least one started and one done status. Status names come only from this file, never from a built-in list, because every board names them differently. If acceptance criteria have their own field, set `acceptance_criteria_field` to its id, and `acceptance_criteria_name` to its name for Data Center changelogs. With the REST fallback, fetch that field with `--extra-field customfield_10010` in step 1. `signals.yaml` uses the same strict part of YAML as `scm.yaml`, and any mistake, such as an unknown setting or category, a status listed twice or a project with no done status, is refused with the file name and line number.
+
+```bash
+python3 <skill>/scripts/ticket_signals.py --config signals.yaml --issues clean/ --out out/ --links work/scm_links.json
+# options: --classified work/classified.json (also group by defect type)   --min-group-size 8   --period quarter
+```
+
+Leave out `--links` if step 5 didn't run. This writes `out/signals.md`, `out/signals.json` and one CSV per section. There are three separate groups of signals, never combined into one score:
+- **Clarity**: a rubric score (steps to reproduce, expected against actual, environment, acceptance criteria), description or acceptance criteria edits after work started, comments asking clarifying questions, and reopens.
+- **Complexity**: linked issues and comments; with links, merge or pull requests, commits, files changed and repos touched. Without links those are reported as not available, not as zero, and a defect with no link is left out of them rather than counted as zero. Lines changed aren't available, because diff text is dropped during anonymisation.
+- **Flow**, which describes the system the work moves through, not the ticket or the people: lead time, cycle time, active and waiting time, flow efficiency, status changes, backward moves and time in each status.
+
+Every figure is for all defects, a team, a period or a defect type, never a person, and goes through the same suppression as step 4: a group or count below `min_group_size` is suppressed and never named. Figures are medians or the number and share of defects showing a signal; nothing is written per defect. Clarifying questions are looked for only in anonymised comments. A defect with an incomplete changelog or incomplete comments is left out of the signals that need them, not counted as zero.
+
+It also compares clarity with rework (a reopen or a backward move) within each complexity band, the terciles of files changed, because a complex change is both harder to describe and more likely to need rework. Without links there are no bands, so it doesn't make the comparison. These are correlations, not causes: say so whenever you report them.
+
+The command line lists any status it found in the changelogs that `signals.yaml` doesn't have. Time in those statuses is neither active nor waiting, so add them and run again.
+
+### 7. Write the report
+
+Write the report from `out/` only: `aggregate.json` and `tables.md`, plus `scm_coverage.md` and `hotspots.md` if step 5 ran, and `signals.md` if step 6 ran. Don't go back to `clean/`, `work/` or the batches for numbers or wording. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group.
 
 Write a Markdown report with these sections, in this order:
 1. **Coverage**: defects matched by the query, defects analysed, unclassified, gaps from `_ingest.json`, and that small groups were suppressed (and at what threshold). If step 5 ran, add link coverage per repo. A high unclassified rate, low link coverage or many gaps is a finding in its own right. Put it near the top.
 2. **Recurring defect types and themes**: the largest types and themes, with counts and how they trend over the periods.
 3. **Where fixes land** (only if step 5 ran): the directories with the most defects fixed in them, from `hotspots.md`. Say that a directory where many fixes land is where defects are found and fixed, not necessarily where they were introduced, and that it reflects the code, not the people working in it.
 4. **How defects are found and where they escape**: triggers and escape stages, framed as "what in our process lets this through", never as who.
-5. **Caveats**: data quality, gaps, link coverage, what the taxonomy can't capture, and that classifications are model judgements.
-6. **Questions for the team**, framed as system improvements. For example: "What in our process lets validation defects reach customers?", not "who missed this?".
+5. **Clarity** (only if step 6 ran): how completely defects were described, edits after work started, clarifying questions and reopens.
+6. **Complexity** (only if step 6 ran): linked issues, comments and, with links, the size of the fixes.
+7. **Flow** (only if step 6 ran): lead and cycle time, waiting, flow efficiency and backward moves, framed as how the system moves work, never as how fast anyone works. Keep clarity, complexity and flow as three separate sections and never combine them into one score. Report clarity against rework only within complexity bands, and say these are correlations, not causes.
+8. **Caveats**: data quality, gaps, link coverage, what the taxonomy can't capture, that classifications are model judgements, and, if step 6 ran, confounders such as complexity and statuses missing from `signals.yaml`.
+9. **Questions for the team**, framed as system improvements. For example: "What in our process lets validation defects reach customers?", not "who missed this?".
 
 Keep the reply short: the report path, the three to five most important findings, and the caveats that matter most.
 
@@ -225,8 +258,7 @@ After the run, suggest the user deletes `raw/`, because it holds unanonymised pe
 
 ## Not ready yet
 
-These steps come later and their draft scripts have known problems. Don't run them on real data:
-- `scripts/ticket_signals.py` (clarity, complexity and flow): hard-codes status names, has an unused variable and crashes on an empty input set.
+This step comes later and its draft script has known problems. Don't run it on real data:
 - `scripts/szz.py` (where defects were probably introduced): silently truncates to 200 lines per file, and its repo lookup collides when two repos share a name.
 
 ## Later versions

@@ -1,0 +1,68 @@
+grouping,group,signal,defects,with_signal,share,median
+all,all defects,linked_issues,71,,,2.0
+all,all defects,comments,suppressed,,,suppressed
+all,all defects,changes,57,,,2.0
+all,all defects,commits,57,,,3.0
+all,all defects,files_changed,57,,,7.0
+all,all defects,repos_touched,57,,,1.0
+team,Accounts,linked_issues,20,,,2.0
+team,Accounts,comments,suppressed,,,suppressed
+team,Accounts,changes,suppressed,,,suppressed
+team,Accounts,commits,suppressed,,,suppressed
+team,Accounts,files_changed,suppressed,,,suppressed
+team,Accounts,repos_touched,suppressed,,,suppressed
+team,Payments,linked_issues,30,,,2.0
+team,Payments,comments,suppressed,,,suppressed
+team,Payments,changes,22,,,2.0
+team,Payments,commits,22,,,3.5
+team,Payments,files_changed,22,,,6.5
+team,Payments,repos_touched,22,,,1.0
+team,Search,linked_issues,6,,,1.5
+team,Search,comments,6,,,3.0
+team,Search,changes,6,,,2.5
+team,Search,commits,6,,,3.5
+team,Search,files_changed,6,,,4.5
+team,Search,repos_touched,6,,,1.5
+team,Web,linked_issues,5,,,2.0
+team,Web,comments,suppressed,,,suppressed
+team,Web,changes,suppressed,,,suppressed
+team,Web,commits,suppressed,,,suppressed
+team,Web,files_changed,suppressed,,,suppressed
+team,Web,repos_touched,suppressed,,,suppressed
+period,2026-01,linked_issues,11,,,3.0
+period,2026-01,comments,11,,,3.0
+period,2026-01,changes,suppressed,,,suppressed
+period,2026-01,commits,suppressed,,,suppressed
+period,2026-01,files_changed,suppressed,,,suppressed
+period,2026-01,repos_touched,suppressed,,,suppressed
+period,2026-02,linked_issues,12,,,1.5
+period,2026-02,comments,suppressed,,,suppressed
+period,2026-02,changes,suppressed,,,suppressed
+period,2026-02,commits,suppressed,,,suppressed
+period,2026-02,files_changed,suppressed,,,suppressed
+period,2026-02,repos_touched,suppressed,,,suppressed
+period,2026-03,linked_issues,12,,,1.0
+period,2026-03,comments,suppressed,,,suppressed
+period,2026-03,changes,12,,,2.0
+period,2026-03,commits,12,,,3.0
+period,2026-03,files_changed,12,,,5.0
+period,2026-03,repos_touched,12,,,1.0
+period,2026-04,linked_issues,12,,,1.0
+period,2026-04,comments,suppressed,,,suppressed
+period,2026-04,changes,suppressed,,,suppressed
+period,2026-04,commits,suppressed,,,suppressed
+period,2026-04,files_changed,suppressed,,,suppressed
+period,2026-04,repos_touched,suppressed,,,suppressed
+period,2026-05,linked_issues,12,,,2.0
+period,2026-05,comments,suppressed,,,suppressed
+period,2026-05,changes,suppressed,,,suppressed
+period,2026-05,commits,suppressed,,,suppressed
+period,2026-05,files_changed,suppressed,,,suppressed
+period,2026-05,repos_touched,suppressed,,,suppressed
+period,2026-06,linked_issues,12,,,2.0
+period,2026-06,comments,suppressed,,,suppressed
+period,2026-06,changes,7,,,2.0
+period,2026-06,commits,7,,,2.0
+period,2026-06,files_changed,7,,,9.0
+period,2026-06,repos_touched,7,,,1.0
+"4 groups suppressed: each had fewer than 5 defects, or was hidden so that a small group can't be worked out from the totals.",,,,,,

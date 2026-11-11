@@ -189,3 +189,30 @@ def test_a_column_whose_own_total_is_suppressed_is_not_named(tmp_path):
     # Hiding rare_type forces a second type to be hidden too, or it could be found from the total.
     assert "rare_type" not in table["columns"] and table["suppressed_columns"] >= 1
     assert not any("rare_type" in p.read_text() for p in tmp_path.iterdir())
+
+
+DETERMINISM_PROBE = """
+import random, sys
+sys.path.insert(0, sys.argv[1])
+import suppress
+rng = random.Random(3)
+records = [{"team": rng.choice("ABCDEFG"), "period": rng.choice(["p1", "p2", "p3"]),
+            "x": rng.choice(["yes", "no", "n/a"]), "y": rng.choice(["yes", "no"])} for _ in range(120)]
+groupings = [(), ("team",), ("period",)]
+combos = groupings + [g + (d,) for g in groupings for d in ("x", "y")]
+print(sorted(sorted(c) for c in suppress.publish(records, combos, 5).suppressed))
+"""
+
+
+def test_the_same_records_are_suppressed_the_same_way_in_every_run():
+    # Python randomises string hashing per process, so anything that depends on set order
+    # would differ between runs; golden files and repeat runs must match exactly.
+    import subprocess
+    import sys
+    from conftest import ROOT
+    results = set()
+    for seed in range(8):
+        done = subprocess.run([sys.executable, "-c", DETERMINISM_PROBE, str(ROOT / "scripts")], capture_output=True,
+                              text=True, check=True, env={"PYTHONHASHSEED": str(seed)})
+        results.add(done.stdout)
+    assert len(results) == 1

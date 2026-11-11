@@ -1,0 +1,31 @@
+# Ticket signals settings for scripts/ticket_signals.py. Copy into the run folder and edit.
+#
+# List every status on each project's board, in workflow order (a move to a status
+# listed earlier is a backward move), each with one category:
+#   started  work begins here; time here is active (cycle time starts at the first one)
+#   active   work is happening; time here is active
+#   waiting  queued, blocked or waiting for someone; counts as waiting once work has started
+#   done     finished
+# Each project needs at least one started and one done status.
+min_group_size: 5
+# acceptance_criteria_field: customfield_10010   # the field id, if acceptance criteria have their own field
+# acceptance_criteria_name: 'Acceptance Criteria' # its name, as Data Center changelogs show it
+statuses:
+  - project: ABC
+    status: To Do
+    category: waiting
+  - project: ABC
+    status: In Progress
+    category: started
+  - project: ABC
+    status: In Review
+    category: waiting
+  - project: ABC
+    status: Ready for Test
+    category: waiting
+  - project: ABC
+    status: In Test
+    category: active
+  - project: ABC
+    status: Done
+    category: done

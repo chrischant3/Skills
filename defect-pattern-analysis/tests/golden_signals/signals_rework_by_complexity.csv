@@ -1,0 +1,7 @@
+band,files_changed,clarity,defects,with_rework,share
+low,up to 5 files,lower,suppressed,suppressed,suppressed
+low,up to 5 files,higher,suppressed,suppressed,suppressed
+middle,6 to 8 files,lower,suppressed,suppressed,suppressed
+middle,6 to 8 files,higher,suppressed,suppressed,suppressed
+high,more than 8 files,lower,suppressed,suppressed,suppressed
+high,more than 8 files,higher,suppressed,suppressed,suppressed

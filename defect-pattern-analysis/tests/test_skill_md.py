@@ -32,8 +32,8 @@ def test_skill_never_lowers_the_group_threshold():
 
 def test_draft_scripts_with_known_problems_are_marked_not_ready():
     not_ready = SKILL.split("## Not ready yet", 1)[1].split("## Later versions", 1)[0]
-    for name in ["ticket_signals.py", "szz.py"]:
-        assert f"scripts/{name}" in not_ready
+    assert "scripts/szz.py" in not_ready
+    assert "ticket_signals" not in not_ready
     assert "Azure DevOps" not in not_ready and "hotspots" not in not_ready.lower()
 
 
@@ -118,3 +118,38 @@ def test_the_report_has_a_hotspot_section_after_the_recurring_types():
     assert report.index("**Recurring defect types and themes**") < report.index("**Where fixes land**") < \
         report.index("**Caveats**")
     assert "hotspots.md" in report
+
+
+def step6():
+    return SKILL.split("### 6.", 1)[1].split("### 7.", 1)[0]
+
+
+def test_ticket_signals_run_after_counting_and_linking_and_before_the_report():
+    workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
+    assert workflow.index("scripts/aggregate.py") < workflow.index("scripts/link_scm.py") \
+        < workflow.index("scripts/ticket_signals.py") < workflow.index("### 7. Write the report")
+    assert "--links work/scm_links.json" in step6() and "signals.yaml" in step6()
+
+
+def test_ticket_signals_keep_clarity_complexity_and_flow_apart_and_call_them_correlations():
+    step = step6()
+    assert "never combined into one score" in step
+    assert "correlations, not causes" in step and "complexity band" in step
+    assert "not as zero" in step and "never a person" in step
+    report = SKILL.split("### 7.", 1)[1]
+    positions = [report.index(f"**{name}**") for name in ["Clarity", "Complexity", "Flow", "Caveats"]]
+    assert positions == sorted(positions)
+    assert "signals.md" in report
+
+
+def test_ticket_signals_status_config_is_documented():
+    step = step6()
+    for word in ["started", "active", "waiting", "done", "workflow order", "line number"]:
+        assert word in step, word
+    assert "--extra-field" in step
+
+
+def test_the_skill_description_no_longer_calls_ticket_signals_unready():
+    front = SKILL.split("---", 2)[1]
+    assert "clarity, complexity and flow" in front
+    assert "Ticket-history signals" not in front
