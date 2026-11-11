@@ -157,4 +157,4 @@ Full suite on each Claude model, three runs per case, with and without the skill
 | **Mean gain over no skill** | +0.43 | +0.44 | +0.51 |
 | **Cost** | $4.54 | $2.04 | $0.18 |
 
-Haiku fails `standard-first`: in all three runs it answered without loading the skill, and two of those answers changed the skill before writing any eval case.
+Haiku fails `standard-first`: in all three runs it answered without loading the skill, and in one of them its plan changed the skill without writing any eval case first.
