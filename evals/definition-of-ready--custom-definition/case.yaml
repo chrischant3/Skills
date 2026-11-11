@@ -39,7 +39,7 @@ graders:
 
   - type: regex
     name: not-ready
-    pattern: 'not ready'
+    pattern: 'Verdict:\W*Not ready'
     flags: i
 
   - type: llm

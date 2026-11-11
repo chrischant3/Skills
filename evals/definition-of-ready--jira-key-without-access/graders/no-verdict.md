@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: '\b(not ready|ready with questions)\b'
+pattern: 'Verdict:'
 flags: i
 match: not_contains
 ---

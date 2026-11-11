@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: 'not ready'
+pattern: 'Verdict:\W*Not ready'
 flags: i
 ---

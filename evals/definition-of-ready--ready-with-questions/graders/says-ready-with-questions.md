@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: 'ready with (open )?questions'
+pattern: 'Verdict:\W*Ready with (open )?questions'
 flags: i
 ---
