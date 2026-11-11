@@ -38,7 +38,9 @@ HEADING_STYLE = re.compile(r"^(heading\s*\d|title|subtitle)$", re.IGNORECASE)
 MIN_PAGE_CHARS = 20
 # A line that starts a new item even without a blank line before it: a requirement ID
 # ("NFR-P1", "SEC-2", "R12"), a numbered heading/item ("2.", "3.1.4") or a bullet.
-ITEM_START = re.compile(r"^\s*(?:[A-Z]{1,6}(?:[-_.]?[A-Z]{1,3})?[-_.]?\d+(?:[.\-]\d+)*\b|\d+(?:\.\d+)*\.\s|\d+(?:\.\d+)+\s|[\u2022\u25aa\-*]\s)")
+ITEM_START = re.compile(
+    r"^\s*(?:[A-Z]{1,6}(?:[-_.]?[A-Z]{1,3})?[-_.]?\d+(?:[.\-]\d+)*\b|\d+(?:\.\d+)*\.\s|\d+(?:\.\d+)+\s|[\u2022\u25aa\-*]\s)"
+)
 
 
 class UnsupportedFormat(ValueError):
@@ -65,14 +67,23 @@ def extract(path: Path) -> list[dict]:
         ".odt": _extract_via_textutil,
     }
     if suffix not in handlers:
-        raise UnsupportedFormat(f"Cannot extract {suffix or 'extensionless'} files: {path.name}")
+        raise UnsupportedFormat(
+            f"Cannot extract {suffix or 'extensionless'} files: {path.name}"
+        )
     return handlers[suffix](path)
 
 
 def _extract_pdf(path: Path) -> list[dict]:
     if not shutil.which("pdftotext"):
-        raise RuntimeError("pdftotext (poppler) is required for PDF files: brew install poppler")
-    out = subprocess.run(["pdftotext", "-layout", str(path), "-"], capture_output=True, text=True, check=True).stdout
+        raise RuntimeError(
+            "pdftotext (poppler) is required for PDF files: brew install poppler"
+        )
+    out = subprocess.run(
+        ["pdftotext", "-layout", str(path), "-"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
     pages = out.split("\f")
     if pages and not pages[-1].strip():
         pages = pages[:-1]
@@ -115,10 +126,15 @@ def _extract_docx(path: Path) -> list[dict]:
             blocks.append({"loc": _docx_loc(heading, count), "text": text})
         elif element.tag == f"{W_NS}tbl":
             for row in element.iter(f"{W_NS}tr"):
-                cells = [" ".join(_para_text(p) for p in cell.iter(f"{W_NS}p")).strip() for cell in row.iter(f"{W_NS}tc")]
+                cells = [
+                    " ".join(_para_text(p) for p in cell.iter(f"{W_NS}p")).strip()
+                    for cell in row.iter(f"{W_NS}tc")
+                ]
                 if any(cells):
                     count += 1
-                    blocks.append({"loc": _docx_loc(heading, count), "text": " | ".join(cells)})
+                    blocks.append(
+                        {"loc": _docx_loc(heading, count), "text": " | ".join(cells)}
+                    )
     return blocks
 
 
@@ -136,12 +152,20 @@ def _is_heading(p: ET.Element, text: str) -> bool:
     The fallback exists because many real specs are formatted by hand, not with styles.
     """
     style = p.find(f"{W_NS}pPr/{W_NS}pStyle")
-    if style is not None and HEADING_STYLE.match(style.get(f"{W_NS}val", "").replace("Heading", "Heading ")):
+    if style is not None and HEADING_STYLE.match(
+        style.get(f"{W_NS}val", "").replace("Heading", "Heading ")
+    ):
         return True
     if p.find(f"{W_NS}pPr/{W_NS}outlineLvl") is not None:
         return True
-    runs = [r for r in p.iter(f"{W_NS}r") if "".join(t.text or "" for t in r.iter(f"{W_NS}t")).strip()]
-    all_bold = bool(runs) and all(r.find(f"{W_NS}rPr/{W_NS}b") is not None for r in runs)
+    runs = [
+        r
+        for r in p.iter(f"{W_NS}r")
+        if "".join(t.text or "" for t in r.iter(f"{W_NS}t")).strip()
+    ]
+    all_bold = bool(runs) and all(
+        r.find(f"{W_NS}rPr/{W_NS}b") is not None for r in runs
+    )
     return all_bold and len(text.split()) <= 12 and not text.endswith((".", ":", ";"))
 
 
@@ -159,7 +183,12 @@ def _extract_xlsx(path: Path) -> list[dict]:
             if headers is None:
                 headers = [v or f"Col{i + 1}" for i, v in enumerate(values)]
                 continue
-            blocks.append({"loc": f"{ws.title}!R{row_number}", "text": _label_row(headers, values)})
+            blocks.append(
+                {
+                    "loc": f"{ws.title}!R{row_number}",
+                    "text": _label_row(headers, values),
+                }
+            )
     return blocks
 
 
@@ -175,7 +204,9 @@ def _extract_csv(path: Path) -> list[dict]:
         if headers is None:
             headers = [v or f"Col{i + 1}" for i, v in enumerate(values)]
             continue
-        blocks.append({"loc": f"{path.stem}!R{row_number}", "text": _label_row(headers, values)})
+        blocks.append(
+            {"loc": f"{path.stem}!R{row_number}", "text": _label_row(headers, values)}
+        )
     return blocks
 
 
@@ -190,15 +221,23 @@ def _label_row(headers: list[str], values: list[str]) -> str:
 
 def _extract_lines(path: Path) -> list[dict]:
     lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
-    return [{"loc": f"L{n}", "text": _squash(line)} for n, line in enumerate(lines, start=1) if line.strip()]
+    return [
+        {"loc": f"L{n}", "text": _squash(line)}
+        for n, line in enumerate(lines, start=1)
+        if line.strip()
+    ]
 
 
 def _extract_via_textutil(path: Path) -> list[dict]:
     if not shutil.which("textutil"):
-        raise RuntimeError(f"{path.suffix} needs macOS textutil; save the file as .docx or .pdf instead")
+        raise RuntimeError(
+            f"{path.suffix} needs macOS textutil; save the file as .docx or .pdf instead"
+        )
     with tempfile.TemporaryDirectory() as tmp:
         out = Path(tmp) / "converted.txt"
-        subprocess.run(["textutil", "-convert", "txt", str(path), "-output", str(out)], check=True)
+        subprocess.run(
+            ["textutil", "-convert", "txt", str(path), "-output", str(out)], check=True
+        )
         return _extract_lines(out)
 
 
@@ -214,7 +253,9 @@ def _warnings(blocks: list[dict]) -> list[str]:
             pages[block["loc"]] = pages.get(block["loc"], 0) + len(block["text"])
     for loc, chars in pages.items():
         if chars < MIN_PAGE_CHARS:
-            warnings.append(f"{loc}: little or no text; probably a scanned image or diagram. Check it by eye or OCR it.")
+            warnings.append(
+                f"{loc}: little or no text; probably a scanned image or diagram. Check it by eye or OCR it."
+            )
     if not any(b["text"] for b in blocks):
         warnings.append("No text extracted at all.")
     return warnings
@@ -222,7 +263,9 @@ def _warnings(blocks: list[dict]) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point: extract a document into source.md + manifest.json."""
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("document", type=Path)
     parser.add_argument("--out-dir", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -239,7 +282,9 @@ def main(argv: list[str] | None = None) -> int:
         "words": sum(len(b["text"].split()) for b in blocks),
         "warnings": _warnings(blocks),
     }
-    (args.out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    (args.out_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2), encoding="utf-8"
+    )
     print(json.dumps(manifest, indent=2))
     return 0
 

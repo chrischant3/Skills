@@ -32,14 +32,20 @@ def issues_from_document(doc) -> list[dict]:
     if isinstance(doc.get("issues"), list):
         return issues_from_document(doc["issues"])
     if isinstance(doc.get("content"), list):
-        return [issue for block in doc["content"] if isinstance(block, dict) and block.get("type") == "text"
-                for issue in issues_from_document(block.get("text", ""))]
+        return [
+            issue
+            for block in doc["content"]
+            if isinstance(block, dict) and block.get("type") == "text"
+            for issue in issues_from_document(block.get("text", ""))
+        ]
     return []
 
 
 def _complete(container: dict | None, items_key: str) -> bool:
     """True only when a total is present and the list holds at least that many items."""
-    if not isinstance(container, dict) or not isinstance(container.get(items_key), list):
+    if not isinstance(container, dict) or not isinstance(
+        container.get(items_key), list
+    ):
         return False
     total = container.get("total")
     return isinstance(total, int) and total <= len(container[items_key])
@@ -54,13 +60,19 @@ def normalise_issue(issue: dict) -> dict:
     """
     out = json.loads(json.dumps(issue))
     changelog = out.get("changelog")
-    if isinstance(changelog, dict) and "histories" not in changelog and isinstance(changelog.get("values"), list):
+    if (
+        isinstance(changelog, dict)
+        and "histories" not in changelog
+        and isinstance(changelog.get("values"), list)
+    ):
         changelog["histories"] = changelog.pop("values")
     previous = out.get("_ingest") if isinstance(out.get("_ingest"), dict) else {}
     out["_ingest"] = {
         "source": previous.get("source", "unknown"),
-        "changelog_complete": bool(previous.get("changelog_complete")) or _complete(out.get("changelog"), "histories"),
-        "comments_complete": bool(previous.get("comments_complete")) or _complete(out["fields"].get("comment"), "comments"),
+        "changelog_complete": bool(previous.get("changelog_complete"))
+        or _complete(out.get("changelog"), "histories"),
+        "comments_complete": bool(previous.get("comments_complete"))
+        or _complete(out["fields"].get("comment"), "comments"),
     }
     return out
 
@@ -69,7 +81,10 @@ def _richness(issue: dict) -> tuple:
     ingest = issue["_ingest"]
     histories = (issue.get("changelog") or {}).get("histories") or []
     comments = (issue["fields"].get("comment") or {}).get("comments") or []
-    return (ingest["changelog_complete"] + ingest["comments_complete"], len(histories) + len(comments))
+    return (
+        ingest["changelog_complete"] + ingest["comments_complete"],
+        len(histories) + len(comments),
+    )
 
 
 def merge_issues(issues: list[dict]) -> list[dict]:
@@ -90,7 +105,9 @@ def _key_order(key: str):
 
 def ingest_report(issues: list[dict], manifest: dict | None) -> dict:
     """Summarise coverage: how many issues, how many matched, and which have gaps."""
-    sources = {i["_ingest"]["source"] for i in issues if i["_ingest"]["source"] != "unknown"}
+    sources = {
+        i["_ingest"]["source"] for i in issues if i["_ingest"]["source"] != "unknown"
+    }
     if manifest and manifest.get("source"):
         sources.add(manifest["source"])
     matched = manifest.get("matched") if manifest else None
@@ -98,6 +115,10 @@ def ingest_report(issues: list[dict], manifest: dict | None) -> dict:
         "issues": len(issues),
         "matched": matched if isinstance(matched, int) else None,
         "sources": sorted(sources),
-        "changelog_incomplete": [i["key"] for i in issues if not i["_ingest"]["changelog_complete"]],
-        "comments_incomplete": [i["key"] for i in issues if not i["_ingest"]["comments_complete"]],
+        "changelog_incomplete": [
+            i["key"] for i in issues if not i["_ingest"]["changelog_complete"]
+        ],
+        "comments_incomplete": [
+            i["key"] for i in issues if not i["_ingest"]["comments_complete"]
+        ],
     }

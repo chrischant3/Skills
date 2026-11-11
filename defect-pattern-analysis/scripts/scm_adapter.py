@@ -50,7 +50,12 @@ class Change:
 
     def texts(self) -> list[str]:
         """Every piece of text that may name an issue key: title, description, branch, commit messages."""
-        return [self.title, self.description, self.source_branch, *(c.get("message") or "" for c in self.commits)]
+        return [
+            self.title,
+            self.description,
+            self.source_branch,
+            *(c.get("message") or "" for c in self.commits),
+        ]
 
 
 class SourceControlAdapter(ABC):
@@ -125,7 +130,9 @@ def adapter_for(platform: str) -> SourceControlAdapter:
         return importlib.import_module(ADAPTER_MODULES[platform]).ADAPTER
     if platform in PLANNED:
         raise NotImplementedError(f"{platform} linking isn't ready yet")
-    raise ValueError(f"unknown platform {platform!r}; expected one of {sorted(known_platforms())}")
+    raise ValueError(
+        f"unknown platform {platform!r}; expected one of {sorted(known_platforms())}"
+    )
 
 
 def known_platforms() -> set[str]:

@@ -11,7 +11,9 @@ from pathlib import Path
 
 import pytest
 
-pytest.importorskip("fpdf", reason="fpdf2 is needed to build the PDF fixture: pip install fpdf2")
+pytest.importorskip(
+    "fpdf", reason="fpdf2 is needed to build the PDF fixture: pip install fpdf2"
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "evals"))
@@ -37,14 +39,26 @@ def test_payouts_pdf_is_byte_identical_across_builds(tmp_path):
     assert _build(tmp_path, "a").read_bytes() == _build(tmp_path, "b").read_bytes()
 
 
-@pytest.mark.skipif(not shutil.which("pdftotext"), reason="pdftotext (poppler) not installed")
+@pytest.mark.skipif(
+    not shutil.which("pdftotext"), reason="pdftotext (poppler) not installed"
+)
 def test_payouts_pdf_keeps_each_section_on_its_own_page(tmp_path):
     blocks = extract.extract(_build(tmp_path, "a"))
-    page_of = {req: b["loc"] for b in blocks for req in ("NFR-P1", "NFR-A2", "NFR-S4", "NFR-D4") if req in b["text"]}
+    page_of = {
+        req: b["loc"]
+        for b in blocks
+        for req in ("NFR-P1", "NFR-A2", "NFR-S4", "NFR-D4")
+        if req in b["text"]
+    }
     assert page_of == {"NFR-P1": "p1", "NFR-A2": "p2", "NFR-S4": "p2", "NFR-D4": "p3"}
 
 
-@pytest.mark.skipif(not shutil.which("pdftotext"), reason="pdftotext (poppler) not installed")
+@pytest.mark.skipif(
+    not shutil.which("pdftotext"), reason="pdftotext (poppler) not installed"
+)
 def test_payouts_pdf_keeps_wrapped_requirements_whole(tmp_path):
     texts = [b["text"] for b in extract.extract(_build(tmp_path, "a"))]
-    assert any("restored within 1 hour with no more than 15 minutes of data loss" in t for t in texts)
+    assert any(
+        "restored within 1 hour with no more than 15 minutes of data loss" in t
+        for t in texts
+    )

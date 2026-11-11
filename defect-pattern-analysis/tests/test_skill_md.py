@@ -9,18 +9,29 @@ SKILL = (ROOT / "SKILL.md").read_text(encoding="utf-8")
 
 
 def test_skill_declines_per_person_breakdowns_and_says_why():
-    section = SKILL.split("**If anyone asks for a per-person breakdown**", 1)[1].split("## Inputs", 1)[0]
+    section = SKILL.split("**If anyone asks for a per-person breakdown**", 1)[1].split(
+        "## Inputs", 1
+    )[0]
     assert "decline" in section
     assert "system" in section and "pairing" in section and "anonymised" in section
 
 
 def test_skill_requires_a_data_governance_check_before_real_data():
     before = SKILL.split("## Workflow", 1)[0]
-    assert re.search(r"confirm that their organisation allows sending Jira ticket data to an AI model", before)
+    assert re.search(
+        r"confirm that their organisation allows sending Jira ticket data to an AI model",
+        before,
+    )
 
 
 def test_skill_names_every_script_in_the_order_it_runs():
-    order = ["jira_changelog.py", "anonymise.py", "make_batches.py", "validate_classifications.py", "aggregate.py"]
+    order = [
+        "jira_changelog.py",
+        "anonymise.py",
+        "make_batches.py",
+        "validate_classifications.py",
+        "aggregate.py",
+    ]
     workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
     positions = [workflow.index(f"scripts/{name}") for name in order]
     assert positions == sorted(positions)
@@ -48,7 +59,11 @@ def test_gitlab_linking_runs_after_anonymisation_and_before_the_report():
 
 
 def test_skill_names_no_dependency_outside_the_standard_library():
-    assert "`requests`" not in SKILL and "pyyaml" not in SKILL.lower() and "pip install" not in SKILL
+    assert (
+        "`requests`" not in SKILL
+        and "pyyaml" not in SKILL.lower()
+        and "pip install" not in SKILL
+    )
 
 
 def test_skill_md_uses_no_em_dashes():
@@ -57,11 +72,15 @@ def test_skill_md_uses_no_em_dashes():
 
 def test_evals_cover_the_per_person_refusal():
     evals = json.loads((ROOT / "evals/evals.json").read_text())["evals"]
-    assert any("assignee" in e["prompt"] and "refusal" in e["expected_output"] for e in evals)
+    assert any(
+        "assignee" in e["prompt"] and "refusal" in e["expected_output"] for e in evals
+    )
 
 
 def test_skill_says_what_the_model_sees_with_mcp_and_with_rest():
-    assert "the model sees raw ticket data, names included, during the fetch step" in SKILL
+    assert (
+        "the model sees raw ticket data, names included, during the fetch step" in SKILL
+    )
     assert "The REST fallback keeps names away from the model entirely" in SKILL
 
 
@@ -78,8 +97,18 @@ def test_skill_lists_component_attribution_as_an_open_question():
 
 def test_skill_documents_the_yaml_subset_scm_yaml_may_use():
     step = SKILL.split("### 5.", 1)[1].split("### 6.", 1)[0]
-    subset = step.split("`scm.yaml` uses a strict part of YAML", 1)[1].split("\n\n", 1)[0]
-    for word in ["single quotes", "tabs", "anchors", "flow", "multi-line", "duplicate", "line number"]:
+    subset = step.split("`scm.yaml` uses a strict part of YAML", 1)[1].split("\n\n", 1)[
+        0
+    ]
+    for word in [
+        "single quotes",
+        "tabs",
+        "anchors",
+        "flow",
+        "multi-line",
+        "duplicate",
+        "line number",
+    ]:
         assert word in subset, word
 
 
@@ -99,7 +128,13 @@ def step5():
 def test_azure_devops_linking_is_documented_with_its_files_and_token():
     step = step5()
     assert "Azure DevOps" in step and "platform: azure" in step
-    for name in ["raw/azure-prs-1.json", "-commits-1.json", "-changes-1.json", "AZDO_PAT", "last iteration"]:
+    for name in [
+        "raw/azure-prs-1.json",
+        "-commits-1.json",
+        "-changes-1.json",
+        "AZDO_PAT",
+        "last iteration",
+    ]:
         assert name in step, name
 
 
@@ -115,8 +150,11 @@ def test_hotspots_run_after_linking_and_explain_the_counting_rule():
 
 def test_the_report_has_a_hotspot_section_after_the_recurring_types():
     report = SKILL.split("### 6.", 1)[1]
-    assert report.index("**Recurring defect types and themes**") < report.index("**Where fixes land**") < \
-        report.index("**Caveats**")
+    assert (
+        report.index("**Recurring defect types and themes**")
+        < report.index("**Where fixes land**")
+        < report.index("**Caveats**")
+    )
     assert "hotspots.md" in report
 
 
@@ -126,8 +164,12 @@ def step6():
 
 def test_ticket_signals_run_after_counting_and_linking_and_before_the_report():
     workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
-    assert workflow.index("scripts/aggregate.py") < workflow.index("scripts/link_scm.py") \
-        < workflow.index("scripts/ticket_signals.py") < workflow.index("### 7. Write the report")
+    assert (
+        workflow.index("scripts/aggregate.py")
+        < workflow.index("scripts/link_scm.py")
+        < workflow.index("scripts/ticket_signals.py")
+        < workflow.index("### 7. Write the report")
+    )
     assert "--links work/scm_links.json" in step6() and "signals.yaml" in step6()
 
 
@@ -137,14 +179,24 @@ def test_ticket_signals_keep_clarity_complexity_and_flow_apart_and_call_them_cor
     assert "correlations, not causes" in step and "complexity band" in step
     assert "not as zero" in step and "never a person" in step
     report = SKILL.split("### 7.", 1)[1]
-    positions = [report.index(f"**{name}**") for name in ["Clarity", "Complexity", "Flow", "Caveats"]]
+    positions = [
+        report.index(f"**{name}**")
+        for name in ["Clarity", "Complexity", "Flow", "Caveats"]
+    ]
     assert positions == sorted(positions)
     assert "signals.md" in report
 
 
 def test_ticket_signals_status_config_is_documented():
     step = step6()
-    for word in ["started", "active", "waiting", "done", "workflow order", "line number"]:
+    for word in [
+        "started",
+        "active",
+        "waiting",
+        "done",
+        "workflow order",
+        "line number",
+    ]:
         assert word in step, word
     assert "--extra-field" in step
 

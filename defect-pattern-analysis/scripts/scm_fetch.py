@@ -42,32 +42,62 @@ def fetch_all(config: dict, since: str, out_dir, client_for=None) -> list[dict]:
     repos = config["repos"]
     if client_for is None:
         # Build every client first, so a missing credential stops the run before anything is fetched.
-        clients = [scm_adapter.adapter_for(r["platform"]).client_from_env(r, os.environ)
-                   if scm_adapter.is_ready(r["platform"]) else None for r in repos]
+        clients = [
+            scm_adapter.adapter_for(r["platform"]).client_from_env(r, os.environ)
+            if scm_adapter.is_ready(r["platform"])
+            else None
+            for r in repos
+        ]
     else:
-        clients = [client_for(r) if scm_adapter.is_ready(r["platform"]) else None for r in repos]
+        clients = [
+            client_for(r) if scm_adapter.is_ready(r["platform"]) else None
+            for r in repos
+        ]
     results = []
     for repo, client in zip(repos, clients):
         if client is None:
-            results.append({"repo": str(repo.get("repo") or repo.get("project")),
-                            "skipped": f"{repo['platform']} isn't ready yet"})
+            results.append(
+                {
+                    "repo": str(repo.get("repo") or repo.get("project")),
+                    "skipped": f"{repo['platform']} isn't ready yet",
+                }
+            )
             continue
-        results.append(scm_adapter.adapter_for(repo["platform"]).fetch(repo, since, out_dir, client))
+        results.append(
+            scm_adapter.adapter_for(repo["platform"]).fetch(
+                repo, since, out_dir, client
+            )
+        )
     return results
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description="Fetch merged changes for every repo in scm.yaml into raw/.")
+    ap = argparse.ArgumentParser(
+        description="Fetch merged changes for every repo in scm.yaml into raw/."
+    )
     ap.add_argument("--config", default="scm.yaml")
-    ap.add_argument("--issues", default="clean", help="anonymised defects, for the default window")
-    ap.add_argument("--since", help="ISO date the window starts on (default: the earliest defect in --issues)")
+    ap.add_argument(
+        "--issues", default="clean", help="anonymised defects, for the default window"
+    )
+    ap.add_argument(
+        "--since",
+        help="ISO date the window starts on (default: the earliest defect in --issues)",
+    )
     ap.add_argument("--out", default="raw")
-    ap.add_argument("--print-since", action="store_true", help="print the window's start date and stop")
+    ap.add_argument(
+        "--print-since",
+        action="store_true",
+        help="print the window's start date and stop",
+    )
     a = ap.parse_args(argv)
     try:
-        since = a.since or clean_data.earliest_created(clean_data.load_clean_issues(a.issues))
+        since = a.since or clean_data.earliest_created(
+            clean_data.load_clean_issues(a.issues)
+        )
         if not since:
-            raise ValueError("no defects in --issues to take the window from; pass --since")
+            raise ValueError(
+                "no defects in --issues to take the window from; pass --since"
+            )
         if a.print_since:
             print(since)
             return 0
@@ -79,8 +109,11 @@ def main(argv=None) -> int:
         print(f"error: {err}", file=sys.stderr)
         return 2
     for r in results:
-        print(f"{r['repo']}: skipped, {r['skipped']}" if "skipped" in r
-              else f"{r['repo']}: {r['changes']} merged changes since {since} -> {a.out}")
+        print(
+            f"{r['repo']}: skipped, {r['skipped']}"
+            if "skipped" in r
+            else f"{r['repo']}: {r['changes']} merged changes since {since} -> {a.out}"
+        )
     return 0
 
 

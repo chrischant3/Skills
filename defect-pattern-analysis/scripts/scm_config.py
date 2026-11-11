@@ -35,15 +35,26 @@ import scm_keys
 LIST_KEY = "repos"
 TOP_LEVEL = {"min_group_size", "default_key_pattern", LIST_KEY}
 COMMON_REPO_FIELDS = {"platform", "team", "key_pattern"}
-LINE = re.compile(r"^(?P<indent> *)(?P<dash>- +)?(?P<key>[A-Za-z_][\w-]*):(?: +(?P<value>.*?))?\s*$")
+LINE = re.compile(
+    r"^(?P<indent> *)(?P<dash>- +)?(?P<key>[A-Za-z_][\w-]*):(?: +(?P<value>.*?))?\s*$"
+)
 RESERVED_WORDS = {"true", "false", "yes", "no", "on", "off", "y", "n", "null", "~"}
-NON_TEXT_NUMBER = re.compile(r"[-+]?(\d[\d_]*\.\d*|\.\d+|\d+(\.\d*)?[eE][-+]?\d+|0[xX][0-9a-fA-F]+|0[oO]?[0-7]+"
-                             r"|\.(inf|Inf|INF|nan|NaN|NAN))")
-INDICATORS = {"&": "anchors (&) aren't supported", "*": "aliases (*) aren't supported",
-              "!": "tags (!) aren't supported", "[": "flow collections ([...]) aren't supported",
-              "{": "flow collections ({...}) aren't supported", "|": "multi-line strings (|) aren't supported",
-              ">": "multi-line strings (>) aren't supported", "%": "% is reserved in YAML; quote the value",
-              "@": "@ is reserved in YAML; quote the value", "`": "` is reserved in YAML; quote the value"}
+NON_TEXT_NUMBER = re.compile(
+    r"[-+]?(\d[\d_]*\.\d*|\.\d+|\d+(\.\d*)?[eE][-+]?\d+|0[xX][0-9a-fA-F]+|0[oO]?[0-7]+"
+    r"|\.(inf|Inf|INF|nan|NaN|NAN))"
+)
+INDICATORS = {
+    "&": "anchors (&) aren't supported",
+    "*": "aliases (*) aren't supported",
+    "!": "tags (!) aren't supported",
+    "[": "flow collections ([...]) aren't supported",
+    "{": "flow collections ({...}) aren't supported",
+    "|": "multi-line strings (|) aren't supported",
+    ">": "multi-line strings (>) aren't supported",
+    "%": "% is reserved in YAML; quote the value",
+    "@": "@ is reserved in YAML; quote the value",
+    "`": "` is reserved in YAML; quote the value",
+}
 
 
 def _strip_comment(line: str) -> str:
@@ -69,23 +80,36 @@ def _scalar(raw: str | None, n: int):
         if len(raw) < 2 or raw[-1] != "'":
             raise ValueError(f"line {n}: unterminated single-quoted value")
         if "'" in inner.replace("''", ""):
-            raise ValueError(f"line {n}: text after a single-quoted value's closing quote; use one quoted value")
+            raise ValueError(
+                f"line {n}: text after a single-quoted value's closing quote; use one quoted value"
+            )
         return inner.replace("''", "'")
     if raw[0] == '"':
         inner = raw[1:-1]
         if len(raw) < 2 or raw[-1] != '"':
             raise ValueError(f"line {n}: unterminated double-quoted value")
         if re.search(r'(?<!\\)"', inner):
-            raise ValueError(f"line {n}: text after a double-quoted value's closing quote; use one quoted value")
+            raise ValueError(
+                f"line {n}: text after a double-quoted value's closing quote; use one quoted value"
+            )
         if re.search(r'\\[^"\\]', inner):
-            raise ValueError(f"line {n}: backslashes in double quotes aren't supported; use single quotes")
+            raise ValueError(
+                f"line {n}: backslashes in double quotes aren't supported; use single quotes"
+            )
         return inner.replace('\\"', '"').replace("\\\\", "\\")
     if raw[0] in INDICATORS:
         raise ValueError(f"line {n}: {INDICATORS[raw[0]]}")
     if re.fullmatch(r"-?(0|[1-9]\d*)", raw):
         return int(raw)
-    if raw.lower() in RESERVED_WORDS or NON_TEXT_NUMBER.fullmatch(raw) or ": " in raw or raw.endswith(":"):
-        raise ValueError(f"line {n}: YAML wouldn't read {raw!r} as plain text; quote it, for example '{raw}'")
+    if (
+        raw.lower() in RESERVED_WORDS
+        or NON_TEXT_NUMBER.fullmatch(raw)
+        or ": " in raw
+        or raw.endswith(":")
+    ):
+        raise ValueError(
+            f"line {n}: YAML wouldn't read {raw!r} as plain text; quote it, for example '{raw}'"
+        )
     return raw
 
 
@@ -107,26 +131,36 @@ def parse_with_lines(text: str, list_key: str = LIST_KEY) -> tuple[dict, dict]:
     dash_indent = item_indent = None
     for n, line in enumerate(text.splitlines(), start=1):
         if n == 1 and line.startswith("﻿"):
-            raise ValueError("line 1: the file starts with a byte order mark; save it as plain UTF-8")
+            raise ValueError(
+                "line 1: the file starts with a byte order mark; save it as plain UTF-8"
+            )
         if "\t" in line:
             raise ValueError(f"line {n}: tab characters aren't supported; use spaces")
         line = _strip_comment(line)
         if not line.strip():
             continue
         if line.strip() in ("---", "...") or line.startswith(("--- ", "... ")):
-            raise ValueError(f"line {n}: document markers (--- and ...) aren't supported; use one document")
+            raise ValueError(
+                f"line {n}: document markers (--- and ...) aren't supported; use one document"
+            )
         dash = re.match(r"^( *)- +([\[{])", line)
         if dash:
-            raise ValueError(f"line {n}: flow collections ({dash[2]}...) aren't supported; write one key per line")
+            raise ValueError(
+                f"line {n}: flow collections ({dash[2]}...) aren't supported; write one key per line"
+            )
         m = LINE.match(line)
         if not m:
             raise ValueError(f"line {n}: not understood: {line.strip()!r}")
         indent, key, value = len(m["indent"]), m["key"], _scalar(m["value"], n)
         if m["dash"]:
             if items is None or indent == 0:
-                raise ValueError(f"line {n}: a list item must be indented under {list_key}:")
+                raise ValueError(
+                    f"line {n}: a list item must be indented under {list_key}:"
+                )
             if dash_indent is not None and indent != dash_indent:
-                raise ValueError(f"line {n}: unexpected indentation; list items must line up")
+                raise ValueError(
+                    f"line {n}: unexpected indentation; list items must line up"
+                )
             if value is None:
                 raise ValueError(f"line {n}: {key} needs a value")
             dash_indent, item_indent = indent, indent + len(m["dash"])
@@ -136,7 +170,9 @@ def parse_with_lines(text: str, list_key: str = LIST_KEY) -> tuple[dict, dict]:
             lines[(list_key, len(items) - 1, key)] = n
         elif indent == 0:
             if key in out:
-                raise ValueError(f"line {n}: duplicate setting {key!r} (first on line {lines[key]})")
+                raise ValueError(
+                    f"line {n}: duplicate setting {key!r} (first on line {lines[key]})"
+                )
             lines[key] = n
             if value is None:
                 items, current, dash_indent = [], None, None
@@ -148,7 +184,9 @@ def parse_with_lines(text: str, list_key: str = LIST_KEY) -> tuple[dict, dict]:
             if key in current:
                 first = lines[(list_key, len(items) - 1, key)]
                 item = "repo" if list_key == LIST_KEY else "item"
-                raise ValueError(f"line {n}: duplicate setting {key!r} in this {item} (first on line {first})")
+                raise ValueError(
+                    f"line {n}: duplicate setting {key!r} in this {item} (first on line {first})"
+                )
             if value is None:
                 raise ValueError(f"line {n}: {key} needs a value")
             current[key] = value
@@ -167,19 +205,29 @@ def _check(config: dict, lines: dict) -> None:
     for key, value in config.items():
         n = lines[key]
         if key not in TOP_LEVEL:
-            raise ValueError(f"line {n}: unknown setting {key!r}; expected one of {sorted(TOP_LEVEL)}")
+            raise ValueError(
+                f"line {n}: unknown setting {key!r}; expected one of {sorted(TOP_LEVEL)}"
+            )
         if key != LIST_KEY and isinstance(value, list):
-            raise ValueError(f"line {n}: {key} needs a value" if not value else f"line {n}: {key} can't be a list")
+            raise ValueError(
+                f"line {n}: {key} needs a value"
+                if not value
+                else f"line {n}: {key} can't be a list"
+            )
     if LIST_KEY not in config:
         raise ValueError(f"line 1: no {LIST_KEY}: list; add one with at least one repo")
     repos, n = config[LIST_KEY], lines[LIST_KEY]
     if not isinstance(repos, list):
-        raise ValueError(f"line {n}: {LIST_KEY} must be a list of repos, each starting with '- platform:'")
+        raise ValueError(
+            f"line {n}: {LIST_KEY} must be a list of repos, each starting with '- platform:'"
+        )
     if not repos:
         raise ValueError(f"line {n}: {LIST_KEY} needs at least one repo")
     size = config.get("min_group_size")
     if size is not None and not isinstance(size, int):
-        raise ValueError(f"line {lines['min_group_size']}: min_group_size must be a whole number, got {size!r}")
+        raise ValueError(
+            f"line {lines['min_group_size']}: min_group_size must be a whole number, got {size!r}"
+        )
     if config.get("default_key_pattern") is not None:
         _check_pattern(config["default_key_pattern"], lines["default_key_pattern"])
     platforms = sorted(scm_adapter.known_platforms())
@@ -187,21 +235,33 @@ def _check(config: dict, lines: dict) -> None:
         start = lines[(LIST_KEY, i)]
         platform = repo.get("platform")
         if platform not in platforms:
-            raise ValueError(f"line {start}: platform must be one of {platforms}, got {platform!r}")
+            raise ValueError(
+                f"line {start}: platform must be one of {platforms}, got {platform!r}"
+            )
         required = scm_adapter.required_fields(platform)
-        allowed = COMMON_REPO_FIELDS | set(required) | set(scm_adapter.optional_fields(platform))
+        allowed = (
+            COMMON_REPO_FIELDS
+            | set(required)
+            | set(scm_adapter.optional_fields(platform))
+        )
         for key in repo:
             if key not in allowed:
-                raise ValueError(f"line {lines[(LIST_KEY, i, key)]}: unknown setting {key!r} for a {platform} repo; "
-                                 f"expected one of {sorted(allowed)}")
+                raise ValueError(
+                    f"line {lines[(LIST_KEY, i, key)]}: unknown setting {key!r} for a {platform} repo; "
+                    f"expected one of {sorted(allowed)}"
+                )
         missing = [f for f in required if repo.get(f) in (None, "")]
         if missing:
-            raise ValueError(f"line {start}: repo {i + 1} ({platform}) is missing {', '.join(missing)}")
+            raise ValueError(
+                f"line {start}: repo {i + 1} ({platform}) is missing {', '.join(missing)}"
+            )
         if "key_pattern" in repo:
             _check_pattern(repo["key_pattern"], lines[(LIST_KEY, i, "key_pattern")])
         for key in scm_adapter.optional_fields(platform):
             if key in repo:
-                scm_adapter.check_optional_field(platform, key, repo[key], lines[(LIST_KEY, i, key)])
+                scm_adapter.check_optional_field(
+                    platform, key, repo[key], lines[(LIST_KEY, i, key)]
+                )
 
 
 def _check_pattern(pattern, n: int) -> None:
@@ -224,5 +284,8 @@ def load_config(path) -> dict:
         _check(config, lines)
     except ValueError as err:
         raise ValueError(f"{path}: {err}") from None
-    return {"min_group_size": config.get("min_group_size"), "default_key_pattern": config.get("default_key_pattern"),
-            "repos": config[LIST_KEY]}
+    return {
+        "min_group_size": config.get("min_group_size"),
+        "default_key_pattern": config.get("default_key_pattern"),
+        "repos": config[LIST_KEY],
+    }
