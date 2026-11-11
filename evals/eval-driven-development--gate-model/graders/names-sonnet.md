@@ -1,5 +1,5 @@
 ---
 type: regex
-pattern: 'opus'
+pattern: 'sonnet'
 flags: i
 ---
