@@ -1,13 +1,14 @@
 ---
 name: eval-driven-development
 description: >-
-  Drives changes to model behaviour with evals: write the eval cases first,
-  see them fail, change the skill or prompt, then gate on the suite and a
-  no-skill baseline. Use when creating, fixing or changing a skill, a prompt,
-  a rules file or agent instructions, when a skill misbehaves and someone
-  wants it fixed, when asked to write, review or run eval cases, or when
-  reporting eval results. Not for deterministic code such as scripts and
-  parsers; use test-driven development there.
+  Use this skill before writing, generating, reviewing or running eval cases,
+  and before creating, fixing or changing a skill, a prompt, a rules file or
+  agent instructions, including when a skill misbehaves and someone wants it
+  fixed, and when summarising eval results. It drives changes to model
+  behaviour with evals: write a small set of cases first, see them fail,
+  make the change, then gate on the suite and a no-skill baseline. Not for
+  deterministic code such as scripts and parsers; use test-driven
+  development there.
 ---
 
 # Eval-Driven Development
