@@ -13,14 +13,20 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 SKILL = ROOT / "SKILL.md"
-INSTRUCTION_FILES = [SKILL, *sorted((ROOT / "references").glob("*.md"))]
-FILE_IDS = [str(p.relative_to(ROOT)) for p in INSTRUCTION_FILES]
+REFERENCE_FILES = sorted((ROOT / "references").glob("*.md"))
+INSTRUCTION_FILES = [SKILL, *REFERENCE_FILES]
+
 
 # From docs/skill-anatomy.md ("Keep SKILL.md under 500 lines").
 MAX_SKILL_LINES = 500
 # The skill loader's limit on the description field.
 MAX_DESCRIPTION_CHARS = 1024
 FENCE = re.compile(r"^\s*(```|~~~)")
+
+
+def file_id(path: Path) -> str:
+    """Return a path relative to the skill root, for readable test IDs."""
+    return str(path.relative_to(ROOT))
 
 
 def read(path: Path) -> str:
@@ -83,12 +89,14 @@ def table_cell_count(row: str) -> int:
 def tables(text: str) -> list[list[str]]:
     """Return each markdown table outside code fences as a list of its rows."""
     found, current = [], []
-    for line in lines_outside_fences(text) + [""]:
+    for line in lines_outside_fences(text):
         if line.lstrip().startswith("|"):
             current.append(line.strip())
         elif current:
             found.append(current)
             current = []
+    if current:
+        found.append(current)
     return found
 
 
@@ -108,14 +116,14 @@ def test_skill_md_stays_under_the_size_limit():
     assert len(read(SKILL).splitlines()) < MAX_SKILL_LINES
 
 
-@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=FILE_IDS)
+@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=file_id)
 def test_code_fences_are_closed(path):
     # An unclosed fence turns every following instruction into example text.
     fences = [line for line in read(path).splitlines() if FENCE.match(line)]
     assert len(fences) % 2 == 0
 
 
-@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=FILE_IDS)
+@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=file_id)
 def test_every_local_link_resolves(path):
     missing = [t for t in local_links(read(path)) if not (path.parent / t).exists()]
     assert missing == []
@@ -123,11 +131,11 @@ def test_every_local_link_resolves(path):
 
 def test_every_reference_file_is_linked_from_skill_md():
     linked = {(SKILL.parent / t).resolve() for t in local_links(read(SKILL))}
-    unlinked = [p.name for p in INSTRUCTION_FILES[1:] if p.resolve() not in linked]
+    unlinked = [p.name for p in REFERENCE_FILES if p.resolve() not in linked]
     assert unlinked == []
 
 
-@pytest.mark.parametrize("path", INSTRUCTION_FILES[1:], ids=FILE_IDS[1:])
+@pytest.mark.parametrize("path", REFERENCE_FILES, ids=file_id)
 def test_reference_files_do_not_chain_to_other_files(path):
     # References sit one level deep from SKILL.md (rubric item P4).
     chained = [t for t in local_links(read(path)) if t.endswith(".md")]
@@ -145,7 +153,7 @@ def test_rubric_ids_cited_in_skill_md_exist_in_the_rubric():
     assert cited - defined == set()
 
 
-@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=FILE_IDS)
+@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=file_id)
 def test_table_rows_match_their_header(path):
     ragged = [
         row
@@ -156,7 +164,7 @@ def test_table_rows_match_their_header(path):
     assert ragged == []
 
 
-@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=FILE_IDS)
+@pytest.mark.parametrize("path", INSTRUCTION_FILES, ids=file_id)
 def test_headings_go_no_deeper_than_h3(path):
     # Rubric item S3; the skill should pass its own rubric.
     deep = [
