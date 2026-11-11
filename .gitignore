@@ -4,6 +4,9 @@ node_modules/
 evals/results/
 **/plugin-evals/results/
 
+# Eval HTML reports kept on the author's machine
+**/reports-local/
+
 # Testzilla reports written into a reviewed repo
 .testzilla/
 
