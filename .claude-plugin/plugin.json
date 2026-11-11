@@ -1,0 +1,11 @@
+{
+  "name": "whitney",
+  "version": "0.1.0",
+  "description": "Skills for testing and quality work: turn requirements into tests, audit agent rules, verify claims, analyse defect patterns, and develop skills eval-first.",
+  "skills": [
+    "./defect-pattern-analysis",
+    "./requirements-to-tests",
+    "./rules-audit",
+    "./verifier"
+  ]
+}
