@@ -7,8 +7,8 @@ description: >-
 tags: [progressive-disclosure, false-positive-guard]
 
 context:
-  # Copies version-b/ (a copy of evals/files/version-b) into the agent's
-  # working directory. Needs --scaffold.
+  # Copies the version-b/ fixture into the agent's working directory.
+  # Needs --scaffold.
   scaffold_script: scaffold.sh
 
 execution:

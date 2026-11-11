@@ -7,8 +7,8 @@ description: >-
 tags: [narrative, high-findings]
 
 context:
-  # Copies version-a/ (a copy of evals/files/version-a) into the agent's
-  # working directory. Needs --scaffold.
+  # Copies the version-a/ fixture into the agent's working directory.
+  # Needs --scaffold.
   scaffold_script: scaffold.sh
 
 execution:
