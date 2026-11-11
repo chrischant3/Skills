@@ -7,7 +7,8 @@ A **critical rule** is one whose breach is costly or hard to undo (leaked secret
 ## Structure and placement
 
 - **S1.** Critical rules appear first, numbered, each with a one-line reason.
-  High when a critical rule is hard to find: inside narrative prose, sharing a sentence or paragraph with unrelated content, or placed after less important rules.
+  High when a critical rule is out of place. This is a test of where the rule sits, not a judgement of how noticeable it is: High if the rule is inside narrative prose, shares a sentence, bullet or paragraph with other content, or sits outside the section where the file keeps its critical rules (after less important rules, when the file has no such section). A well-structured file does not lower the severity of one misplaced rule.
+  Not a finding when a rule that matters only for one kind of task lives in an on-demand file whose pointer has a trigger covering that task. That is P1 working as intended; P3 covers pointers without a trigger.
 - **S2.** Each rule is stated once; detail points back to it rather than rewording it.
   High when a critical rule is restated in different wording or strength, because the reader cannot tell which version governs. Medium when the repeated content is not a critical rule, or is repeated word for word.
 - **S3.** Headers show hierarchy, no deeper than H3.
