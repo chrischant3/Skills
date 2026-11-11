@@ -1,0 +1,10 @@
+# Formatter and linter config (standards rule 3). ruff is pinned in requirements-dev.txt
+# so CI, the pre-push hook and local runs format identically.
+target-version = "py310" # the oldest Python the skills promise users; matches .python-version
+
+extend-exclude = ["venv", ".venv"]
+
+[lint]
+# Pyflakes F plus core pycodestyle E, named explicitly because newer ruff releases widen
+# the default rule set. Add ignores only with a documented reason.
+select = ["E4", "E7", "E9", "F"]

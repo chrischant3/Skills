@@ -70,7 +70,7 @@ def build_jql(projects, issue_types=("Bug",), labels=(), window_days=DEFAULT_WIN
     if issue_types:
         conditions.append(f"issuetype in ({', '.join(_quote(t) for t in issue_types)})")
     if labels:
-        conditions.append(f"labels in ({', '.join(_quote(l) for l in labels)})")
+        conditions.append(f"labels in ({', '.join(_quote(label) for label in labels)})")
     if not conditions:
         raise ValueError("give at least one issue type or label that marks a defect")
     defect = conditions[0] if len(conditions) == 1 else "(" + " OR ".join(conditions) + ")"

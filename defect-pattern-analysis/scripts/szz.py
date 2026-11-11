@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Usage: szz.py --links clean/links.json --clones clones/ --issues clean/ --out clean/szz.json"""
-import argparse, json, re, subprocess
+import argparse
+import json
+import re
+import subprocess
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -36,13 +39,13 @@ def blame(repo, sha, path, lines):
         args += ["-L", f"{n},{n}"]
     raw = git(repo, *args, f"{sha}^", "--", path)
     commits, times = set(), {}
-    for l in raw.splitlines():
-        m = re.match(r"^([0-9a-f]{40}) ", l)
+    for line in raw.splitlines():
+        m = re.match(r"^([0-9a-f]{40}) ", line)
         if m:
             cur = m.group(1)
             commits.add(cur)
-        elif l.startswith("committer-time "):
-            times[cur] = int(l.split()[1])
+        elif line.startswith("committer-time "):
+            times[cur] = int(line.split()[1])
     return {c: times.get(c) for c in commits}
 
 def main():
