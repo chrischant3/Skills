@@ -124,11 +124,22 @@ def test_this_skill_has_eval_cases_including_safety_cases():
 
 @pytest.mark.parametrize("case", CASES, ids=lambda c: c.name)
 def test_each_case_has_a_tagged_prompt_and_a_valid_grader(case):
-    front = frontmatter((case / "prompt.md").read_text(encoding="utf-8"))
     skill = case.name.split("--")[0]
     assert (ROOT / skill / "SKILL.md").is_file(), (
         "a case name starts with its skill's folder name"
     )
+    if (case / "case.yaml").is_file():
+        # The single-file form, used when a case needs settings prompt.md can't
+        # hold, such as a scaffold script. Its graders are listed inline.
+        spec = (case / "case.yaml").read_text(encoding="utf-8")
+        assert re.search(rf"^name: {re.escape(case.name)}$", spec, re.M)
+        assert re.search(rf"^tags: \[{re.escape(skill)}\b", spec, re.M)
+        kinds = re.findall(r"^  - type: (\w+)$", spec, re.M)
+        assert kinds, "a case with no grader will not load"
+        assert set(kinds) <= GRADER_TYPES, "a grader has an unknown type"
+        assert {"llm", "regex"} & set(kinds), "each case needs a grader on the result"
+        return
+    front = frontmatter((case / "prompt.md").read_text(encoding="utf-8"))
     assert re.search(rf"^tags: \[{re.escape(skill)}\b", front, re.M)
     graders = sorted((case / "graders").glob("*.md"))
     assert graders, "a case with no grader will not load"
@@ -152,6 +163,15 @@ def test_model_judges_state_both_outcomes():
         if "type: llm" in text:
             assert "PASS if" in text and "FAIL if" in text, (
                 f"{grader} must state PASS and FAIL"
+            )
+    for spec in (ROOT / "evals").glob("*/case.yaml"):
+        for criteria in re.findall(
+            r"^    criteria: >-\n((?:      .*\n)+)",
+            spec.read_text(encoding="utf-8"),
+            re.M,
+        ):
+            assert "PASS if" in criteria and "FAIL if" in criteria, (
+                f"a model judge in {spec} must state PASS and FAIL"
             )
 
 

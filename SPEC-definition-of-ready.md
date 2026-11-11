@@ -59,7 +59,7 @@ definition-of-ready/
   SKILL.md                                    → the process
   references/default-definition-of-ready.md   → the default definition
   references/assessing-criteria.md            → how to judge each default criterion, with examples
-  tests/test_skill_structure.py               → structure tests
+  tests/test_definition_of_ready_structure.py → structure tests
 evals/definition-of-ready--<case>/            → eval cases, tagged definition-of-ready
 .claude-plugin/plugin.json                    → add ./definition-of-ready
 ```

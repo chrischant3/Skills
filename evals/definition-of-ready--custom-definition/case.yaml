@@ -1,0 +1,54 @@
+schema_version: "1.1"
+name: definition-of-ready--custom-definition
+description: >-
+  The project has its own definition of ready in docs/. The skill should find
+  it and assess the story against those four criteria only, not the default.
+tags: [definition-of-ready]
+
+context:
+  # Copies fixture/docs into the agent's working directory. Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |-
+    Is this story ready to start?
+
+    ```markdown
+    # Show branch opening hours on the home page
+
+    Owner: Sam Okafor
+    Size: 3 points
+
+    ## Acceptance criteria
+    1. The home page shows today's opening hours for the member's home branch.
+    2. If the branch is closed today, it shows "Closed today" and the next opening time.
+    ```
+  max_turns: 12
+  allowed_tools: [Read, Glob, Grep, Skill]
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: 'definition-of-ready'
+
+  - type: tool_used
+    name: read-team-definition
+    tool: Read
+    input_match: 'docs/definition-of-ready\.md'
+
+  - type: regex
+    name: not-ready
+    pattern: 'not ready'
+    flags: i
+
+  - type: llm
+    name: team-criteria-only
+    criteria: >-
+      PASS if the response assesses the story against the team's own four
+      criteria (owner, acceptance criteria, design link, size), finds the
+      missing design link as the gap, and does not mark the story down for
+      anything outside those four, such as missing examples, verification,
+      a description or INVEST qualities. FAIL if it misses the design link,
+      or lists missing examples, verification or other default criteria as
+      reasons the story is not ready.
