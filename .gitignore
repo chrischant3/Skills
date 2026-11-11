@@ -2,6 +2,7 @@ node_modules/
 
 # Eval output (Tier 3 behavioral runs)
 evals/results/
+**/plugin-evals/results/
 
 # Testzilla reports written into a reviewed repo
 .testzilla/
