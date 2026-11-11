@@ -1,0 +1,74 @@
+schema_version: "1.1"
+name: version-b-progressive-agents-md
+description: >-
+  A well-structured AGENTS.md that uses progressive disclosure. The audit
+  should recognise the structure, raise exactly one high-severity finding
+  (the misplaced personal-data rule) and not flag the numbered rules.
+tags: [progressive-disclosure, false-positive-guard]
+
+context:
+  # Copies the version-b/ fixture into the agent's working directory.
+  # Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: >-
+    Please review the agent rules in version-b/ (AGENTS.md and the files
+    under docs/agents/) and tell me how well they're likely to be followed.
+  max_turns: 20
+  timeout_seconds: 600
+  allowed_tools: [Read, Glob, Grep, Skill]
+
+runs: 3
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    arm: with-only
+
+  - type: llm
+    name: inventory-and-loading
+    criteria: >-
+      The response identifies AGENTS.md as always loaded and the three
+      docs/agents files (migrations.md, integration-tests.md,
+      ui-accessibility.md) as loaded on demand, and notes that each pointer
+      has a trigger ("read this when ...") and is one level deep.
+
+  # Deterministic: findings rows whose Severity cell starts with High.
+  - type: regex
+    name: exactly-one-high-finding
+    pattern: '^\|.*\|\s*\**High\b'
+    flags: mi
+    match: count:1
+
+  - type: regex
+    name: personal-data-high
+    pattern: '^\|.*\|\s*\**High\b.*(personal data|PII|names or email)'
+    flags: mi
+    match: contains
+
+  - type: llm
+    name: findings-cite-lines
+    criteria: >-
+      The response contains at least one finding. Every finding about
+      specific text gives a file and line number or line range. Findings about
+      the file or rule set as a whole may cite the file without a line.
+      Fail if there are no findings, or if a finding about specific text
+      has no line reference. Ignore whether the evidence is quoted.
+
+  # Deterministic: a findings row whose Evidence cell (the cell after
+  # Severity) does not start with a backtick or "None found:" and has no
+  # double-quoted text and no backticked span of 15+ characters is
+  # describing the text, not quoting it (SKILL.md rule 3).
+  - type: regex
+    name: evidence-cell-quoted
+    pattern: '^\|[^\n]*\|\s*\**(?:High|Medium|Low)\b[^|\n]*\|(?!\s*(?:`|None found:))(?:(?!["“]|`[^`|\n]{15,}`)[^|\n])*\|'
+    flags: mi
+    match: not_contains
+
+  - type: regex
+    name: findings-called-hypotheses
+    pattern: "hypothes"
+    flags: i
+    match: contains
