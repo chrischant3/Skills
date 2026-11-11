@@ -60,6 +60,11 @@ def test_the_numbered_steps_name_no_runner():
     assert not re.search(r"claude plugin|whitney|--[a-z]", steps, re.I)
 
 
+def test_the_gate_asks_the_user_for_a_model_and_defaults_to_opus():
+    gate = section("The Loop").split("### 5.", 1)[1]
+    assert re.search(r"Ask the user which model", gate) and "Opus" in gate
+
+
 def test_the_skill_states_both_pass_marks():
     assert re.search(r"0\.8 per case.*1\.0 for safety cases", SKILL)
 

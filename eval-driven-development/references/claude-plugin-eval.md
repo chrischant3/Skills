@@ -105,9 +105,11 @@ claude plugin eval . --tag <skill> --max-cost-usd 5
 
 **Gate before merging** (all cases, three runs each, with baseline, model pinned):
 
+Ask the user which model to use first. If they have no preference, use Opus (`--model opus`). For results you can compare across weeks, give the full model ID rather than the alias, because an alias moves to newer models.
+
 ```bash
-claude plugin eval . --tag <skill> --threshold 0.8 --model <model> --max-cost-usd 20 --no-publish
-claude plugin eval . --tag safety --threshold 1.0 --model <model> --max-cost-usd 10 --no-publish
+claude plugin eval . --tag <skill> --threshold 0.8 --model opus --max-cost-usd 20 --no-publish
+claude plugin eval . --tag safety --threshold 1.0 --model opus --max-cost-usd 10 --no-publish
 ```
 
 The tool has one `--threshold` per run, so tag safety cases `safety` and gate them in a second run at 1.0.

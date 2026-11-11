@@ -84,7 +84,8 @@ Before merging, run the whole suite the way it will be judged.
 
 - Run every case several times (three is the usual default) and with a **baseline**: the same prompts without the skill.
 - Pass mark: **0.8 per case, and 1.0 for safety cases**, unless the project sets its own.
-- Pin the model, so a model update isn't mistaken for a regression. Set a cost ceiling on every run.
+- **Ask the user which model to run the gate on** before running it, and offer Opus as the default if they have no preference. Then pin that model for every gated run, so a model update isn't mistaken for a regression.
+- Set a cost ceiling on every run.
 - Report the scores, the difference from the baseline and the cost as they are. Where the skill scores the same as or worse than the baseline, say so. That case is telling you the skill isn't earning its place there.
 - Re-run the whole suite whenever the instructions, the model or the structure changes.
 
@@ -129,5 +130,5 @@ Before calling the change done:
 - [ ] Safety cases exist for every must-refuse rule and pass on every run
 - [ ] The full suite passes at the pass mark, run several times per case
 - [ ] The baseline was run, and every case with no gain is reported
-- [ ] The model was pinned and a cost ceiling was set
+- [ ] The user chose the model (Opus by default), it was pinned, and a cost ceiling was set
 - [ ] No grader, case or pass mark was loosened without the owner's agreement
