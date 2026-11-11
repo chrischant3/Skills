@@ -2,6 +2,10 @@ node_modules/
 
 # Eval output (Tier 3 behavioral runs)
 evals/results/
+**/plugin-evals/results/
+
+# Eval HTML reports kept on the author's machine
+**/reports-local/
 
 # Testzilla reports written into a reviewed repo
 .testzilla/
