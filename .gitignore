@@ -11,8 +11,11 @@ evals/results/
 # Python bytecode
 __pycache__/
 
-# Local Claude Code settings
-.claude/
+# Per-person Claude Code files. The shared .claude/settings.json and .claude/hooks/ are
+# committed (standards rules 12 and 13).
+.claude/settings.local.json
+.claude/worktrees/
+.claude/invocations.log
 
 # Private handover notes (contain employer-specific detail)
 skills-to-develop/
