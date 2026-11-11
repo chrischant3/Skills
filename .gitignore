@@ -16,3 +16,4 @@ __pycache__/
 
 # Private handover notes (contain employer-specific detail)
 skills-to-develop/
+.coverage

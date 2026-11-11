@@ -1,0 +1,37 @@
+#!/bin/sh
+# Copy to .githooks/pre-push, then: git config core.hooksPath .githooks
+# Runs the same gates CI runs before a push to the default branch. Only gates
+# the default branch; bypass with `git push --no-verify`.
+set -e
+
+DEFAULT_BRANCH=main # <- your default branch
+
+pushing_default=false
+z40=0000000000000000000000000000000000000000
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "$z40" ] && continue # branch deletion
+  case "$remote_ref" in
+    refs/heads/"$DEFAULT_BRANCH") pushing_default=true ;;
+  esac
+done
+[ "$pushing_default" != "true" ] && exit 0
+
+echo "── Pushing to $DEFAULT_BRANCH → running CI's gates locally first ──"
+
+if command -v ruff >/dev/null 2>&1; then
+  echo "→ ruff check ."
+  ruff check . || { echo "✗ Lint failed (ruff check --fix . often fixes it). --no-verify to bypass."; exit 1; }
+  echo "→ ruff format --check ."
+  ruff format --check . || { echo "✗ Format failed (run 'ruff format .'). --no-verify to bypass."; exit 1; }
+else
+  echo "⚠ ruff not installed — skipping lint/format locally (CI still enforces it)."
+fi
+
+# Unit tests only, and deliberately without --cov: the hook stays fast so it
+# doesn't get bypassed out of habit. CI owns the coverage gate (rule 10) and the
+# E2E journeys (rule 11).
+echo "→ python3 -m pytest"
+python3 -m pytest || { echo "✗ Tests failed. Not pushing. --no-verify to bypass."; exit 1; }
+
+echo "✓ Gates passed. Proceeding with push."
+exit 0

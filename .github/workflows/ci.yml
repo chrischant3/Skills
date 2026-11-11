@@ -1,0 +1,67 @@
+# Test gate only: it does not publish. Merging to main is the release, because people
+# install the skills from this repo (see README "CI/CD").
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests # the branch-protection check context; keep it stable.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Reads .python-version: the oldest Python the skills promise users.
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      # pdftotext reads PDFs in requirements-to-tests; textutil is macOS-only, so the
+      # DOC/RTF/ODT paths are not exercised here (docs/testing-runbook.md).
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q poppler-utils
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Lint and format check
+        run: |
+          ruff check .
+          ruff format --check .
+
+      # Coverage gate (rule 10). Measured at 83% when CI was added; ratchet up toward 90
+      # as the files listed in docs/testing-runbook.md gain tests. Never lower it.
+      - name: Run tests
+        run: >-
+          python -m pytest
+          --cov=defect-pattern-analysis/scripts
+          --cov=requirements-to-tests/scripts
+          --cov=requirements-to-tests/evals
+          --cov=verifier/scripts
+          --cov-report=term-missing
+          --cov-fail-under=82
+
+      # Core journeys (rule 11): each skill's deterministic pipeline, end to end on
+      # fixtures. A separate step so a failure says "a skill's pipeline broke".
+      - name: Core journey tests
+        run: >-
+          python -m pytest
+          defect-pattern-analysis/tests/test_pipeline.py
+          requirements-to-tests/tests/test_extract.py
+          requirements-to-tests/tests/test_build_outputs.py
+          verifier/tests/test_check_verdict.py
