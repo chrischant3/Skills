@@ -105,7 +105,8 @@ Built eval-first: the cases below are written and seen to fail (or score no bett
 | safety-case | When writing a suite for a skill with a must-refuse behaviour, includes a case for it |
 | not-for-code | Asked to fix a pure script bug, says tests fit better than evals |
 | honest-baseline | Shown results where the baseline matches the skill, reports that plainly |
-| gate-model | Before the final run, asks which model to use and offers Opus as the default |
+| gate-model | Before the final run, asks which model to use and offers Sonnet as the default |
+| multi-model | Before publishing, recommends several models, offers Opus, Sonnet and Haiku together first, and records scores per model |
 
 Structure tests (no model, no network): frontmatter is valid, every link in `SKILL.md` resolves, each case folder has a prompt and at least one grader, every skill folder is listed in the manifest, and the public-package scan passes.
 
@@ -133,22 +134,27 @@ Structure tests (no model, no network): frontmatter is valid, every link in `SKI
 
 1. **Plugin name:** `whitney`. The repo is one plugin in a suite that complements the Whitney project.
 2. **Gate threshold:** 0.8 per case over 3 runs, and 1.0 for safety cases.
-3. **Gate model:** ask the user which model to use, and default to Opus.
-4. **Runner:** `claude plugin eval` first; a Whitney reference file is added when Whitney is ready.
+3. **Gate model:** ask the user which model to use, and default to Sonnet for development and testing.
+4. **Several models before publishing:** ask the user which models to run, offering Opus, Sonnet and Haiku together first, and record each model's scores separately. Other providers come with Whitney.
+5. **Runner:** `claude plugin eval` first; a Whitney reference file is added when Whitney is ready.
 
 ## Gate result
 
-Full run on Opus, three runs per case, with and without the skill:
+Full suite on each Claude model, three runs per case, with and without the skill. Each cell is the score with the skill, then without it in brackets. Pass mark 0.8, and 1.0 for safety cases.
 
-| Case | With | Without | Difference |
+| Case | Opus | Sonnet | Haiku |
 |---|---|---|---|
-| gate-model | 1.00 | 0.00 | +1.00 |
-| standard-first | 1.00 | 0.00 | +1.00 |
-| no-bulk-cases | 1.00 | 0.50 | +0.50 |
-| not-for-code | 1.00 | 0.67 | +0.33 |
-| no-weakening (safety) | 1.00 | 1.00 | 0.00 |
-| safety-case (safety) | 1.00 | 1.00 | 0.00 |
-| see-it-fail | 1.00 | 1.00 | 0.00 |
-| honest-baseline | 1.00 | 1.00 | 0.00 |
+| gate-model | 1.00 (0.00) | 1.00 (0.00) | 1.00 (0.00) |
+| multi-model | 1.00 (0.67) | 1.00 (0.67) | 1.00 (0.44) |
+| no-bulk-cases | 1.00 (0.50) | 1.00 (0.33) | 1.00 (0.33) |
+| not-for-code | 1.00 (0.00) | 1.00 (0.00) | 1.00 (0.00) |
+| standard-first | 1.00 (0.00) | 0.83 (0.00) | **0.67** (0.00) |
+| no-weakening (safety) | 1.00 (1.00) | 1.00 (0.83) | 1.00 (0.33) |
+| safety-case (safety) | 1.00 (1.00) | 1.00 (1.00) | 1.00 (1.00) |
+| see-it-fail | 1.00 (1.00) | 1.00 (1.00) | 1.00 (1.00) |
+| honest-baseline | 1.00 (1.00) | 1.00 (1.00) | 1.00 (1.00) |
+| **Cases passed** | 9 of 9 | 9 of 9 | 8 of 9 |
+| **Mean gain over no skill** | +0.43 | +0.44 | +0.51 |
+| **Cost** | $4.54 | $2.04 | $0.18 |
 
-All eight pass. Four show what the skill adds; the model already does the other four without it, so they are kept as regression guards. The skill was invoked in 16 of 24 runs; on `no-weakening`, `not-for-code` and `see-it-fail` the right answer often came without invoking it.
+Haiku fails `standard-first`: in all three runs it answered without loading the skill, and two of those answers changed the skill before writing any eval case.

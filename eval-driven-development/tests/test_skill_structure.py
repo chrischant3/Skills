@@ -60,9 +60,15 @@ def test_the_numbered_steps_name_no_runner():
     assert not re.search(r"claude plugin|whitney|--[a-z]", steps, re.I)
 
 
-def test_the_gate_asks_the_user_for_a_model_and_defaults_to_opus():
+def test_the_gate_asks_the_user_for_a_model_and_defaults_to_sonnet():
     gate = section("The Loop").split("### 5.", 1)[1]
-    assert re.search(r"Ask the user which model", gate) and "Opus" in gate
+    assert re.search(r"Ask the user which model", gate) and "offer Sonnet as the default" in gate
+
+
+def test_the_gate_recommends_several_models_and_scores_per_model():
+    gate = section("The Loop").split("### 5.", 1)[1]
+    assert "Opus, Sonnet and Haiku" in gate
+    assert re.search(r"scores separately", gate) and re.search(r"Never average", gate)
 
 
 def test_the_skill_states_both_pass_marks():

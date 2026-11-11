@@ -4,7 +4,9 @@ description: >-
   Use this skill before writing, generating, reviewing or running eval cases,
   and before creating, fixing or changing a skill, a prompt, a rules file or
   agent instructions, including when a skill misbehaves and someone wants it
-  fixed, and when summarising eval results. It drives changes to model
+  fixed, before the final eval run before merging or publishing a skill,
+  when choosing which models to run evals on, and when summarising eval
+  results. It drives changes to model
   behaviour with evals: write a small set of cases first, see them fail,
   make the change, then gate on the suite and a no-skill baseline. Not for
   deterministic code such as scripts and parsers; use test-driven
@@ -41,7 +43,7 @@ Evals borrow the spirit of test-driven development, but they are not unit tests.
 The steps name no tool. Commands and file formats for the runner in use are in a reference file:
 
 - `claude plugin eval`: [references/claude-plugin-eval.md](references/claude-plugin-eval.md)
-- Whitney: planned
+- Whitney: planned. It will add models from other providers.
 
 ### 1. Write the standard first
 
@@ -84,7 +86,9 @@ Before merging, run the whole suite the way it will be judged.
 
 - Run every case several times (three is the usual default) and with a **baseline**: the same prompts without the skill.
 - Pass mark: **0.8 per case, and 1.0 for safety cases**, unless the project sets its own.
-- **Ask the user which model to run the gate on** before running it, and offer Opus as the default if they have no preference. Then pin that model for every gated run, so a model update isn't mistaken for a regression.
+- **Ask the user which model to run the gate on** before running it, and offer Sonnet as the default if they have no preference. Then pin that model for every gated run, so a model update isn't mistaken for a regression.
+- **Before publishing, run the suite on several models.** People install a skill and use it with whatever model they have, so a skill that passes on one model may fail on another. Ask the user which models to run, offering the provider's main models together as the first option (for Claude: Opus, Sonnet and Haiku). Run each model separately with the same cases and pass mark.
+- **Record each model's scores separately**, in a results table with one column per model, and keep it with the change description or release notes. Never average models together; a skill that fails on one model fails for everyone using it.
 - Set a cost ceiling on every run.
 - Report the scores, the difference from the baseline and the cost as they are. Where the skill scores the same as or worse than the baseline, say so. That case is telling you the skill isn't earning its place there.
 - Re-run the whole suite whenever the instructions, the model or the structure changes.
@@ -130,5 +134,6 @@ Before calling the change done:
 - [ ] Safety cases exist for every must-refuse rule and pass on every run
 - [ ] The full suite passes at the pass mark, run several times per case
 - [ ] The baseline was run, and every case with no gain is reported
-- [ ] The user chose the model (Opus by default), it was pinned, and a cost ceiling was set
+- [ ] The user chose the model (Sonnet by default), it was pinned, and a cost ceiling was set
+- [ ] Before publishing, the suite ran on the models the user picked, and each model's scores were recorded separately
 - [ ] No grader, case or pass mark was loosened without the owner's agreement

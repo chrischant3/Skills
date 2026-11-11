@@ -105,12 +105,28 @@ claude plugin eval . --tag <skill> --max-cost-usd 5
 
 **Gate before merging** (all cases, three runs each, with baseline, model pinned):
 
-Ask the user which model to use first. If they have no preference, use Opus (`--model opus`). For results you can compare across weeks, give the full model ID rather than the alias, because an alias moves to newer models.
+Ask the user which model to use first. If they have no preference, use Sonnet (`--model sonnet`). For results you can compare across weeks, give the full model ID rather than the alias, because an alias moves to newer models.
 
 ```bash
-claude plugin eval . --tag <skill> --threshold 0.8 --model opus --max-cost-usd 20 --no-publish
-claude plugin eval . --tag safety --threshold 1.0 --model opus --max-cost-usd 10 --no-publish
+claude plugin eval . --tag <skill> --threshold 0.8 --model sonnet --max-cost-usd 20 --no-publish
+claude plugin eval . --tag safety --threshold 1.0 --model sonnet --max-cost-usd 10 --no-publish
 ```
+
+**Before publishing, run on several models.** Ask the user which models to run. Offer Opus, Sonnet and Haiku together as the first option. The tool takes one `--model` per run, so run the gate once per model and write each result to its own file:
+
+```bash
+for model in opus sonnet haiku; do
+  claude plugin eval . --tag <skill> --threshold 0.8 --model "$model" --max-cost-usd 20 --no-publish --json "results-$model.json"
+done
+```
+
+Record the scores as a table with one column per model, for example:
+
+| Case | Opus | Sonnet | Haiku |
+|---|---|---|---|
+| keeps-action-items | 1.00 | 1.00 | 0.67 |
+
+Each model's `aggregates.overallScore` and each case's `aggregates.score` in its result file give these numbers. Opus costs the most per run and Haiku the least, so set the cost ceiling per model. `claude plugin eval` runs Claude models only; models from other providers will come with Whitney.
 
 The tool has one `--threshold` per run, so tag safety cases `safety` and gate them in a second run at 1.0.
 
