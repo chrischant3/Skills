@@ -5,6 +5,7 @@ links resolve, that every eval case can load, and that nothing private is in the
 """
 
 import json
+import os
 import re
 from pathlib import Path
 
@@ -138,6 +139,12 @@ def test_each_case_has_a_tagged_prompt_and_a_valid_grader(case):
         assert kinds, "a case with no grader will not load"
         assert set(kinds) <= GRADER_TYPES, "a grader has an unknown type"
         assert {"llm", "regex"} & set(kinds), "each case needs a grader on the result"
+        scaffold = re.search(r"^  scaffold_script: (\S+)$", spec, re.M)
+        if scaffold:
+            script = case / scaffold[1]
+            assert script.is_file() and os.access(script, os.X_OK), (
+                f"{scaffold[1]} must exist and be executable"
+            )
         return
     front = frontmatter((case / "prompt.md").read_text(encoding="utf-8"))
     assert re.search(rf"^tags: \[{re.escape(skill)}\b", front, re.M)
@@ -165,11 +172,13 @@ def test_model_judges_state_both_outcomes():
                 f"{grader} must state PASS and FAIL"
             )
     for spec in (ROOT / "evals").glob("*/case.yaml"):
-        for criteria in re.findall(
-            r"^    criteria: >-\n((?:      .*\n)+)",
-            spec.read_text(encoding="utf-8"),
-            re.M,
-        ):
+        text = spec.read_text(encoding="utf-8")
+        judges = re.findall(r"^    criteria: >-\n((?:      .*\n)+)", text, re.M)
+        # Every llm grader must be in the folded form read here, or it goes unchecked.
+        assert len(judges) == len(re.findall(r"^  - type: llm$", text, re.M)), (
+            f"write each model judge in {spec} as 'criteria: >-'"
+        )
+        for criteria in judges:
             assert "PASS if" in criteria and "FAIL if" in criteria, (
                 f"a model judge in {spec} must state PASS and FAIL"
             )

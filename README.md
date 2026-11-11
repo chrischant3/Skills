@@ -5,6 +5,7 @@ Claude skills that package a repeatable workflow, so that anyone can install one
 | Skill | What it does |
 | --- | --- |
 | [defect-pattern-analysis](defect-pattern-analysis/SKILL.md) | Finds the types of defect that keep recurring in Jira, with counts and trends at team and pattern level, never for individuals. |
+| [definition-of-ready](definition-of-ready/SKILL.md) | Checks whether a story or ticket is ready to start, against a team's own definition (`definition-of-ready.md` at the project root or in `docs/`) or a default built on INVEST. |
 | [requirements-to-tests](requirements-to-tests/SKILL.md) | Turns a requirements document into a traceable analysis: requirements classified, ambiguities and gaps raised, and test scenarios drafted. |
 | [rules-audit](rules-audit/SKILL.md) | Audits instructions given to coding agents (AGENTS.md, CLAUDE.md, skills, system prompts) for prompt engineering practice. |
 | [verifier](verifier/SKILL.md) | Checks claims about finished work and writes an evidence-backed Pass, Fail or Inconclusive verdict. |
