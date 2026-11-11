@@ -4,6 +4,7 @@
   "description": "Skills for testing and quality work: turn requirements into tests, audit agent rules, verify claims, analyse defect patterns, and develop skills eval-first.",
   "skills": [
     "./defect-pattern-analysis",
+    "./eval-driven-development",
     "./requirements-to-tests",
     "./rules-audit",
     "./verifier"
