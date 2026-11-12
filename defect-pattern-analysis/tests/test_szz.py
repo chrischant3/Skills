@@ -252,6 +252,78 @@ def test_a_renamed_file_is_blamed_under_its_old_path(repo):
     ]
 
 
+def test_a_removed_sql_comment_does_not_hide_the_lines_after_it(repo):
+    start = repo.commit(
+        {"q.sql": lines("-- note", "select 1;", "select 2;")}, "2026-01-01T09:00:00Z"
+    )
+    fix = repo.commit({"q.sql": lines("select 3;")}, "2026-02-10T09:00:00Z")
+    assert candidates(trace_one(repo, fix)) == [("group/checkout", "q.sql", start)]
+
+
+def test_a_file_that_is_not_utf8_is_traced_without_crashing(repo):
+    target = repo.path / "legacy.txt"
+    target.write_bytes("caf\xe9 = 1\nb = 2\n".encode("latin-1"))
+    start = repo.commit({}, "2026-01-01T09:00:00Z")
+    target.write_bytes("caf\xe9 = 2\nb = 2\n".encode("latin-1"))
+    fix = repo.commit({}, "2026-02-10T09:00:00Z")
+    assert candidates(trace_one(repo, fix)) == [("group/checkout", "legacy.txt", start)]
+
+
+@pytest.mark.parametrize("name", ["my dir/a b.py", 'we"ird/a.py', "back\\slash/a.py"])
+def test_paths_git_quotes_or_pads_are_still_traced(repo, name):
+    start = repo.commit({name: lines("a = 1")}, "2026-01-01T09:00:00Z")
+    fix = repo.commit({name: lines("a = 2")}, "2026-02-10T09:00:00Z")
+    result = trace_one(repo, fix)
+    assert candidates(result) == [("group/checkout", name, start)]
+    assert result["coverage"]["blame_failures"] == 0
+
+
+def test_people_named_in_paths_are_masked_like_the_rest_of_the_run(tmp_path):
+    clone = Repo(tmp_path / "clones" / "tool")
+    clone.commit(
+        {
+            "notes/robin.q/plan.py": lines("a = 1"),
+            "docs/alice-example/x.py": lines("b = 1"),
+            "src/checkout/y.py": lines("c = 1"),
+        },
+        "2026-01-01T09:00:00Z",
+    )
+    fix = clone.commit(
+        {
+            "notes/robin.q/plan.py": lines("a = 2"),
+            "docs/alice-example/x.py": lines("b = 2"),
+            "src/checkout/y.py": lines("c = 2"),
+        },
+        "2026-02-10T09:00:00Z",
+    )
+    name = "[person]/checkout-tool"
+    result = szz.trace(
+        links_for({"ABC-1": [(name, [fix])]}),
+        {"ABC-1": REPORTED},
+        {name: clone.path},
+        people=["robin.q"],
+    )
+    paths = sorted(c["path"] for c in result["defects"]["ABC-1"]["candidates"])
+    assert paths == [
+        "docs/[person]/x.py",
+        "notes/[person]/plan.py",
+        "src/checkout/y.py",
+    ]
+
+
+def test_a_defect_with_no_report_date_is_counted_apart(repo):
+    repo.commit({"app.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
+    fix = repo.commit({"app.py": lines("a = 2")}, "2026-02-10T09:00:00Z")
+    result = szz.trace(
+        links_for({"ABC-1": [("group/checkout", [fix])]}),
+        {},
+        {"group/checkout": repo.path},
+    )
+    assert result["coverage"]["defects_without_report_date"] == 1
+    assert result["coverage"]["candidates_after_report_dropped"] == 0
+    assert result["defects"]["ABC-1"]["traced"] is False
+
+
 # --- Publishing -------------------------------------------------------------------
 
 
@@ -401,6 +473,35 @@ def test_the_command_line_refuses_a_bad_clone_mapping(repo, tmp_path, capsys, cl
     )
     assert code == 2 and "error:" in capsys.readouterr().err
     assert not (tmp_path / "out").exists()
+
+
+def test_the_command_line_needs_the_config_to_mask_a_personal_repo(tmp_path, capsys):
+    clone = Repo(tmp_path / "clones" / "tool")
+    fix = clone.commit({"a.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
+    links = links_for({"ABC-1": [("[person]/checkout-tool", [fix])]})
+    (tmp_path / "links.json").write_text(json.dumps(links))
+    clean = write_clean(tmp_path, links["defects"])
+    code = szz.main(
+        [
+            "--links",
+            str(tmp_path / "links.json"),
+            "--issues",
+            str(clean),
+            "--clone",
+            f"[person]/checkout-tool={clone.path}",
+            "--out",
+            str(tmp_path / "out"),
+        ]
+    )
+    assert code == 2 and "--config" in capsys.readouterr().err
+
+
+def test_the_command_line_refuses_links_it_cannot_read(tmp_path, capsys):
+    (tmp_path / "links.json").write_text(json.dumps({"since": "2026-01-01"}))
+    code = szz.main(
+        ["--links", str(tmp_path / "links.json"), "--out", str(tmp_path / "out")]
+    )
+    assert code == 2 and "error:" in capsys.readouterr().err
 
 
 def test_the_command_line_refuses_unanonymised_issues(repo, tmp_path, capsys):
