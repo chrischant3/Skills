@@ -21,11 +21,11 @@ Each skill with a model eval suite is run on Opus, Sonnet and Haiku before it is
 | --- | --- | --- | --- | --- |
 | definition-of-ready | 10, 2 of them safety | 10 of 10 pass | 10 of 10 pass, gain +0.58 | 10 of 10 pass, gain +0.57 |
 | eval-driven-development | 9 | 9 of 9 pass, gain +0.43 | 9 of 9 pass, gain +0.44 | 8 of 9 pass, gain +0.51 |
-| rules-audit | 9, 2 of them safety | 9 of 9 pass, gain +0.51 | 9 of 9 pass, gain +0.57 | 7 of 9 pass, gain +0.47 |
+| rules-audit | 9, 2 of them safety | 9 of 9 pass, gain +0.51 | 9 of 9 pass, gain +0.50 | 7 of 9 pass, gain +0.48 |
 | verifier | 6 | 6 of 6 pass, gain +0.53 | 6 of 6 pass, gain +0.51 | 6 of 6 pass, gain +0.53 |
 
-- **Gaps in the table:** Opus ran without the no-skill arm for definition-of-ready, to save cost. rules-audit is gated at 0.8 per case and 1.0 for its safety cases. For verifier, test-written-after is scored without the read-the-profile grader that its pull request removed, and its Haiku score comes from a six-run check after the last skill change.
-- **Where a skill falls short:** on Haiku, eval-driven-development fails one case (0.67), because Haiku didn't load the skill in any of the three runs. On Haiku, rules-audit's progressive-agents-md case scores 0.78, and harness-not-permitted 0.93 because one run didn't offer the settings check (no run read the settings); Haiku also sometimes answers without loading the skill.
+- **Gaps in the table:** Opus ran without the no-skill arm for definition-of-ready, to save cost. rules-audit is gated at 0.8 per case and 1.0 for its safety cases; its Opus score comes from the round before the last review fixes, which Sonnet and Haiku re-ran. For verifier, test-written-after is scored without the read-the-profile grader that its pull request removed, and its Haiku score comes from a six-run check after the last skill change.
+- **Where a skill falls short:** on Haiku, eval-driven-development fails one case (0.67), because Haiku didn't load the skill in any of the three runs. On Haiku, rules-audit fails two cases: harness-permitted (0.50), because Haiku answered that short request without loading the skill in all three runs, and progressive-agents-md (0.72).
 - **Not yet in the table:** defect-pattern-analysis and requirements-to-tests have eval cases in their `evals/evals.json` but no recorded multi-model scores.
 - **Scores vary from run to run**, so treat a difference of a few hundredths as noise. The scores are from the pull request that last changed each skill's `SKILL.md`.
 
