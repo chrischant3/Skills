@@ -238,7 +238,7 @@ def _secrets(line):
         )
         spans.append(match.span(1))
     for match in KNOWN_TOKEN.finditer(line):
-        if any(start < match.end() and match.start() < end for start, end in spans):
+        if _overlaps(match.span(), spans):
             continue  # already reported as URL credentials
         value = match.group(1) or match.group(0)
         masked, hidden = _mask(value)
@@ -265,13 +265,25 @@ def _mask(value):
     return kept + "****", len(value) - len(kept)
 
 
+def _overlaps(span, spans):
+    """True when span shares any character with one of spans."""
+    return any(span[0] < end and start < span[1] for start, end in spans)
+
+
 def _redact(text):
     """Return text with every secret value it contains masked."""
-    text = SECRET_ASSIGNMENT.sub(
-        lambda m: m.group(0)[: m.start(2) - m.start()] + _mask(m.group(2))[0], text
-    )
-    text = URL_CREDENTIALS.sub(lambda m: m.group(0).split("//")[0] + "//****@", text)
-    return KNOWN_TOKEN.sub(lambda m: _mask(m.group(0))[0], text)
+
+    def mask_assigned_value(match):
+        name_and_separator = match.group(0)[: match.start(2) - match.start()]
+        return name_and_separator + _mask(match.group(2))[0]
+
+    def mask_url_userinfo(match):
+        scheme = match.group(0).split("//")[0]
+        return scheme + "//****@"
+
+    text = SECRET_ASSIGNMENT.sub(mask_assigned_value, text)
+    text = URL_CREDENTIALS.sub(mask_url_userinfo, text)
+    return KNOWN_TOKEN.sub(lambda match: _mask(match.group(0))[0], text)
 
 
 def _is_placeholder(value):
@@ -301,9 +313,7 @@ def _blobs(line, secret_spans):
     hits = []
     for match in BASE64_RUN.finditer(line):
         run = match.group(0)
-        if any(
-            start < match.end() and match.start() < end for start, end in secret_spans
-        ):
+        if _overlaps(match.span(), secret_spans):
             continue  # already reported, masked, as a secret
         # Paths and snake_case words are long too; encoded data mixes cases and digits.
         if (
