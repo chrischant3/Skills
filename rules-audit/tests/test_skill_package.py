@@ -148,7 +148,7 @@ def test_rubric_ids_cited_in_skill_md_exist_in_the_rubric():
             r"^- \*\*([A-Z]\d+)\.\*\*", read(ROOT / "references" / "rubric.md"), re.M
         )
     )
-    cited = set(re.findall(r"\b([SPQDT]\d)\b", read(SKILL)))
+    cited = set(re.findall(r"\b([SPQDTA]\d)\b", read(SKILL)))
     assert defined
     assert cited - defined == set()
 

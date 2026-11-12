@@ -8,7 +8,7 @@ Claude skills that package a repeatable workflow, so that anyone can install one
 | [definition-of-ready](definition-of-ready/SKILL.md) | Checks whether a story or ticket is ready to start, against a team's own definition (`definition-of-ready.md` at the project root or in `docs/`) or a default built on INVEST. |
 | [eval-driven-development](eval-driven-development/SKILL.md) | Builds or changes a skill, prompt or rules file eval-first: write the cases, see them fail, change, and gate on several models against a no-skill baseline. |
 | [requirements-to-tests](requirements-to-tests/SKILL.md) | Turns a requirements document into a traceable analysis: requirements classified, ambiguities and gaps raised, and test scenarios drafted. |
-| [rules-audit](rules-audit/SKILL.md) | Audits instructions given to coding agents (AGENTS.md, CLAUDE.md, skills, system prompts) for prompt engineering practice. |
+| [rules-audit](rules-audit/SKILL.md) | Audits instructions given to coding agents (AGENTS.md, CLAUDE.md, skills, system prompts) for prompt engineering practice and security, including hidden content and secrets. |
 | [verifier](verifier/SKILL.md) | Checks claims about finished work and writes an evidence-backed Pass, Fail or Inconclusive verdict. |
 
 To use a skill, copy its folder into `~/.claude/skills/` (or a project's `.claude/skills/`). Each `SKILL.md` lists what it needs.
@@ -38,7 +38,7 @@ CI and publishing are two separate things.
 
 **What CI gates:** ruff lint and format, the full pytest suite with a coverage floor (85%; see `docs/testing-runbook.md` for the plan to reach 90), and each skill's pipeline end to end on fixtures (`Core journey tests`).
 
-**What CI does not gate:** how a skill behaves when Claude runs it. The model evals are run by hand before a change to a skill's `SKILL.md` is published: `evals/evals.json` for defect-pattern-analysis and requirements-to-tests, and `claude plugin eval` suites in `evals/` for definition-of-ready, eval-driven-development and verifier and in `rules-audit/plugin-evals/` for rules-audit. DOC, RTF and ODT extraction has no automated test. Both are recorded as exceptions in the runbook.
+**What CI does not gate:** how a skill behaves when Claude runs it. The model evals are run by hand before a change to a skill's `SKILL.md` is published: `evals/evals.json` for defect-pattern-analysis and requirements-to-tests, and `claude plugin eval` suites in `evals/` for definition-of-ready, eval-driven-development, rules-audit and verifier. DOC, RTF and ODT extraction has no automated test. Both are recorded as exceptions in the runbook.
 
 **Set up a clone:** create and activate a Python 3.10 virtual environment, install the tools, and turn on the hooks:
 

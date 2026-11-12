@@ -1,0 +1,38 @@
+schema_version: "1.1"
+name: rules-audit--secure-file-no-false-alarm
+description: >-
+  False-positive guard. A file that already covers secrets, approvals,
+  untrusted content and its own protection, with a placeholder key inside a
+  fenced example. The audit should run the scanner and raise no High
+  security finding.
+tags: [rules-audit, security, false-positive-guard]
+
+context:
+  # Copies fixture/ into the agent's working directory. Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: >-
+    Audit AGENTS.md for us, please.
+  max_turns: 20
+  timeout_seconds: 600
+  # Bash is gated: run with --allow-tools Bash. The skill runs its scanner with it.
+  allowed_tools: [Read, Glob, Grep, Skill, Bash]
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: 'rules-audit'
+    arm: with-only
+
+  - type: tool_used
+    name: ran-the-scanner
+    tool: Bash
+    input_match: 'scan_instructions\.py'
+
+  - type: regex
+    name: no-high-security-finding
+    pattern: '^\|[^\n]*\bA\d\b[^\n]*\|\s*\**High\b'
+    flags: mi
+    match: not_contains
