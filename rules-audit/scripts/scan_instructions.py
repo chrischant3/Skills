@@ -6,10 +6,12 @@ Usage: python3 scan_instructions.py FILE [FILE ...]
 Prints JSON: {"files": [...], "hits": [...]}. Each hit names the file, line,
 rubric check (A1 secrets, A3 hidden content), kind, a short detail, and
 whether the line is inside a fenced code block. The scanner never prints a
-secret's value, only a masked form and its length. It reports what it finds;
-the audit decides what each hit means (a placeholder in a fenced example is
-usually fine). Exit code 0 when the files were scanned, 2 on a usage error or
-a missing file.
+secret's value, only a masked form and its length; text it quotes from the
+file (comment bodies, text hidden in tag characters) has secrets masked too.
+It reports what it finds; the audit decides what each hit means (a
+placeholder in a fenced example is usually fine). A file that can't be read
+is reported as a hit and the others are still scanned. Exit code 0 when at
+least one file was scanned, 2 on a usage error or when none could be read.
 
 Standard library only, Python 3.10 or later.
 """
@@ -20,7 +22,13 @@ import sys
 from urllib.parse import urlparse
 
 ZERO_WIDTH = {"\u200b", "\u200c", "\u200d", "\u2060", "\ufeff", "\u00ad"}
-BIDI = {chr(c) for c in [*range(0x202A, 0x202F), *range(0x2066, 0x206A)]}
+BIDI = {
+    chr(c)
+    for c in [*range(0x202A, 0x202F), *range(0x2066, 0x206A), 0x200E, 0x200F, 0x061C]
+}
+VARIATION_SELECTORS = {
+    chr(c) for c in [*range(0xFE00, 0xFE10), *range(0xE0100, 0xE01F0)]
+}
 TAG_START, TAG_END = 0xE0000, 0xE007F
 
 FENCE = re.compile(r"^ {0,3}(```|~~~)")
@@ -38,8 +46,16 @@ SECRET_ASSIGNMENT = re.compile(
     re.IGNORECASE,
 )
 URL_CREDENTIALS = re.compile(
-    r"\b[a-z][a-z0-9+.-]*://([^\s:/@]+):([^\s@/]+)@", re.IGNORECASE
+    r"\b[a-z][a-z0-9+.-]*://([^\s:/@]+)(?::([^\s@/]+))?@", re.IGNORECASE
 )
+# Credentials with a well-known shape, found even when nothing names them.
+KNOWN_TOKEN = re.compile(
+    r"\b(?:AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|sk_(?:live|test)_[A-Za-z0-9]{8,}"
+    r"|xox[abpr]-[A-Za-z0-9-]{10,})\b"
+    r"|\bBearer\s+([A-Za-z0-9._~+/=-]{16,})"
+)
+# A URL username this long is more likely a token than a person's login.
+TOKEN_LIKE_USERNAME = 16
 PRIVATE_KEY = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")
 PLACEHOLDER_WORDS = (
     "your",
@@ -82,28 +98,39 @@ def main(argv):
     if not argv:
         print("usage: scan_instructions.py FILE [FILE ...]", file=sys.stderr)
         return 2
-    hits = []
+    hits, scanned = [], 0
     for path in argv:
         try:
             raw = open(path, "rb").read()
         except OSError as error:
             print(f"cannot read {path}: {error.strerror}", file=sys.stderr)
-            return 2
+            hits.append(
+                {
+                    "file": path,
+                    **_file_problem("missing", f"cannot read: {error.strerror}"),
+                }
+            )
+            continue
+        scanned += 1
         try:
             file_hits = scan_text(raw.decode("utf-8"))
         except UnicodeDecodeError:
             file_hits = [
-                {
-                    "check": None,
-                    "kind": "unreadable",
-                    "line": None,
-                    "detail": "not UTF-8 text, so it was not scanned",
-                    "in_code_fence": False,
-                }
+                _file_problem("unreadable", "not UTF-8 text, so it was not scanned")
             ]
         hits.extend({"file": path, **hit} for hit in file_hits)
     print(json.dumps({"files": list(argv), "hits": hits}, ensure_ascii=True, indent=2))
-    return 0
+    return 0 if scanned else 2
+
+
+def _file_problem(kind, detail):
+    return {
+        "check": None,
+        "kind": kind,
+        "line": None,
+        "detail": detail,
+        "in_code_fence": False,
+    }
 
 
 def _fenced_lines(lines):
@@ -120,14 +147,15 @@ def _fenced_lines(lines):
 
 def _line_hits(line):
     """Return the hits found within a single line, without line numbers."""
+    secrets, secret_spans = _secrets(line)
     return [
         hit
         for hit in (
             _invisible(line),
             _bidi(line),
-            *_secrets(line),
+            *secrets,
             *_remote_images(line),
-            *_blobs(line),
+            *_blobs(line, secret_spans),
         )
         if hit
     ]
@@ -136,16 +164,30 @@ def _line_hits(line):
 def _invisible(line):
     tags = [c for c in line if TAG_START <= ord(c) <= TAG_END]
     zero_width = [c for c in line if c in ZERO_WIDTH]
-    if not tags and not zero_width:
+    # A selector after an emoji or ideograph is normal; after plain text or another
+    # selector it carries nothing visible, which is how "emoji smuggling" hides data.
+    selectors = [
+        c
+        for i, c in enumerate(line)
+        if c in VARIATION_SELECTORS
+        and (i == 0 or ord(line[i - 1]) < 0x2000 or line[i - 1] in VARIATION_SELECTORS)
+    ]
+    if not tags and not zero_width and not selectors:
         return None
     parts = []
     if tags:
         parts.append(f"{len(tags)} tag characters")
     if zero_width:
         parts.append(f"{len(zero_width)} zero-width characters")
+    if selectors:
+        parts.append(f"{len(selectors)} stray variation selectors")
     decoded = (
-        "".join(
-            chr(ord(c) - TAG_START) for c in tags if 0x20 <= ord(c) - TAG_START < 0x7F
+        _redact(
+            "".join(
+                chr(ord(c) - TAG_START)
+                for c in tags
+                if 0x20 <= ord(c) - TAG_START < 0x7F
+            )
         )
         or None
     )
@@ -164,14 +206,17 @@ def _bidi(line):
     return {
         "check": "A3",
         "kind": "bidi-control",
-        "detail": f"{count} bidirectional control characters",
+        "detail": f"{count} bidirectional control or direction mark characters",
     }
 
 
 def _secrets(line):
-    hits = []
+    """Return the secret hits in a line and the character spans they cover."""
+    hits, spans = [], []
     for match in SECRET_ASSIGNMENT.finditer(line):
         name, value = match.group(1), match.group(2)
+        if value.isdigit() and len(value) < 8:
+            continue  # max_tokens: 4096 is a setting, not a credential
         masked, hidden = _mask(value)
         hits.append(
             _secret_hit(
@@ -179,17 +224,29 @@ def _secrets(line):
                 _is_placeholder(value),
             )
         )
+        spans.append(match.span(2))
     for match in URL_CREDENTIALS.finditer(line):
-        password = match.group(2)
+        user, password = match.group(1), match.group(2)
+        if password is None and len(user) < TOKEN_LIKE_USERNAME:
+            continue  # git@host and similar logins
+        hidden = len(user) + len(password or "")
         hits.append(
             _secret_hit(
-                f"password in a URL for user {match.group(1)} ({len(password)} characters hidden)",
-                _is_placeholder(password),
+                f"credentials in a URL, user {_mask(user)[0]} ({hidden} characters hidden)",
+                _is_placeholder(password or user),
             )
         )
+        spans.append(match.span(1))
+    for match in KNOWN_TOKEN.finditer(line):
+        if any(start < match.end() and match.start() < end for start, end in spans):
+            continue  # already reported as URL credentials
+        value = match.group(1) or match.group(0)
+        masked, hidden = _mask(value)
+        hits.append(_secret_hit(f"token {masked} ({hidden} characters hidden)", False))
+        spans.append(match.span())
     if PRIVATE_KEY.search(line):
         hits.append(_secret_hit("private key block", False))
-    return hits
+    return hits, spans
 
 
 def _secret_hit(detail, placeholder):
@@ -208,6 +265,15 @@ def _mask(value):
     return kept + "****", len(value) - len(kept)
 
 
+def _redact(text):
+    """Return text with every secret value it contains masked."""
+    text = SECRET_ASSIGNMENT.sub(
+        lambda m: m.group(0)[: m.start(2) - m.start()] + _mask(m.group(2))[0], text
+    )
+    text = URL_CREDENTIALS.sub(lambda m: m.group(0).split("//")[0] + "//****@", text)
+    return KNOWN_TOKEN.sub(lambda m: _mask(m.group(0))[0], text)
+
+
 def _is_placeholder(value):
     lowered = value.lower()
     return (
@@ -220,7 +286,7 @@ def _is_placeholder(value):
 def _remote_images(line):
     hits = []
     for match in REMOTE_IMAGE.finditer(line):
-        host = urlparse(match.group(1) or match.group(2)).netloc
+        host = urlparse(match.group(1) or match.group(2)).hostname
         hits.append(
             {
                 "check": "A3",
@@ -231,10 +297,14 @@ def _remote_images(line):
     return hits
 
 
-def _blobs(line):
+def _blobs(line, secret_spans):
     hits = []
     for match in BASE64_RUN.finditer(line):
         run = match.group(0)
+        if any(
+            start < match.end() and match.start() < end for start, end in secret_spans
+        ):
+            continue  # already reported, masked, as a secret
         # Paths and snake_case words are long too; encoded data mixes cases and digits.
         if (
             any(c.isupper() for c in run)
@@ -262,7 +332,7 @@ def _blobs(line):
 def _html_comments(text):
     hits = []
     for match in HTML_COMMENT.finditer(text):
-        body = " ".join(match.group(1).split())
+        body = _redact(" ".join(match.group(1).split()))
         hits.append(
             {
                 "check": "A3",

