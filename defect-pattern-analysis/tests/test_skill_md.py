@@ -225,3 +225,12 @@ def test_the_skill_description_no_longer_calls_ticket_signals_unready():
     front = SKILL.split("---", 2)[1]
     assert "clarity, complexity and flow" in front
     assert "Ticket-history signals" not in front
+
+
+def test_the_report_is_written_by_report_py_then_filled_in_and_checked():
+    step = SKILL.split("### 7.", 1)[1].split("## Later versions", 1)[0]
+    write = step.index("scripts/report.py --out out/")
+    check = step.index("--check out/report.md")
+    assert write < check < step.index("Keep the reply short")
+    assert "<!-- write:" in step and "report.py:generated" in step
+    assert "until it passes" in step

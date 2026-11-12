@@ -255,10 +255,24 @@ The command line lists any status it found in the changelogs that `signals.yaml`
 
 ### 7. Write the report
 
-Write the report from `out/` only: `aggregate.json` and `tables.md`, plus `scm_coverage.md` and `hotspots.md` if step 5 ran (and `szz.md` if the introduction estimate ran), and `signals.md` if step 6 ran. Don't go back to `clean/`, `work/` or the batches for numbers or wording. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group.
+The report is written in two parts: a script lays out every number and table, and you write the interpretation. Run:
 
-Write a Markdown report with these sections, in this order:
-1. **Coverage**: defects matched by the query, defects analysed, unclassified, gaps from `_ingest.json`, and that small groups were suppressed (and at what threshold). If step 5 ran, add link coverage per repo. A high unclassified rate, low link coverage or many gaps is a finding in its own right. Put it near the top.
+```bash
+python3 <skill>/scripts/report.py --out out/
+```
+
+It writes `out/report.md` from `out/` only (`aggregate.json` and `tables.md`, plus `scm_coverage.md`, `hotspots.md` and `szz.md` if step 5 wrote them, and `signals.md` if step 6 ran), with small groups already suppressed. Everything between `<!-- report.py:generated -->` and `<!-- report.py:end -->` is copied from those files: don't edit it. A section whose step didn't run says so in one line.
+
+Replace each `<!-- write: ... -->` comment with the text it asks for, and write nothing anywhere else. Use only what the report shows: don't go back to `clean/`, `work/` or the batches for numbers or wording. Quote numbers only as they appear in the report, and don't work out new ones such as percentages. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group. Then check it:
+
+```bash
+python3 <skill>/scripts/report.py --out out/ --check out/report.md
+```
+
+The check fails if a generated block was changed, a write slot is still empty, text was added outside a slot, or the written text holds a number not shown in the report, a ticket key or an email address. Fix each problem it lists and run it again until it passes. Don't share the report before then.
+
+The report's sections, and what to write in each slot:
+1. **Coverage** (all generated): defects matched by the query, defects analysed, unclassified, ingest gaps, the suppression threshold and, if step 5 ran, link coverage per repo. A high unclassified rate, gaps and low link coverage are listed as findings to read first. Mention them in your reply.
 2. **Recurring defect types and themes**: the largest types and themes, with counts and how they trend over the periods.
 3. **Where fixes land** (only if step 5 ran): the directories with the most defects fixed in them, from `hotspots.md`. Say that a directory where many fixes land is where defects are found and fixed, not necessarily where they were introduced, and that it reflects the code, not the people working in it.
 4. **Where defects were probably introduced** (only if `szz.py` ran): the directories from `szz.md`, labelled an estimate. Say that SZZ blames the lines each fix changed, so refactors, moved code and fixes that only add lines mislead or escape it, give the counts it couldn't trace, and that it reflects the code, not the people working in it.

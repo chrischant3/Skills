@@ -22,21 +22,21 @@ Each skill's deterministic pipeline, run on synthetic fixtures. No test calls a 
 
 | Journey | Test | Runs in CI |
 | --- | --- | --- |
-| Defect pattern analysis: raw Jira fixtures through to suppressed counts (phases 1–3, no SCM linking) | `defect-pattern-analysis/tests/test_pipeline.py` | Yes, `Core journey tests` step |
+| Defect pattern analysis: raw Jira fixtures through to suppressed counts and a checked report (no SCM linking) | `defect-pattern-analysis/tests/test_pipeline.py` | Yes, `Core journey tests` step |
 | Requirements to tests: extract a PDF, DOCX, XLSX or text document, then build the traceable outputs | `requirements-to-tests/tests/test_extract.py`, `requirements-to-tests/tests/test_build_outputs.py` | Yes, `Core journey tests` step |
 | Verifier: check a verdict file against the format | `verifier/tests/test_check_verdict.py` | Yes, `Core journey tests` step |
 
-SCM linking in defect-pattern-analysis is covered by its unit tests (`test_link_scm.py`, `test_scm_*.py`), not by a journey, and so is the SZZ introduction estimate (`test_szz.py`, which builds throwaway git repos with known commit dates; it needs `git` on the path). `rules-audit` is Markdown only. `rules-audit/tests/test_skill_package.py` checks in CI that the files an agent loads are well formed: links resolve, code fences close, rubric IDs exist, tables are not ragged. Its behaviour is covered by its model evals (see Exceptions).
+SCM linking in defect-pattern-analysis is covered by its unit tests (`test_link_scm.py`, `test_scm_*.py`), not by a journey, and so is the SZZ introduction estimate (`test_szz.py`, which builds throwaway git repos with known commit dates; it needs `git` on the path). The report's layout and each `--check` rule are covered by `test_report.py`. `rules-audit` is Markdown only. `rules-audit/tests/test_skill_package.py` checks in CI that the files an agent loads are well formed: links resolve, code fences close, rubric IDs exist, tables are not ragged. Its behaviour is covered by its model evals (see Exceptions).
 
 ## Running the suite
 
 **Prerequisites:** a Python 3.10 virtual environment, activated (`python3.10 -m venv .venv && . .venv/bin/activate`), then `pip install -r requirements-dev.txt`, and poppler's `pdftotext` on PATH (`brew install poppler` or `apt-get install poppler-utils`). Without `pdftotext` or `fpdf2` the PDF tests are skipped, not failed.
 
-**Unit tests:** `python -m pytest` — expected: about 1090 passed, exit 0.
+**Unit tests:** `python -m pytest` — expected: about 1315 passed, exit 0.
 
 **Coverage:** `python -m pytest --cov=defect-pattern-analysis/scripts --cov=requirements-to-tests/scripts --cov=requirements-to-tests/evals --cov=verifier/scripts --cov-report=term-missing --cov-fail-under=85` — expected: 85.77% or more, exit 0.
 
-**Core journeys:** `python -m pytest defect-pattern-analysis/tests/test_pipeline.py requirements-to-tests/tests/test_extract.py requirements-to-tests/tests/test_build_outputs.py verifier/tests/test_check_verdict.py` — expected: 106 passed, exit 0.
+**Core journeys:** `python -m pytest defect-pattern-analysis/tests/test_pipeline.py requirements-to-tests/tests/test_extract.py requirements-to-tests/tests/test_build_outputs.py verifier/tests/test_check_verdict.py` — expected: 107 passed, exit 0.
 
 **Lint and format:** `ruff check . && ruff format --check .` — expected: no errors, exit 0.
 
