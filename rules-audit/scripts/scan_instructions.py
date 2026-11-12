@@ -41,8 +41,11 @@ BASE64_RUN = re.compile(r"[A-Za-z0-9+/_-]{40,}={0,2}")
 HEX_RUN = re.compile(r"\b[0-9a-fA-F]{64,}\b")
 
 SECRET_ASSIGNMENT = re.compile(
-    r"\b([A-Za-z0-9_]*(?:token|secret|password|passwd|api[_-]?key|access[_-]?key"
-    r"|private[_-]?key|credentials?)[A-Za-z0-9_]*)\s*[:=]\s*[\"'`]?(<[^>\n]*>|[^\s\"'`]+)",
+    # The name parts are capped at 40 characters: unbounded runs backtrack
+    # quadratically on a long line of repeated keywords, which a planted file
+    # could use to stall the audit.
+    r"\b([A-Za-z0-9_]{0,40}(?:token|secret|password|passwd|api[_-]?key|access[_-]?key"
+    r"|private[_-]?key|credentials?)[A-Za-z0-9_]{0,40})\s*[:=]\s*[\"'`]?(<[^>\n]*>|[^\s\"'`]+)",
     re.IGNORECASE,
 )
 URL_CREDENTIALS = re.compile(
@@ -340,14 +343,16 @@ def _blobs(line, secret_spans):
 
 
 def _html_comments(text):
-    hits = []
+    hits, line, counted_to = [], 1, 0
     for match in HTML_COMMENT.finditer(text):
+        line += text.count("\n", counted_to, match.start())
+        counted_to = match.start()
         body = _redact(" ".join(match.group(1).split()))
         hits.append(
             {
                 "check": "A3",
                 "kind": "html-comment",
-                "line": text.count("\n", 0, match.start()) + 1,
+                "line": line,
                 "detail": "hidden when rendered: "
                 + (body[:100] + ("..." if len(body) > 100 else "")),
             }

@@ -6,6 +6,7 @@ Every secret below is invented and matches no provider's live format.
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -243,13 +244,14 @@ def test_a_token_used_as_a_url_username_is_a_secret():
     "line",
     [
         "Authorization: Bearer Pq7zLm2Vx9Kw4Rt8Yh3n",
-        "aws AKIAPQ7ZLM2VX9KW4RT8",
+        "aws AKIAIOSFODNN7EXAMPLE",
         "use ghp_Pq7zLm2Vx9Kw4Rt8Yh3nB6cD1eF5gH0jK2m",
     ],
 )
 def test_well_known_token_shapes_are_secrets(line):
     hit = only_hit(line + "\n", "secret")
     assert "Pq7zLm2Vx9Kw" not in json.dumps(hit)
+    assert "IOSFODNN7" not in json.dumps(hit)
 
 
 def test_token_counts_are_not_secrets():
@@ -277,3 +279,15 @@ def test_a_short_live_key_in_a_comment_is_masked():
 def test_a_token_in_a_url_is_reported_once():
     line = "clone https://ghp_Pq7zLm2Vx9Kw4Rt8Yh3nB6cD1eF5gH0jK2m@github.com/o/r\n"
     assert kinds(line) == ["secret"]
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["token" * 10000 + "\n", "<!-- a -->\n" * 20000],
+    ids=["long-keyword-run", "many-comments"],
+)
+def test_hostile_input_is_scanned_quickly(text):
+    # A planted file shouldn't be able to stall the audit.
+    started = time.monotonic()
+    scan_instructions.scan_text(text)
+    assert time.monotonic() - started < 0.5
