@@ -1,0 +1,18 @@
+"""Parse short duration strings such as "90s", "5m30s" or "1h30m" into seconds."""
+
+import re
+
+UNIT_SECONDS = {"s": 1, "m": 60, "h": 3600}
+_PART = re.compile(r"(\d+)([smh])")
+
+
+def parse_duration(text):
+    """Return the number of seconds in a duration string like "1h30m".
+
+    Raises ValueError for an empty or malformed string.
+    """
+    text = text.strip()
+    parts = _PART.findall(text)
+    if not parts or "".join(n + u for n, u in parts) != text:
+        raise ValueError(f"not a duration: {text!r}")
+    return sum(int(n) * UNIT_SECONDS[u] for n, u in parts)

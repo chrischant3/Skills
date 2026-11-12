@@ -1,16 +1,16 @@
 ---
 name: verifier
 description: >-
-  Independently checks claims about work another agent or person has done, and writes an
-  evidence-backed verdict file (Pass, Fail or Inconclusive) instead of an opinion. Treats every claim
-  ("tests pass", "follows the spec", "no behaviour change") as a hypothesis, prefers running things
-  over reading them, and records "could not verify" honestly. Has an optional rule-compliance
-  profile that checks whether a coding agent (Kilo, Claude Code or similar) followed its rules,
-  instructions and skills, and whether those rules can be judged at all. Use when asked to verify,
-  check, audit or second-guess another agent's work or summary; when a builder says "done" and you
-  need evidence; when the user asks "did it really follow the rules", "did it write the test first"
-  or "is this actually tested"; or when producing a verdict file for a run. Advisory only: it never
-  blocks a merge. Not for open-ended code review of style or design.
+  Use this skill whenever someone asks you to verify, check, audit or second-guess work that another
+  agent or person says is done, or their summary of it: "can you verify that?", "is that actually
+  true?", "is this actually tested?", "did it really follow the rules?", "did it write the test
+  first?". Also use it when a builder says "done" and you need evidence, or when producing a verdict
+  file for a run. It treats every claim ("tests pass", "follows the spec", "no behaviour change") as
+  a hypothesis, prefers running things over reading them, and writes an evidence-backed verdict file
+  (Pass, Fail or Inconclusive) that records "could not verify" honestly. Its rule-compliance profile
+  checks whether a coding agent (Kilo, Claude Code or similar) followed its rules, instructions and
+  skills, and whether those rules can be judged at all. Advisory only: it never blocks a merge. Not
+  for open-ended code review of style or design.
 ---
 
 # Verifier
@@ -44,7 +44,8 @@ A team can make "never the builder's provider" a hard rule in its own harness. T
 
 | Input | What it is | If missing |
 | --- | --- | --- |
-| Task | What was supposed to happen, in the requester's words | Stop and ask. There is nothing to verify against. |
+| Task | What was supposed to happen, in the requester's words | Stop and ask. There is nothing to verify against. A commit message, PR description or the builder's summary is not the task: it says what the builder did, not what was asked. |
+| Builder model | Which model built the work, as `<provider>/<model>` | Stop and ask. The verdict file must record it, and `same_provider` can't be set without it. Never guess it or write a placeholder. |
 | Claims | The specific statements to verify | Derive them from the task and list them before checking anything. |
 | Artefacts | The diff, output, files, document or system state under review | Stop and ask. |
 | Criteria | Acceptance criteria, rules or standards that define success | Use the task alone, and note in `observations` that no criteria were given. |
@@ -54,6 +55,7 @@ The rule-compliance profile adds two inputs: the rules, instructions and skills 
 
 ## Process
 
+0. **Check the inputs before anything else.** If the task, the builder model or the artefacts are missing, ask for all the missing ones in one message and stop. Don't run anything, verify anything or write a verdict file until they arrive.
 1. **Restate the intent** in one or two sentences and list the claims to check. Where the task or a claim can be read more than one way, flag it rather than picking a reading.
 2. **Rank claims by risk:** impact if wrong multiplied by likelihood of being wrong. Mark each `high`, `medium` or `low`.
 3. **Gather evidence for each claim.** Observe directly where you can: run the tests, execute the code, read the actual files, query the system. Fall back to inspection only when execution isn't possible or isn't allowed, and record which you used (`executed` or `inspected`).
@@ -80,7 +82,7 @@ Other reasons to record Inconclusive, with the reason in `observations`: no inde
 
 ## Output
 
-One JSON file per run. The proposed location is `.verifier/runs/<run_id>.json` in the repo under review, alongside the code; change it if it clashes with the repo's conventions. The format is fixed so files can later be collected across repos without rework.
+One JSON file per run. Write it on every run that reaches a verdict, without asking first: the file is the result, and the chat summary only repeats it. The proposed location is `.verifier/runs/<run_id>.json` in the repo under review, alongside the code; change it if it clashes with the repo's conventions. The format is fixed so files can later be collected across repos without rework.
 
 The file must validate against `references/verdict-schema.json`. The schema enforces the enums, the overall verdict rule, and `expected`, `observed` and `repro` on every Failed claim. `audit` stays `null`: it is reserved for a second-line auditor that is not part of this skill yet.
 

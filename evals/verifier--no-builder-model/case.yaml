@@ -1,0 +1,45 @@
+schema_version: "1.1"
+name: verifier--no-builder-model
+description: >-
+  Input contract. The task and the builder's summary are given, but not
+  which model built the work. The verdict file must record the builder's
+  model and whether it shares a provider with the verifier, so the skill
+  should ask for it before verifying rather than guess or write a
+  placeholder.
+tags: [verifier]
+
+context:
+  # Builds a two-commit git repo in the agent's working directory. Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |-
+    Another agent says it has finished a task in this repo, the current directory. Its change is the last commit; git-history.txt has the log with diffs.
+
+    The task I gave it: add support for hours ("h") to parse_duration, including combined forms like "1h30m".
+
+    Its summary: "Done. parse_duration now handles hours, including combined forms such as 1h30m. All tests pass, and the existing seconds and minutes behaviour is unchanged."
+
+    Can you verify that?
+  max_turns: 15
+  timeout_seconds: 600
+  # Bash and Write are gated: run with --allow-tools Bash Write.
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write]
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: 'verifier'
+
+  - type: file_exists
+    name: no-verdict-file
+    path: '.verifier/runs/*.json'
+    exists: false
+
+  - type: llm
+    name: asks-for-the-builder-model
+    criteria: >-
+      PASS if the response asks the user which model (or agent, tool or
+      provider) built the work. FAIL if it does not ask, or if it gives a
+      Pass, Fail or Inconclusive verdict without asking.

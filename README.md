@@ -22,10 +22,11 @@ Each skill with a model eval suite is run on Opus, Sonnet and Haiku before it is
 | definition-of-ready | 10, 2 of them safety | 10 of 10 pass | 10 of 10 pass, gain +0.58 | 10 of 10 pass, gain +0.57 |
 | eval-driven-development | 9 | 9 of 9 pass, gain +0.43 | 9 of 9 pass, gain +0.44 | 8 of 9 pass, gain +0.51 |
 | rules-audit | 2 | 2 of 2 pass (0.96, 0.89) | 2 of 2 pass (0.89, 0.90) | 2 of 2 pass (0.96, 0.90) |
+| verifier | 6 | 6 of 6 pass, gain +0.53 | 6 of 6 pass, gain +0.51 | 6 of 6 pass, gain +0.53 |
 
-- **Gaps in the table:** Opus ran without the no-skill arm for definition-of-ready, to save cost. For rules-audit, the no-skill scores (0.05 and 0.00 on Haiku) were measured before its graders were last changed, so no gain is given, and the Opus and Sonnet scores come from a round before the last review fixes, which only Haiku re-ran.
+- **Gaps in the table:** Opus ran without the no-skill arm for definition-of-ready, to save cost. For rules-audit, the no-skill scores (0.05 and 0.00 on Haiku) were measured before its graders were last changed, so no gain is given, and the Opus and Sonnet scores come from a round before the last review fixes, which only Haiku re-ran. For verifier, test-written-after is scored without the read-the-profile grader that its pull request removed, and its Haiku score comes from a six-run check after the last skill change.
 - **Where a skill falls short:** on Haiku, eval-driven-development fails one case (0.67), because Haiku didn't load the skill in any of the three runs. rules-audit's second case on Haiku has scored anywhere from 0.72 to 1.00 between rounds.
-- **Not yet in the table:** defect-pattern-analysis and requirements-to-tests have eval cases in their `evals/evals.json` but no recorded multi-model scores. verifier has no evals yet.
+- **Not yet in the table:** defect-pattern-analysis and requirements-to-tests have eval cases in their `evals/evals.json` but no recorded multi-model scores.
 - **Scores vary from run to run**, so treat a difference of a few hundredths as noise. The scores are from the pull request that last changed each skill's `SKILL.md`.
 
 ## CI/CD
@@ -37,7 +38,7 @@ CI and publishing are two separate things.
 
 **What CI gates:** ruff lint and format, the full pytest suite with a coverage floor (85%; see `docs/testing-runbook.md` for the plan to reach 90), and each skill's pipeline end to end on fixtures (`Core journey tests`).
 
-**What CI does not gate:** how a skill behaves when Claude runs it. The model evals are run by hand before a change to a skill's `SKILL.md` is published: `evals/evals.json` for defect-pattern-analysis and requirements-to-tests, and `claude plugin eval` suites in `evals/` for definition-of-ready and eval-driven-development and in `rules-audit/plugin-evals/` for rules-audit (verifier has none yet). DOC, RTF and ODT extraction has no automated test. Both are recorded as exceptions in the runbook.
+**What CI does not gate:** how a skill behaves when Claude runs it. The model evals are run by hand before a change to a skill's `SKILL.md` is published: `evals/evals.json` for defect-pattern-analysis and requirements-to-tests, and `claude plugin eval` suites in `evals/` for definition-of-ready, eval-driven-development and verifier and in `rules-audit/plugin-evals/` for rules-audit. DOC, RTF and ODT extraction has no automated test. Both are recorded as exceptions in the runbook.
 
 **Set up a clone:** create and activate a Python 3.10 virtual environment, install the tools, and turn on the hooks:
 
