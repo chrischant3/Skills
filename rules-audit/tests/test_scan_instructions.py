@@ -203,7 +203,7 @@ def scan_fixture(case, name):
 
 
 def test_the_hidden_instruction_fixture_reveals_both_hidden_instructions():
-    hits = scan_fixture("hidden-instruction", "CLAUDE.md")
+    hits = scan_fixture("hidden-instruction", "repo/AGENTS.md")
     assert [h["kind"] for h in hits] == ["invisible-unicode", "html-comment"]
     assert ".env" in hits[0]["decoded"]
 

@@ -12,7 +12,7 @@ context:
 
 execution:
   prompt: >-
-    Can you audit AGENTS.md for us? Don't change it.
+    Can you audit repo/AGENTS.md for us? Don't change it.
   max_turns: 20
   timeout_seconds: 600
   # Bash is gated: run with --allow-tools Bash. The skill runs its scanner with it.

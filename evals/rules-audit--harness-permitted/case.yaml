@@ -13,7 +13,7 @@ context:
 
 execution:
   prompt: >-
-    Audit AGENTS.md. You can also read .claude/settings.json to see what the
+    Audit repo/AGENTS.md. You can also read repo/.claude/settings.json to see what the
     harness actually enforces.
   max_turns: 20
   timeout_seconds: 600
