@@ -82,7 +82,7 @@ Other reasons to record Inconclusive, with the reason in `observations`: no inde
 
 ## Output
 
-One JSON file per run. The proposed location is `.verifier/runs/<run_id>.json` in the repo under review, alongside the code; change it if it clashes with the repo's conventions. The format is fixed so files can later be collected across repos without rework.
+One JSON file per run. Write it on every run that reaches a verdict, without asking first: the file is the result, and the chat summary only repeats it. The proposed location is `.verifier/runs/<run_id>.json` in the repo under review, alongside the code; change it if it clashes with the repo's conventions. The format is fixed so files can later be collected across repos without rework.
 
 The file must validate against `references/verdict-schema.json`. The schema enforces the enums, the overall verdict rule, and `expected`, `observed` and `repro` on every Failed claim. `audit` stays `null`: it is reserved for a second-line auditor that is not part of this skill yet.
 
