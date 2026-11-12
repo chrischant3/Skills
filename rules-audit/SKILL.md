@@ -1,13 +1,14 @@
 ---
 name: rules-audit
 description: >-
-  Audits the instructions given to coding agents (AGENTS.md, CLAUDE.md, Kilo
-  rules, skills, system prompts and other rule sets) for prompt engineering
-  practice and progressive disclosure, and reports findings with severity,
-  evidence and fixes. Use when asked to review, audit, assess, critique or
-  improve existing agent instructions, when an agent keeps ignoring a rule
-  and the user wants to know whether the rules file is to blame, or before
-  restructuring a rules file. Not for writing new rules from scratch.
+  Use when someone asks to review, audit, assess, critique or improve agent
+  instructions or a prompt (AGENTS.md, CLAUDE.md, Kilo rules, skills,
+  SKILL.md, system prompts, other rule sets), asks how well rules are likely
+  to be followed, why an agent keeps ignoring a rule, or whether a rules file
+  is safe, even if they don't say "audit". Also before restructuring a rules
+  file. Reports findings on prompt engineering practice, progressive
+  disclosure and security, with severity, quoted evidence and fixes. Not for
+  writing new rules from scratch.
 ---
 
 # Rules audit
