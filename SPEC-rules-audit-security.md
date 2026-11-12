@@ -81,3 +81,16 @@ Fixtures use invented, non-provider credential formats, so nothing in the repo l
 2. **rules-audit ships a script**, its first.
 3. **Harness settings with permission only**, never blocking the audit of the files asked for.
 4. **Built with `eval-driven-development`**, using `claude plugin eval`.
+
+## Results
+
+Built with `eval-driven-development` in five measured changes (see the commit history). Gate runs, 3 runs per arm:
+
+| Model | Cases passing | Mean with skill | Gain over no skill |
+|---|---|---|---|
+| Opus | 9 of 9 | 1.00 | +0.51 |
+| Sonnet | 9 of 9 | 0.98 | +0.57 |
+| Haiku | 7 of 9 | 0.90 | +0.47 |
+
+On Haiku, progressive-agents-md scores 0.78, and harness-not-permitted 0.93: one run didn't offer the settings check, and no run read the settings. The summary line saying instructions aren't a security control was not added: its grader passed with and without the skill before any change.
+
