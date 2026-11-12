@@ -1,16 +1,16 @@
 ---
 name: verifier
 description: >-
-  Independently checks claims about work another agent or person has done, and writes an
-  evidence-backed verdict file (Pass, Fail or Inconclusive) instead of an opinion. Treats every claim
-  ("tests pass", "follows the spec", "no behaviour change") as a hypothesis, prefers running things
-  over reading them, and records "could not verify" honestly. Has an optional rule-compliance
-  profile that checks whether a coding agent (Kilo, Claude Code or similar) followed its rules,
-  instructions and skills, and whether those rules can be judged at all. Use when asked to verify,
-  check, audit or second-guess another agent's work or summary; when a builder says "done" and you
-  need evidence; when the user asks "did it really follow the rules", "did it write the test first"
-  or "is this actually tested"; or when producing a verdict file for a run. Advisory only: it never
-  blocks a merge. Not for open-ended code review of style or design.
+  Use this skill whenever someone asks you to verify, check, audit or second-guess work that another
+  agent or person says is done, or their summary of it: "can you verify that?", "is that actually
+  true?", "is this actually tested?", "did it really follow the rules?", "did it write the test
+  first?". Also use it when a builder says "done" and you need evidence, or when producing a verdict
+  file for a run. It treats every claim ("tests pass", "follows the spec", "no behaviour change") as
+  a hypothesis, prefers running things over reading them, and writes an evidence-backed verdict file
+  (Pass, Fail or Inconclusive) that records "could not verify" honestly. Its rule-compliance profile
+  checks whether a coding agent (Kilo, Claude Code or similar) followed its rules, instructions and
+  skills, and whether those rules can be judged at all. Advisory only: it never blocks a merge. Not
+  for open-ended code review of style or design.
 ---
 
 # Verifier
