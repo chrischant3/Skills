@@ -31,10 +31,11 @@ graders:
   - type: llm
     name: inventory-and-loading
     criteria: >-
-      The response identifies AGENTS.md as always loaded and the three
-      docs/agents files (migrations.md, integration-tests.md,
-      ui-accessibility.md) as loaded on demand, and notes that each pointer
-      has a trigger ("read this when ...") and is one level deep.
+      PASS if the response identifies AGENTS.md as always loaded and the three
+      docs/agents files (migrations.md, integration-tests.md, ui-
+      accessibility.md) as loaded on demand, and notes that each pointer has a
+      trigger ("read this when ...") and is one level deep. FAIL if it misses
+      any of these.
 
   # Deterministic: findings rows whose Severity cell starts with High.
   - type: regex
@@ -52,11 +53,11 @@ graders:
   - type: llm
     name: findings-cite-lines
     criteria: >-
-      The response contains at least one finding. Every finding about
-      specific text gives a file and line number or line range. Findings about
-      the file or rule set as a whole may cite the file without a line.
-      Fail if there are no findings, or if a finding about specific text
-      has no line reference. Ignore whether the evidence is quoted.
+      PASS if the response contains at least one finding and every finding
+      about specific text gives a file and line number or line range. Findings
+      about the file or rule set as a whole may cite the file without a line.
+      FAIL if there are no findings, or if a finding about specific text has
+      no line reference. Ignore whether the evidence is quoted.
 
   # Deterministic: a findings row whose Evidence cell (the cell after
   # Severity) does not start with a backtick or "None found:" and has no

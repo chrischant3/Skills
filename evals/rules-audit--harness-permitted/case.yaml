@@ -39,4 +39,6 @@ graders:
       pushing to main, running terraform apply, or reading .env files
       (for example because Bash(*) and Read(*) are allowed with no
       matching deny rule), and suggests adding deny rules or another
-      harness control. FAIL otherwise.
+      harness control. FAIL if it says
+      the settings enforce these rules, or doesn't compare the rules with
+      the settings.
