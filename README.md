@@ -19,7 +19,7 @@ CI and publishing are two separate things.
 - **CI** is the `Tests` job in `.github/workflows/ci.yml`. It runs on every pull request and on pushes to `main`. Branch protection on `main` will require it to pass before a pull request can merge; the maintainer applies that once with the standards repo's `scripts/protect-branch.sh chrischant3/Skills main "Tests"`.
 - **Publishing** has no pipeline. People install the skills from this repository, so **a merge to `main` is a release**. Nothing deploys automatically.
 
-**What CI gates:** ruff lint and format, the full pytest suite with a coverage floor (82%; see `docs/testing-runbook.md` for the plan to reach 90), and each skill's pipeline end to end on fixtures (`Core journey tests`).
+**What CI gates:** ruff lint and format, the full pytest suite with a coverage floor (85%; see `docs/testing-runbook.md` for the plan to reach 90), and each skill's pipeline end to end on fixtures (`Core journey tests`).
 
 **What CI does not gate:** how a skill behaves when Claude runs it. The model evals are run by hand before a change to a skill's `SKILL.md` is published: `evals/evals.json` for defect-pattern-analysis and requirements-to-tests, and a `claude plugin eval` suite in `rules-audit/plugin-evals/` for rules-audit (verifier has none yet). DOC, RTF and ODT extraction has no automated test. Both are recorded as exceptions in the runbook.
 

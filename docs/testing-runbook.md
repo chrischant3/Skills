@@ -8,7 +8,7 @@ Departures from the quality rules in the engineering standards. An undocumented 
 
 | Rule | Where | Why | What covers the risk instead | Revisit |
 | --- | --- | --- | --- | --- |
-| 10 (90% coverage) | The whole repo: 85.77% measured on 2026-11-12, gated at 82% in CI | CI arrived after the code | Every script not listed in the next rows is at 80% or more | Raise `--cov-fail-under` each time a file below gains tests; aim for 90 |
+| 10 (90% coverage) | The whole repo: 85.77% measured on 2026-11-12, gated at 85% in CI | CI arrived after the code | Every script not listed in the next rows is at 80% or more | Raise `--cov-fail-under` each time a file below gains tests; aim for 90 |
 | 10 | `requirements-to-tests/evals/grade.py` (0%), `requirements-to-tests/evals/make_fixtures.py` (54%) | Eval tooling, run by hand, not shipped to users | Nothing automated for `grade.py`; `make_fixtures.py` is partly covered by `tests/test_make_fixtures.py`. Accepted | When the evals run in CI |
 | 10 | `verifier/scripts/check_verdict.py` (0% measured) | Its tests run it as a subprocess, which coverage doesn't follow by default | `verifier/tests/test_check_verdict.py` exercises it end to end | Turn on coverage's subprocess patching, then raise the floor |
 | 10 | `defect-pattern-analysis/scripts/rest_transport.py` (56%) | Thin HTTP wrapper; the untested lines are the live network calls | Callers are tested with fake transports. Accepted | When the wrapper grows logic of its own |
@@ -34,7 +34,7 @@ SCM linking in defect-pattern-analysis is covered by its unit tests (`test_link_
 
 **Unit tests:** `python -m pytest` — expected: about 1090 passed, exit 0.
 
-**Coverage:** `python -m pytest --cov=defect-pattern-analysis/scripts --cov=requirements-to-tests/scripts --cov=requirements-to-tests/evals --cov=verifier/scripts --cov-report=term-missing --cov-fail-under=82` — expected: 82.95% or more, exit 0.
+**Coverage:** `python -m pytest --cov=defect-pattern-analysis/scripts --cov=requirements-to-tests/scripts --cov=requirements-to-tests/evals --cov=verifier/scripts --cov-report=term-missing --cov-fail-under=85` — expected: 85.77% or more, exit 0.
 
 **Core journeys:** `python -m pytest defect-pattern-analysis/tests/test_pipeline.py requirements-to-tests/tests/test_extract.py requirements-to-tests/tests/test_build_outputs.py verifier/tests/test_check_verdict.py` — expected: 106 passed, exit 0.
 
