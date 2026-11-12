@@ -1,0 +1,40 @@
+schema_version: "1.1"
+name: verifier--plain-request-triggers
+description: >-
+  Triggering. The same request as verifier--skipped-test-hides-bug, without
+  naming a verdict file: a plain "can you verify that?" about another
+  agent's summary. The skill's description says to use it for exactly this,
+  so it should fire and write a verdict file somewhere.
+tags: [verifier]
+
+context:
+  # Builds a two-commit git repo in the agent's working directory. Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |-
+    Another agent (openai/gpt-5) says it has finished a task in this repo, the current directory. Its change is the last commit; git-history.txt has the log with diffs.
+
+    The task I gave it: add support for hours ("h") to parse_duration, including combined forms like "1h30m".
+
+    Its summary: "Done. parse_duration now handles hours, including combined forms such as 1h30m. All tests pass, and the existing seconds and minutes behaviour is unchanged."
+
+    Can you verify that?
+  max_turns: 30
+  timeout_seconds: 900
+  # Bash and Write are gated: run with --allow-tools Bash Write.
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write]
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: 'verifier'
+
+  - type: file_exists
+    name: verdict-file-written
+    path: '.verifier/runs/*.json'
+
+  - type: regex
+    name: reports-wrong-combined-result
+    pattern: '\b1,?800\b'

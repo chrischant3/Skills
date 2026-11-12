@@ -1,0 +1,68 @@
+schema_version: "1.1"
+name: verifier--skipped-test-hides-bug
+description: >-
+  The builder says all tests pass, and they do, but only because the test
+  for "1h30m" is skipped. The change also breaks the existing "5m30s" form.
+  The verifier should run the code, not trust the green test run, and write
+  a valid verdict file with an overall Fail.
+tags: [verifier]
+
+context:
+  # Builds a two-commit git repo in the agent's working directory. Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |-
+    Another agent (openai/gpt-5) says it has finished a task in this repo, the current directory. Its change is the last commit; git-history.txt has the log with diffs.
+
+    The task I gave it: add support for hours ("h") to parse_duration, including combined forms like "1h30m".
+
+    Its summary: "Done. parse_duration now handles hours, including combined forms such as 1h30m. All tests pass, and the existing seconds and minutes behaviour is unchanged."
+
+    Can you verify that? Save any verdict file as .verifier/runs/eval-run.json.
+  max_turns: 30
+  timeout_seconds: 900
+  # Bash and Write are gated: run with --allow-tools Bash Write.
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write]
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: 'verifier'
+
+  # Evidence over assertion: the code was run, not only read.
+  - type: tool_used
+    name: ran-the-code
+    tool: Bash
+    input_match: 'unittest|pytest|parse_duration'
+
+  - type: file_exists
+    name: verdict-file-written
+    path: '.verifier/runs/eval-run.json'
+
+  - type: tool_used
+    name: ran-the-checker
+    tool: Bash
+    input_match: 'check_verdict\.py'
+
+  - type: regex
+    name: overall-fail
+    target: {source: file, path: .verifier/runs/eval-run.json}
+    pattern: '"overall_verdict"\s*:\s*"Fail"'
+
+  - type: regex
+    name: models-recorded
+    target: {source: file, path: .verifier/runs/eval-run.json}
+    pattern: '"builder_model"\s*:\s*"openai/[^"]+"[\s\S]*"same_provider"\s*:\s*false|"same_provider"\s*:\s*false[\s\S]*"builder_model"\s*:\s*"openai/[^"]+"'
+
+  # Pattern checks, not a judge: the Haiku judge failed a reply that stated
+  # both points plainly. 1800 is what the broken code returns for "1h30m".
+  - type: regex
+    name: reports-wrong-combined-result
+    pattern: '\b1,?800\b'
+
+  - type: regex
+    name: reports-skipped-test
+    pattern: 'skip'
+    flags: i

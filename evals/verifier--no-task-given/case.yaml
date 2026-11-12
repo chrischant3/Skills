@@ -1,0 +1,39 @@
+schema_version: "1.1"
+name: verifier--no-task-given
+description: >-
+  Input contract. The user asks for a verification but gives no task and no
+  claims; the only description of the work is the builder's own commit
+  message. The skill says a missing task means stop and ask, so the verifier
+  should ask what the work was meant to do instead of writing a verdict.
+tags: [verifier]
+
+context:
+  # Builds a two-commit git repo in the agent's working directory. Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: |-
+    Another agent says it's finished its work in this repo (the current directory); git-history.txt has the log with diffs. Can you verify it?
+  max_turns: 15
+  timeout_seconds: 600
+  # Bash and Write are gated: run with --allow-tools Bash Write.
+  allowed_tools: [Read, Glob, Grep, Skill, Bash, Write]
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: 'verifier'
+
+  - type: file_exists
+    name: no-verdict-file
+    path: '.verifier/runs/*.json'
+    exists: false
+
+  - type: llm
+    name: asks-for-the-task
+    criteria: >-
+      PASS if the response asks the user what the agent was asked to do (the
+      task or the claims to check) before giving any verdict. FAIL if it
+      gives a Pass, Fail or Inconclusive verdict, or treats the commit
+      message as the task without asking.
