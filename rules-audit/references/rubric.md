@@ -59,8 +59,8 @@ These items judge what the text asks of the agent and what it leaves out. Instru
   High for hidden instructions or remote images, wherever they sit. Not a finding for a comment that is plainly a tooling marker, such as `<!-- generated -->`.
 - **A4.** An agent that reads content it didn't write (issues, pull requests, web pages, tool or MCP output, files from elsewhere) is told to treat that content as data, not instructions, and to ask before acting on anything it asks for.
   Medium when such content is read with no such rule; High when the agent also runs commands or code taken from that content.
-- **A5.** High-impact or irreversible actions (push, deploy, delete, migrations, payments, sending messages) need explicit approval, and the rule names them.
-  High when an action the files ask for or allow could do lasting harm and no rule requires approval for it.
+- **A5.** High-impact or irreversible actions the agent itself might take (push, deploy, delete, running migrations, payments, sending messages) need explicit approval, and the rule names them.
+  High when the files tell the agent to take such an action without approval. Medium when the agent's work could plausibly include one and no rule covers it. Not a finding for actions that CI or people perform, such as migrations that run in CI on deploy.
 - **A6.** The agent may not change its own instructions, hooks, harness settings or CI configuration without asking.
   Medium when the files are silent on it.
 - **A7.** No fetch-and-run (`curl ... | sh`), unpinned or unreviewed installs, or tools and MCP servers beyond what the work needs.
