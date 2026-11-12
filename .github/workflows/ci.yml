@@ -54,7 +54,7 @@ jobs:
           --cov=requirements-to-tests/evals
           --cov=verifier/scripts
           --cov-report=term-missing
-          --cov-fail-under=82
+          --cov-fail-under=85
 
       # Core journeys (rule 11): each skill's deterministic pipeline, end to end on
       # fixtures. A separate step so a failure says "a skill's pipeline broke".

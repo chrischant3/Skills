@@ -16,7 +16,7 @@ defects in clean/, so it follows the run's own time window. Changes merged befor
 are not scanned.
 
 Writes:
-- work/scm_links.json: per defect, its repos, changes, commits and files changed; per
+- work/scm_links.json: per defect, its repos, changes (each with its commits), commits and files changed; per
   repo, changes scanned, changes linked and defects linked. It holds ticket keys, so it
   is working data, never a report.
 - out/scm_coverage.json, .csv and .md: link coverage per repo, every count through
@@ -130,6 +130,7 @@ def _add_change(entry: dict, change) -> None:
             "kind": change.kind,
             "id": change.id,
             "merged_at": change.merged_at,
+            "commits": [commit["id"] for commit in change.commits],
         }
     )
     for commit in change.commits:

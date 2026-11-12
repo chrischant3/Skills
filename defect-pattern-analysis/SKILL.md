@@ -18,7 +18,7 @@ description: >-
 Help a team learn from its defects at system level. This version answers one question:
 **what types of defect keep occurring, and how is that changing over time?** It needs Jira only.
 
-If the team uses GitLab or Azure DevOps, it can also link each defect to the merge requests or pull requests that fixed it, report how well defects and changes are linked in each repo, and show which directories fixes land in most (step 5). That answers the first half of a second question, where in the code defects are fixed. Step 6 reads ticket history for signs of unclear work, genuine complexity and flow problems. Where defects were introduced is planned and not ready. Its draft script is in `scripts/` but has known problems (see [Not ready yet](#not-ready-yet)). Don't run it on real data.
+If the team uses GitLab or Azure DevOps, it can also link each defect to the merge requests or pull requests that fixed it, report how well defects and changes are linked in each repo, and show which directories fixes land in most (step 5). That answers a second question, where in the code defects are fixed. With local clones of those repos, it can also estimate where defects were probably introduced (the end of step 5). Step 6 reads ticket history for signs of unclear work, genuine complexity and flow problems.
 
 `<skill>` below means the folder containing this file. Call scripts by absolute path. Work in a run folder outside any git repository (for example a folder called `defect-runs/2026-11/` in the user's home folder), with `raw/`, `clean/`, `work/` and `out/` inside it.
 
@@ -209,6 +209,22 @@ python3 <skill>/scripts/hotspots.py --links work/scm_links.json --config scm.yam
 
 `out/hotspots.md` (with `.json` and `.csv`) gives, for each repo and directory, the number of defects whose fixes touched a file in that directory. It counts defects, not files or commits, so one large fix counts once, the same as a one-line fix. A defect whose fix touched several directories counts once in each, so the counts don't add up to the number of defects. A directory is the folder path cut to `--depth` parts (default 2, such as `src/checkout`); files at the top of a repo count under `(root)`. Directories with fewer than `min_group_size` defects are suppressed, with enough others in the same repo that they can't be worked out, and are never named. The output holds repo names and paths only, never authors. A path inside a personal-namespace repo shows the owner as `[person]`, as the repo name does.
 
+**Optionally, estimate where defects were introduced.** Skip this unless the user has local clones of the linked repos and wants it. For each fix commit linked in `work/scm_links.json`, `szz.py` blames, in the commit's parent, the lines the fix removed or changed. The commits that last changed those lines before the defect was reported are the candidate introducers. This is the SZZ method, and its result is an estimate.
+
+The user clones each repo themselves, with full history: a shallow clone (`--depth`) stops blame at its cut-off. If the team squashes merge requests or pull requests, the fix commits may not be on the main branch. On GitLab, fetch them before running with `git fetch origin '+refs/merge-requests/*/head:refs/remotes/origin/mr/*'`. Elsewhere, `commits_not_in_clone` in the output shows how many were missing. Never run `git log` or `git blame` on the clones yourself, because their output names authors; leave reading them to the script.
+
+Name each clone by the repo's name as `out/scm_coverage.md` shows it:
+
+```bash
+python3 <skill>/scripts/szz.py --links work/scm_links.json --issues clean/ --config scm.yaml \
+  --clone group/checkout-service=clones/checkout-service \
+  --clone Accounts/accounts-api=clones/accounts-api \
+  --work work/szz.json --out out/
+# options: --depth 3   --min-group-size 8
+```
+
+Whitespace-only and comment-only changes aren't blamed, commits listed in a repo's `.git-blame-ignore-revs` are looked past, and candidates committed after the defect was reported are dropped. `out/szz.md` (with `.json` and `.csv`) gives, for each repo and directory, the number of defects with a candidate introducer there, counted and suppressed the same way as the fix hotspots, and the median days from the newest candidate to the report (suppressed when fewer than `min_group_size` defects were traced). Its summary counts what couldn't be traced: `commits_not_in_clone` (often squashed merges), `merge_commits_skipped`, `commits_with_nothing_to_blame` (fixes that only add lines, which SZZ can't trace), `paths_not_in_linked_changes` (see below), `blame_failures`, `defects_without_report_date` and `repos_without_clone` (a count; the names are in `work/szz.json`). `candidates_after_report_dropped` counts lines last changed after the defect was reported, which can't have introduced it. A high count in any of these is a caveat for the report. `work/szz.json` holds ticket keys, so it is working data, never something to quote. No output holds an author, a commit id or a commit time, and the lags aren't kept against their defects, so nothing ties a defect to the person whose commit was blamed. A clone's paths are raw data, and a folder can be named after a person, so a path is used only if `link_scm.py` already listed it for that repo from the anonymised data, and is shown in that cleaned form. Other paths, such as the old path of a renamed file, are counted as `paths_not_in_linked_changes` and never shown. Treat the result as an estimate: refactors and moved code mislead it, and it is a prompt for a conversation about the code, never about the people who worked on it.
+
 ### 6. Optional: ticket signals (clarity, complexity and flow)
 
 Skip this step if the user only wants defect types. It needs `clean/` from step 2 with complete changelogs and comments (fill the gaps `clean/_ingest.json` lists first, as step 2 says). It uses `work/scm_links.json` if step 5 ran.
@@ -239,27 +255,37 @@ The command line lists any status it found in the changelogs that `signals.yaml`
 
 ### 7. Write the report
 
-Write the report from `out/` only: `aggregate.json` and `tables.md`, plus `scm_coverage.md` and `hotspots.md` if step 5 ran, and `signals.md` if step 6 ran. Don't go back to `clean/`, `work/` or the batches for numbers or wording. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group.
+The report is written in two parts: a script lays out every number and table, and you write the interpretation. Run:
 
-Write a Markdown report with these sections, in this order:
-1. **Coverage**: defects matched by the query, defects analysed, unclassified, gaps from `_ingest.json`, and that small groups were suppressed (and at what threshold). If step 5 ran, add link coverage per repo. A high unclassified rate, low link coverage or many gaps is a finding in its own right. Put it near the top.
-2. **Recurring defect types and themes**: the largest types and themes, with counts and how they trend over the periods.
-3. **Where fixes land** (only if step 5 ran): the directories with the most defects fixed in them, from `hotspots.md`. Say that a directory where many fixes land is where defects are found and fixed, not necessarily where they were introduced, and that it reflects the code, not the people working in it.
-4. **How defects are found and where they escape**: triggers and escape stages, framed as "what in our process lets this through", never as who.
-5. **Clarity** (only if step 6 ran): how completely defects were described, edits after work started, clarifying questions and reopens.
-6. **Complexity** (only if step 6 ran): linked issues, comments and, with links, the size of the fixes.
-7. **Flow** (only if step 6 ran): lead and cycle time, waiting, flow efficiency and backward moves, framed as how the system moves work, never as how fast anyone works. Keep clarity, complexity and flow as three separate sections and never combine them into one score. Report clarity against rework only within complexity bands, and say these are correlations, not causes.
-8. **Caveats**: data quality, gaps, link coverage, what the taxonomy can't capture, that classifications are model judgements, and, if step 6 ran, confounders such as complexity and statuses missing from `signals.yaml`.
-9. **Questions for the team**, framed as system improvements. For example: "What in our process lets validation defects reach customers?", not "who missed this?".
+```bash
+python3 <skill>/scripts/report.py --out out/
+```
+
+It writes `out/report.md` from `out/` only (`aggregate.json` and `tables.md`, plus `scm_coverage.md`, `hotspots.md` and `szz.md` if step 5 wrote them, and `signals.md` if step 6 ran), with small groups already suppressed. Everything between `<!-- report.py:generated -->` and `<!-- report.py:end -->` is copied from those files: don't edit it. A section whose step didn't run says so in one line.
+
+Replace each `<!-- write: ... -->` comment with the text it asks for, and write nothing anywhere else. Use only what the report shows: don't go back to `clean/`, `work/` or the batches for numbers or wording. Quote numbers only as they appear in the report, and don't work out new ones such as percentages. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group. Then check it:
+
+```bash
+python3 <skill>/scripts/report.py --out out/ --check out/report.md
+```
+
+The check fails if a generated block was changed, a write slot is still empty, text was added outside a slot, or the written text holds a number not shown in the report, a ticket key or an email address. Fix each problem it lists and run it again until it passes. Don't share the report before then.
+
+The report's sections, and what to write in each slot:
+1. **Coverage** (all generated): defects matched by the query, defects analysed, unclassified, ingest gaps, the suppression threshold and, if step 5 ran, link coverage per repo. A high unclassified rate, gaps and low link coverage are listed as findings to read first. Mention them in your reply.
+2. **Recurring defect types and themes**: write two to four sentences on the largest types and themes and how they trend.
+3. **Where fixes land** (from `hotspots.md`; one line if step 5 didn't run): say which directories stand out. The report already says that this is where defects are found and fixed, not necessarily introduced, and that it reflects the code, not the people.
+4. **Where defects were probably introduced** (from `szz.md`, labelled an estimate; one line if it didn't run): say which directories stand out, as a prompt for a conversation about the code. The caveats already give what it couldn't trace.
+5. **How defects are found and where they escape**: triggers and escape stages, framed as "what in our process lets this through", never as who.
+6. **Clarity**, 7. **Complexity** and 8. **Flow** (from `signals.md`; one line each if step 6 didn't run): what stands out in each. Keep them separate and never combine them into one score. Flow is how the system moves work, never how fast anyone works. Report clarity against rework only within complexity bands, and call any link a correlation, not a cause.
+9. **Caveats**: the report lists the standard ones (classifications are model judgements, the taxonomy's limits, suppression, what the estimate couldn't trace, confounders in the signals). Add any specific to this run, or write "No further caveats."
+10. **Questions for the team**: three to five, framed as system improvements. For example: "What in our process lets validation defects reach customers?", not "who missed this?".
+
+The check is a practical guard, not a proof. It can't catch numbers written as words ("four defects"), the name of a suppressed group, details spelled out to dodge it ("robin at example dot com"), or a number that is shown in the report but written next to the wrong group. The rules above still apply to all of them.
 
 Keep the reply short: the report path, the three to five most important findings, and the caveats that matter most.
 
 After the run, suggest the user deletes `raw/`, because it holds unanonymised personal data, and keeps `clean/` and `work/` only as long as they need them.
-
-## Not ready yet
-
-This step comes later and its draft script has known problems. Don't run it on real data:
-- `scripts/szz.py` (where defects were probably introduced): silently truncates to 200 lines per file, and its repo lookup collides when two repos share a name.
 
 ## Later versions
 
