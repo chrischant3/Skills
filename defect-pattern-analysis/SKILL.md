@@ -255,19 +255,33 @@ The command line lists any status it found in the changelogs that `signals.yaml`
 
 ### 7. Write the report
 
-Write the report from `out/` only: `aggregate.json` and `tables.md`, plus `scm_coverage.md` and `hotspots.md` if step 5 ran (and `szz.md` if the introduction estimate ran), and `signals.md` if step 6 ran. Don't go back to `clean/`, `work/` or the batches for numbers or wording. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group.
+The report is written in two parts: a script lays out every number and table, and you write the interpretation. Run:
 
-Write a Markdown report with these sections, in this order:
-1. **Coverage**: defects matched by the query, defects analysed, unclassified, gaps from `_ingest.json`, and that small groups were suppressed (and at what threshold). If step 5 ran, add link coverage per repo. A high unclassified rate, low link coverage or many gaps is a finding in its own right. Put it near the top.
-2. **Recurring defect types and themes**: the largest types and themes, with counts and how they trend over the periods.
-3. **Where fixes land** (only if step 5 ran): the directories with the most defects fixed in them, from `hotspots.md`. Say that a directory where many fixes land is where defects are found and fixed, not necessarily where they were introduced, and that it reflects the code, not the people working in it.
-4. **Where defects were probably introduced** (only if `szz.py` ran): the directories from `szz.md`, labelled an estimate. Say that SZZ blames the lines each fix changed, so refactors, moved code and fixes that only add lines mislead or escape it, give the counts it couldn't trace, and that it reflects the code, not the people working in it.
+```bash
+python3 <skill>/scripts/report.py --out out/
+```
+
+It writes `out/report.md` from `out/` only (`aggregate.json` and `tables.md`, plus `scm_coverage.md`, `hotspots.md` and `szz.md` if step 5 wrote them, and `signals.md` if step 6 ran), with small groups already suppressed. Everything between `<!-- report.py:generated -->` and `<!-- report.py:end -->` is copied from those files: don't edit it. A section whose step didn't run says so in one line.
+
+Replace each `<!-- write: ... -->` comment with the text it asks for, and write nothing anywhere else. Use only what the report shows: don't go back to `clean/`, `work/` or the batches for numbers or wording. Quote numbers only as they appear in the report, and don't work out new ones such as percentages. Never fill in, estimate or reverse-engineer a suppressed value, and never name a suppressed group. Then check it:
+
+```bash
+python3 <skill>/scripts/report.py --out out/ --check out/report.md
+```
+
+The check fails if a generated block was changed, a write slot is still empty, text was added outside a slot, or the written text holds a number not shown in the report, a ticket key or an email address. Fix each problem it lists and run it again until it passes. Don't share the report before then.
+
+The report's sections, and what to write in each slot:
+1. **Coverage** (all generated): defects matched by the query, defects analysed, unclassified, ingest gaps, the suppression threshold and, if step 5 ran, link coverage per repo. A high unclassified rate, gaps and low link coverage are listed as findings to read first. Mention them in your reply.
+2. **Recurring defect types and themes**: write two to four sentences on the largest types and themes and how they trend.
+3. **Where fixes land** (from `hotspots.md`; one line if step 5 didn't run): say which directories stand out. The report already says that this is where defects are found and fixed, not necessarily introduced, and that it reflects the code, not the people.
+4. **Where defects were probably introduced** (from `szz.md`, labelled an estimate; one line if it didn't run): say which directories stand out, as a prompt for a conversation about the code. The caveats already give what it couldn't trace.
 5. **How defects are found and where they escape**: triggers and escape stages, framed as "what in our process lets this through", never as who.
-6. **Clarity** (only if step 6 ran): how completely defects were described, edits after work started, clarifying questions and reopens.
-7. **Complexity** (only if step 6 ran): linked issues, comments and, with links, the size of the fixes.
-8. **Flow** (only if step 6 ran): lead and cycle time, waiting, flow efficiency and backward moves, framed as how the system moves work, never as how fast anyone works. Keep clarity, complexity and flow as three separate sections and never combine them into one score. Report clarity against rework only within complexity bands, and say these are correlations, not causes.
-9. **Caveats**: data quality, gaps, link coverage, what the taxonomy can't capture, that classifications are model judgements, if `szz.py` ran, the commits and repos it couldn't trace, and, if step 6 ran, confounders such as complexity and statuses missing from `signals.yaml`.
-10. **Questions for the team**, framed as system improvements. For example: "What in our process lets validation defects reach customers?", not "who missed this?".
+6. **Clarity**, 7. **Complexity** and 8. **Flow** (from `signals.md`; one line each if step 6 didn't run): what stands out in each. Keep them separate and never combine them into one score. Flow is how the system moves work, never how fast anyone works. Report clarity against rework only within complexity bands, and call any link a correlation, not a cause.
+9. **Caveats**: the report lists the standard ones (classifications are model judgements, the taxonomy's limits, suppression, what the estimate couldn't trace, confounders in the signals). Add any specific to this run, or write "No further caveats."
+10. **Questions for the team**: three to five, framed as system improvements. For example: "What in our process lets validation defects reach customers?", not "who missed this?".
+
+The check is a practical guard, not a proof. It can't catch numbers written as words ("four defects"), the name of a suppressed group, details spelled out to dodge it ("robin at example dot com"), or a number that is shown in the report but written next to the wrong group. The rules above still apply to all of them.
 
 Keep the reply short: the report path, the three to five most important findings, and the caveats that matter most.
 

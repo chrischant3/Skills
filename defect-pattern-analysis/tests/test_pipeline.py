@@ -16,6 +16,7 @@ import aggregate
 import anonymise
 import jira_changelog
 import make_batches
+import report
 import validate_classifications
 from conftest import FIXTURES, all_text_under, load_fixture, person_identifiers
 from test_jira_changelog import Recorded
@@ -212,3 +213,18 @@ def test_rest_fallback_data_comes_out_of_anonymise_with_no_people(
         and report["comments_incomplete"] == []
         and report["sources"] == ["rest"]
     )
+
+
+def test_the_run_ends_in_a_report_that_passes_its_check_once_written(tmp_path):
+    out = run_pipeline(tmp_path)
+    assert report.main(["--out", str(out)]) == 0
+    path = out / "report.md"
+    written = re.sub(
+        r"<!-- write: .*? -->",
+        "Checking validation is the largest type.",
+        path.read_text(),
+        flags=re.S,
+    )
+    path.write_text(written)
+    assert report.check(written, out) == []
+    assert "Step 5 didn't run" in written
