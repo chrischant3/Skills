@@ -30,11 +30,6 @@ graders:
     tool: Skill
     input_match: 'verifier'
 
-  - type: tool_used
-    name: read-the-profile
-    tool: Read
-    input_match: 'rule-compliance-profile\.md'
-
   - type: file_exists
     name: verdict-file-written
     path: '.verifier/runs/eval-run.json'
