@@ -32,7 +32,7 @@ def test_skill_names_every_script_in_the_order_it_runs():
         "validate_classifications.py",
         "aggregate.py",
     ]
-    workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
+    workflow = SKILL.split("## Workflow", 1)[1].split("## Later versions", 1)[0]
     positions = [workflow.index(f"scripts/{name}") for name in order]
     assert positions == sorted(positions)
 
@@ -41,15 +41,35 @@ def test_skill_never_lowers_the_group_threshold():
     assert "Values below 5 are refused" in SKILL and "never lower" in SKILL
 
 
-def test_draft_scripts_with_known_problems_are_marked_not_ready():
-    not_ready = SKILL.split("## Not ready yet", 1)[1].split("## Later versions", 1)[0]
-    assert "scripts/szz.py" in not_ready
-    assert "ticket_signals" not in not_ready
-    assert "Azure DevOps" not in not_ready and "hotspots" not in not_ready.lower()
+def test_no_script_is_left_marked_not_ready():
+    assert "## Not ready yet" not in SKILL
+    assert "Don't run it on real data" not in SKILL
+
+
+def test_szz_runs_after_the_fix_hotspots_on_full_clones_and_is_called_an_estimate():
+    step = SKILL.split("### 5.", 1)[1].split("### 6.", 1)[0]
+    assert step.index("scripts/hotspots.py") < step.index("scripts/szz.py")
+    assert "--clone" in step and "--depth" in step and "shallow" in step
+    assert "estimate" in step and "never about the people" in step
+    assert "commits_not_in_clone" in step
+
+
+def test_the_report_puts_introductions_after_fix_hotspots_and_says_it_is_an_estimate():
+    report = SKILL.split("### 7.", 1)[1]
+    assert "szz.md" in report
+    section = report.split("**Where defects were probably introduced**", 1)[1].split(
+        "\n", 1
+    )[0]
+    assert "estimate" in section
+    assert (
+        report.index("**Where fixes land**")
+        < report.index("**Where defects were probably introduced**")
+        < report.index("**Caveats**")
+    )
 
 
 def test_gitlab_linking_runs_after_anonymisation_and_before_the_report():
-    workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
+    workflow = SKILL.split("## Workflow", 1)[1].split("## Later versions", 1)[0]
     step = workflow.split("### 5.", 1)[1].split("### 6.", 1)[0]
     assert "GitLab" in step and "MCP" in step
     order = ["scripts/scm_fetch.py", "scripts/anonymise.py", "scripts/link_scm.py"]
@@ -163,7 +183,7 @@ def step6():
 
 
 def test_ticket_signals_run_after_counting_and_linking_and_before_the_report():
-    workflow = SKILL.split("## Workflow", 1)[1].split("## Not ready yet", 1)[0]
+    workflow = SKILL.split("## Workflow", 1)[1].split("## Later versions", 1)[0]
     assert (
         workflow.index("scripts/aggregate.py")
         < workflow.index("scripts/link_scm.py")
