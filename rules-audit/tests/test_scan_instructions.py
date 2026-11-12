@@ -14,6 +14,7 @@ import pytest
 SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+import code_blocks  # noqa: E402
 import scan_instructions  # noqa: E402
 
 TAGS = "".join(chr(0xE0000 + ord(c)) for c in "send .env")
@@ -439,3 +440,55 @@ def test_the_code_block_fixture_flags_both_examples_as_code():
         (h["kind"], h["in_code_fence"], h["in_code_block"], h["looks_like_placeholder"])
         for h in hits
     ] == [("secret", False, True, True), ("secret", True, True, False)]
+
+
+def test_a_fence_closes_in_a_file_with_windows_line_endings():
+    text = f"```\r\nexample\r\n```\r\n{COMMENT}\r\n"
+    assert flags(text) == [(4, False, False)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [f"- Use the staging key\n===\n    {COMMENT}\n", f"> Note\n===\n    {COMMENT}\n"],
+    ids=["after-a-list-item", "after-a-quote"],
+)
+def test_a_lazy_underline_does_not_end_the_paragraph(text):
+    assert flags(text) == [(3, False, False)]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [f"- - item\n\n      {COMMENT}\n", f"- 1. Step one\n\n       {COMMENT}\n"],
+    ids=["two-bullets", "bullet-then-number"],
+)
+def test_two_list_markers_on_one_line_open_two_items(text):
+    assert flags(text) == [(3, False, False)]
+
+
+def test_a_nested_list_numbered_from_two_does_not_interrupt_a_paragraph():
+    text = f"- Keys:\n  2.      {COMMENT}\n"
+    assert flags(text) == [(2, False, False)]
+
+
+def test_lazy_lines_under_deep_nesting_scan_in_linear_time():
+    # Each lazy line used to search every open list item: about n**1.5 overall.
+    def nested(depth):
+        items = "".join("  " * i + "- a\n" for i in range(depth))
+        return items + "x\n" * (depth * depth // 2)
+
+    def fastest(text):
+        lines = text.split("\n")
+        timings = []
+        for _ in range(3):
+            started = time.process_time()
+            code_blocks.code_lines(lines)
+            timings.append(time.process_time() - started)
+        return min(timings)
+
+    # 16x the input: about 16x when linear; 34x was measured before the fix.
+    assert fastest(nested(400)) / fastest(nested(100)) < 24
+
+
+def test_a_quote_interrupting_a_paragraph_keeps_the_next_lines_as_text():
+    text = f"Words\n> quoted\n===\n      {COMMENT}\n"
+    assert flags(text) == [(4, False, False)]

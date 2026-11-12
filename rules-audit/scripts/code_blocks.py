@@ -13,6 +13,7 @@ Standard library only, Python 3.10 or later.
 """
 
 import re
+from bisect import bisect_right
 
 TAB_STOP = 4
 FENCE_OPEN = re.compile(r"(`{3,}|~{3,})(.*)$")
@@ -60,8 +61,15 @@ def code_lines(lines):
     """
     reader = _Reader()
     for number, raw in enumerate(lines, start=1):
+        if raw.endswith("\r"):
+            raw = raw[:-1]  # Windows line endings; a stray \r stops fences closing
         reader.read(number, raw.expandtabs(TAB_STOP))
     return reader.fenced, reader.fenced | reader.indented
+
+
+# What the last line was, which decides what the next one can start.
+BLANK, PARAGRAPH, CODE, OTHER = "blank", "paragraph", "code", "other"
+EMPTY_ITEM = "empty-item"  # a bare list marker, which a blank line then closes
 
 
 class _Reader:
@@ -69,33 +77,34 @@ class _Reader:
 
     def __init__(self):
         self.fenced, self.indented = set(), set()
-        self.items = []  # content column of each open list item, innermost last
+        self.items = []  # content column of each open list item, strictly increasing
         self.fence = None  # (character, length, item depth) of the open fence
         self.html = None  # (end pattern or None, item depth) of the open HTML block
-        # The last line: blank | paragraph | code | other | empty-item (a bare list marker).
-        self.previous = "blank"
+        self.previous = BLANK
+        # Where the open paragraph started, for telling a heading underline from
+        # a lazy continuation line.
+        self.paragraph_column, self.paragraph_quoted = 0, False
 
     def read(self, number, line):
         text = line.lstrip(" ")
         indent = len(line) - len(text)
         blank = text == ""
-        if self.fence and self._continues_open_block(number, text, indent, blank):
+        if self.fence and self._continues_fence(number, text, indent, blank):
             return
         if self.html and self._continues_html(text, indent, blank):
             return
         if blank:
-            if self.previous == "empty-item":
+            if self.previous == EMPTY_ITEM:
                 self.items.pop()  # an item can't start with two blank lines (CommonMark 5.2)
-            self.previous = "blank"
+            self.previous = BLANK
             return
-        continues_paragraph = self.previous == "paragraph"
-        if continues_paragraph and not self._interrupts_paragraph(text, indent):
+        if self.previous == PARAGRAPH and not self._interrupts_paragraph(text, indent):
             return
         while self.items and indent < self.items[-1]:
             self.items.pop()
-        self._start_block(number, line, text, indent - self._column())
+        self._start_block(number, line, text, indent)
 
-    def _continues_open_block(self, number, text, indent, blank):
+    def _continues_fence(self, number, text, indent, blank):
         character, length, depth = self.fence
         if not blank and depth and indent < self.items[depth - 1]:
             self.fence = None  # the list item holding the fence has ended
@@ -105,7 +114,7 @@ class _Reader:
             run = len(text) - len(text.lstrip(character))
             if run >= length and text[run:].strip(" ") == "":
                 self.fence = None
-                self.previous = "other"
+                self.previous = OTHER
         return True
 
     def _continues_html(self, text, indent, blank):
@@ -116,86 +125,121 @@ class _Reader:
         if end is None:
             if blank:
                 self.html = None
-                self.previous = "blank"
+                self.previous = BLANK
             return True
         if end.search(text):
             self.html = None
-            self.previous = "other"
+            self.previous = OTHER
         return True
 
     def _interrupts_paragraph(self, text, indent):
         # Only some blocks can start on a line straight after paragraph text;
         # anything else continues the paragraph, however it is indented.
-        column = self._column_for(indent)
-        if indent - column > 3:
+        if indent - self._column_for(indent) > 3:
             return False
-        if FENCE_OPEN.match(text) and _is_fence_opening(FENCE_OPEN.match(text)):
+        if (
+            _fence_opening(text)
+            or ATX_HEADING.match(text)
+            or THEMATIC_BREAK.match(text)
+        ):
             return True
-        if ATX_HEADING.match(text) or THEMATIC_BREAK.match(text):
-            return True
-        if SETEXT_UNDERLINE.match(text):
+        if self._underlines_paragraph(text, indent):
             return True
         if any(start.match(text) for start, _ in HTML_STARTS):
             return True
+        if text.startswith(">"):
+            return True  # a block quote; its text is then read as a quoted paragraph
         marker = LIST_MARKER.match(text)
-        if marker:
-            starts_at_one = marker.group(2) is None or marker.group(2) == "1"
-            has_text = text[marker.end() :].strip() != ""
-            return has_text and (starts_at_one or bool(self.items))
-        return False
+        if not marker:
+            return False
+        has_text = text[marker.end() :].strip() != ""
+        starts_at_one = marker.group(2) in (None, "1")
+        # A list numbered from 2 can only interrupt as the next item of an open list.
+        sibling = bool(self.items) and indent < self.items[-1]
+        return has_text and (starts_at_one or sibling)
 
-    def _start_block(self, number, line, text, relative):
-        if relative >= 4:
+    def _underlines_paragraph(self, text, indent):
+        # An underline turns the paragraph into a heading, but only from inside
+        # the paragraph's own container: a lazy line can't be one.
+        if not SETEXT_UNDERLINE.match(text) or self.paragraph_quoted:
+            return False
+        return indent >= self.paragraph_column
+
+    def _start_block(self, number, line, text, indent):
+        if indent - self._column() >= 4:
             self.indented.add(number)
-            self.previous = "code"
+            self.previous = CODE
             return
-        if self._opens_fence(number, text):
+        if self._try_open_fence(number, text) or self._try_open_html(text):
             return
-        underline = self.previous == "paragraph" and SETEXT_UNDERLINE.match(text)
+        underline = self.previous == PARAGRAPH and self._underlines_paragraph(
+            text, indent
+        )
         if THEMATIC_BREAK.match(text) or ATX_HEADING.match(text) or underline:
-            self.previous = "other"
+            self.previous = OTHER
             return
-        if self._opens_html(text):
+        if LIST_MARKER.match(text):
+            self._open_list_items(number, line, indent)
             return
-        marker = LIST_MARKER.match(text)
-        if marker:
-            indent = len(line) - len(text)
-            content = _content_column(line, indent + marker.end())
+        self._start_paragraph(text)
+
+    def _open_list_items(self, number, line, position):
+        # One line can open several items: "- 1. Step" is a list inside a list.
+        while True:
+            marker = LIST_MARKER.match(line, position)
+            content = _content_column(line, marker.end())
             self.items.append(content)
             rest = line[content:]
             opening = rest.lstrip(" ")
             if rest.startswith("    ") and opening:
                 # Five or more spaces after the marker: the item opens with code.
                 self.indented.add(number)
-                self.previous = "code"
-            elif not self._opens_fence(number, opening) and not self._opens_html(
-                opening
-            ):
-                self.previous = "paragraph" if rest.strip() else "empty-item"
+                self.previous = CODE
+                return
+            position = content + len(rest) - len(opening)
+            if not (opening and LIST_MARKER.match(line, position)):
+                break
+        if self._try_open_fence(number, opening) or self._try_open_html(opening):
             return
-        self.previous = "paragraph"
+        if opening:
+            self._start_paragraph(opening)
+        else:
+            self.previous = EMPTY_ITEM
 
-    def _opens_fence(self, number, text):
-        opened = FENCE_OPEN.match(text)
-        if not (opened and _is_fence_opening(opened)):
+    def _start_paragraph(self, text):
+        self.previous = PARAGRAPH
+        self.paragraph_column = self._column()
+        self.paragraph_quoted = text.startswith(">")
+
+    def _try_open_fence(self, number, text):
+        """Open a fenced block if text starts one. Returns whether it did."""
+        opened = _fence_opening(text)
+        if not opened:
             return False
         self.fence = (opened.group(1)[0], len(opened.group(1)), len(self.items))
         self.fenced.add(number)
-        self.previous = "other"
+        self.previous = OTHER
         return True
 
-    def _opens_html(self, text):
-        for start, end in HTML_STARTS:
-            if start.match(text):
-                break
-        else:
-            if self.previous == "paragraph" or not HTML_OTHER_TAG.match(text):
-                return False
-            end = None
-        self.previous = "other"
+    def _try_open_html(self, text):
+        """Open an HTML block if text starts one. Returns whether it did."""
+        starts, end = self._html_start(text)
+        if not starts:
+            return False
+        self.previous = OTHER
         if end is None or not end.search(text):
             self.html = (end, len(self.items))
         return True
+
+    def _html_start(self, text):
+        # Returns (starts a block, pattern that ends it or None for a blank line).
+        for start, end in HTML_STARTS:
+            if start.match(text):
+                return True, end
+        # Any other tag alone on its line starts a block, unless it follows paragraph text.
+        if self.previous != PARAGRAPH and HTML_OTHER_TAG.match(text):
+            return True, None
+        return False, None
 
     def _column(self, depth=None):
         depth = len(self.items) if depth is None else depth
@@ -203,20 +247,23 @@ class _Reader:
 
     def _column_for(self, indent):
         # The content column of the innermost list item this line is still inside.
-        for column in reversed(self.items):
-            if indent >= column:
-                return column
-        return 0
+        # Columns increase, so a binary search keeps deep nesting linear overall.
+        inside = bisect_right(self.items, indent)
+        return self.items[inside - 1] if inside else 0
 
 
-def _is_fence_opening(match):
+def _fence_opening(text):
     # A backtick fence's info string can't contain a backtick (CommonMark 4.5).
-    return not (match.group(1)[0] == "`" and "`" in match.group(2))
+    opened = FENCE_OPEN.match(text)
+    if opened and opened.group(1)[0] == "`" and "`" in opened.group(2):
+        return None
+    return opened
 
 
 def _content_column(line, after_marker):
     spaces = len(line) - after_marker - len(line[after_marker:].lstrip(" "))
     if spaces == 0 or spaces > 4 or line[after_marker:].strip() == "":
-        # One space after the marker; with five or more, the rest is indented code.
+        # No text after the marker, or five or more spaces: content starts one
+        # space after it (and with five or more, the rest is indented code).
         return after_marker + 1
     return after_marker + spaces
