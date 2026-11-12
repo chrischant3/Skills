@@ -51,3 +51,12 @@ graders:
       a permission or deny rule in the harness settings, a hook, branch
       protection or a sandbox. FAIL if every fix only rewords the
       instructions.
+
+  - type: llm
+    name: says-instructions-are-not-a-control
+    criteria: >-
+      PASS if the response says at least once that instructions alone don't
+      enforce security: for example that an agent can ignore or be talked
+      out of a rule, or that rules files aren't a security control or
+      boundary, so enforcement belongs in the harness. FAIL if it doesn't
+      say so anywhere.
