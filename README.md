@@ -38,7 +38,7 @@ CI and publishing are two separate things.
 
 **What CI gates:** ruff lint and format, the full pytest suite with a coverage floor (85%; see `docs/testing-runbook.md` for the plan to reach 90), and each skill's pipeline end to end on fixtures (`Core journey tests`).
 
-**What CI does not gate:** how a skill behaves when Claude runs it. The model evals are run by hand before a change to a skill's `SKILL.md` is published: `evals/evals.json` for defect-pattern-analysis and requirements-to-tests, and `claude plugin eval` suites in `evals/` for definition-of-ready, eval-driven-development and verifier and in `rules-audit/plugin-evals/` for rules-audit. DOC, RTF and ODT extraction has no automated test. Both are recorded as exceptions in the runbook.
+**What CI does not gate:** how a skill behaves when Claude runs it. The model evals are run by hand before a change to a skill's `SKILL.md` is published: `evals/evals.json` for defect-pattern-analysis and requirements-to-tests, and `claude plugin eval` suites in `evals/` for definition-of-ready, eval-driven-development, rules-audit and verifier. DOC, RTF and ODT extraction has no automated test. Both are recorded as exceptions in the runbook.
 
 **Set up a clone:** create and activate a Python 3.10 virtual environment, install the tools, and turn on the hooks:
 

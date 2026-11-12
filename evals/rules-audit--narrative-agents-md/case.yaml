@@ -1,10 +1,10 @@
 schema_version: "1.1"
-name: version-a-narrative-agents-md
+name: rules-audit--narrative-agents-md
 description: >-
   A narrative AGENTS.md with critical rules buried in prose. The audit should
   flag each buried critical rule as high severity, quote evidence with line
   numbers, and propose a restructure that top-loads the critical rules.
-tags: [narrative, high-findings]
+tags: [rules-audit, narrative, high-findings]
 
 context:
   # Copies the version-a/ fixture into the agent's working directory.
@@ -26,6 +26,7 @@ graders:
   - type: tool_used
     name: skill-fired
     tool: Skill
+    input_match: 'rules-audit'
     arm: with-only
 
   - type: llm
