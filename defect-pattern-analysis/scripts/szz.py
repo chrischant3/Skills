@@ -18,13 +18,14 @@ candidate introducers. It reads local clones, so it works the same for every pla
   traced. Each is counted in the summary, never skipped silently.
 
 Outputs:
-- work/szz.json: per defect, its candidate introducers (repo, commit, path, date). It
-  holds ticket keys and commit ids, so it is working data, never a report.
+- work/szz.json: per defect, where its candidate introducers are (repo and cleaned
+  path), and the lags as a sorted list not tied to any defect. It holds ticket keys, so
+  it is working data, never a report.
 - out/szz.json, .csv and .md: per repo and directory, the number of distinct defects
   with a candidate introducer there, every count through suppress.py, and the median
   days from the newest candidate to the report. Every output says it is an estimate.
 
-No output holds an author or a commit id. Blame's author and committer fields are
+No output holds an author, a commit id or a commit time. Blame's author and committer fields are
 discarded as they are parsed. Paths in a clone are raw data (a folder can be named after
 a person), so a path is used only when link_scm.py already listed it for that repo, from
 data anonymise.py cleaned, and is shown in that cleaned form. Other paths are counted as
@@ -39,7 +40,6 @@ import re
 import statistics
 import subprocess
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 
 import clean_data
@@ -282,15 +282,16 @@ def trace(links: dict, reported: dict, clones: dict) -> dict:
         reported: defect key -> aware datetime the defect was reported (created in Jira).
         clones: repo name (as in links) -> path of a local clone.
     Returns:
-        {"defects": {key: {"traced", "candidates": [{"repo", "path", "committed_at"}],
-         "days_last_changed_to_reported"}}, "coverage": {...}, "since": links' since}.
-        Paths are in their anonymised form. No commit id is kept, so nothing ties a
-        defect to the commit (and so the person) blamed for it.
+        {"defects": {key: {"traced", "candidates": [{"repo", "path"}]}}, "coverage":
+         {...}, "since": links' since, "lag_days": sorted days from each traced defect's
+         newest candidate to its report}. Paths are in their anonymised form. No commit
+         id or commit time is kept, and the lags aren't keyed by defect, so nothing ties
+         a defect to the commit (and so the person) blamed for it.
     """
     coverage = dict.fromkeys(COVERAGE_KEYS, 0)
     without_clone: set[str] = set()
     lookups = clean_paths(links)
-    defects = {}
+    defects, lags = {}, []
     for key, defect in links["defects"].items():
         coverage["defects_linked"] += 1
         when = reported.get(key)
@@ -299,11 +300,7 @@ def trace(links: dict, reported: dict, clones: dict) -> dict:
         if cutoff is None:
             # Without a report date nothing can be told apart from the fix itself.
             coverage["defects_without_report_date"] += 1
-            defects[key] = {
-                "traced": False,
-                "candidates": [],
-                "days_last_changed_to_reported": None,
-            }
+            defects[key] = {"traced": False, "candidates": []}
             continue
         for change in defect.get("changes") or []:
             repo_name = change["repo"]
@@ -347,25 +344,23 @@ def trace(links: dict, reported: dict, clones: dict) -> dict:
                             coverage["candidates_after_report_dropped"] += 1
                             continue
                         found[(repo_name, commit, shown)] = at
-        found_list = [
-            {
-                "repo": repo_name,
-                "path": path,
-                "committed_at": datetime.fromtimestamp(at, timezone.utc).isoformat(),
-            }
-            for (repo_name, _commit, path), at in sorted(found.items())
-        ]
-        newest = max(found.values(), default=None)
+        places = sorted({(repo_name, path) for repo_name, _commit, path in found})
         defects[key] = {
-            "traced": bool(found_list),
-            "candidates": found_list,
-            "days_last_changed_to_reported": (
-                round((cutoff - newest) / 86400, 1) if found_list else None
-            ),
+            "traced": bool(places),
+            "candidates": [{"repo": r, "path": path} for r, path in places],
         }
-        coverage["defects_traced"] += bool(found_list)
+        if found:
+            coverage["defects_traced"] += 1
+            lags.append(round((cutoff - max(found.values())) / 86400, 1))
     coverage["repos_without_clone"] = sorted(without_clone)
-    return {"since": links.get("since"), "coverage": coverage, "defects": defects}
+    # Lags are sorted and kept apart from their defects: a lag next to its defect gives
+    # the day of the blamed commit, and so the commit and its author.
+    return {
+        "since": links.get("since"),
+        "coverage": coverage,
+        "defects": defects,
+        "lag_days": sorted(lags),
+    }
 
 
 def build_records(result: dict, depth: int) -> list[dict]:
@@ -399,11 +394,7 @@ def write_szz(
     coverage = result["coverage"]
     for name in COVERAGE_KEYS:
         pub.add_scalar(name, coverage[name])
-    lags = [
-        d["days_last_changed_to_reported"]
-        for d in result["defects"].values()
-        if d["traced"]
-    ]
+    lags = result["lag_days"]
     summary = {
         **pub.summary,
         # A median of a handful of defects is close to one defect's own history, so it is

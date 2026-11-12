@@ -18,14 +18,10 @@ import szz
 
 AUTHOR = ("Alice Example", "alice@example.com")
 REPORTED = datetime(2026, 2, 1, 9, tzinfo=timezone.utc)
-# Commit dates seen in the current test, so a candidate (which keeps no commit id) can be
-# matched back to the commit the test expects. Each test gives its commits distinct days.
-DAYS: dict[str, str] = {}
 
 
 @pytest.fixture(autouse=True)
-def _fresh_days_and_folder(tmp_path, monkeypatch):
-    DAYS.clear()
+def _in_a_temporary_folder(tmp_path, monkeypatch):
     # Default output paths are relative, so run in a temporary folder: nothing lands in the repo.
     monkeypatch.chdir(tmp_path)
 
@@ -71,7 +67,6 @@ class Repo:
         self.git("add", "-A")
         self.git("commit", "-q", "--no-gpg-sign", "-m", message, date=date)
         sha = self.git("rev-parse", "HEAD")
-        DAYS[date[:10]] = sha
         return sha
 
 
@@ -152,17 +147,14 @@ def trace_one(repo: Repo, fix: str, reported=REPORTED, name="group/checkout") ->
 
 
 def candidates(result, key="ABC-1") -> list[tuple]:
-    return sorted(
-        (c["repo"], c["path"], DAYS[c["committed_at"][:10]])
-        for c in result["defects"][key]["candidates"]
-    )
+    return sorted((c["repo"], c["path"]) for c in result["defects"][key]["candidates"])
 
 
 # --- Tracing --------------------------------------------------------------------
 
 
 def test_a_changed_line_is_traced_to_the_commit_that_last_changed_it(repo):
-    start = repo.commit(
+    repo.commit(
         {"src/checkout/cart.py": lines("a = 1", "b = 2", "c = 3")},
         "2026-01-01T09:00:00Z",
     )
@@ -171,7 +163,7 @@ def test_a_changed_line_is_traced_to_the_commit_that_last_changed_it(repo):
         "2026-02-10T09:00:00Z",
     )
     result = trace_one(repo, fix)
-    assert candidates(result) == [("group/checkout", "src/checkout/cart.py", start)]
+    assert candidates(result) == [("group/checkout", "src/checkout/cart.py")]
     assert result["defects"]["ABC-1"]["traced"] is True
 
 
@@ -197,33 +189,37 @@ def test_whitespace_only_and_comment_only_changes_are_not_blamed(repo):
 
 
 def test_commits_listed_in_the_ignore_revs_file_are_looked_past(repo):
-    start = repo.commit({"app.py": lines("a = 'x'", "b = 'y'")}, "2026-01-01T09:00:00Z")
+    repo.commit({"app.py": lines("a = 'x'", "b = 'y'")}, "2026-01-01T09:00:00Z")
     tidy = repo.commit({"app.py": lines('a = "x"', 'b = "y"')}, "2026-01-10T09:00:00Z")
     repo.commit({".git-blame-ignore-revs": lines(tidy)}, "2026-01-11T09:00:00Z")
     fix = repo.commit({"app.py": lines('a = "x"', 'b = "z"')}, "2026-02-10T09:00:00Z")
-    assert candidates(trace_one(repo, fix)) == [("group/checkout", "app.py", start)]
+    result = trace_one(repo, fix)
+    assert candidates(result) == [("group/checkout", "app.py")]
+    # The first commit, 31 days before the report, not the tidy-up 22 days before it.
+    assert result["lag_days"] == [31.0]
 
 
 def test_every_changed_line_is_blamed_not_only_the_first_200(repo):
     body = [f"v{n} = {n}" for n in range(300)]
-    start = repo.commit({"big.py": lines(*body)}, "2026-01-01T09:00:00Z")
+    repo.commit({"big.py": lines(*body)}, "2026-01-01T09:00:00Z")
     late = list(body)
     late[249] = "v249 = 'changed before the report'"
-    middle = repo.commit({"big.py": lines(*late)}, "2026-01-20T09:00:00Z")
+    repo.commit({"big.py": lines(*late)}, "2026-01-20T09:00:00Z")
     fix = repo.commit(
         {"big.py": lines(*(f"v{n} = {n} + 1" for n in range(300)))},
         "2026-02-10T09:00:00Z",
     )
-    assert candidates(trace_one(repo, fix)) == sorted(
-        [("group/checkout", "big.py", start), ("group/checkout", "big.py", middle)]
-    )
+    result = trace_one(repo, fix)
+    assert candidates(result) == [("group/checkout", "big.py")]
+    # Line 250 was last changed 12 days before the report; the first 200 lines, 31 days.
+    assert result["lag_days"] == [12.0]
 
 
 def test_two_repos_with_the_same_last_name_are_kept_apart(tmp_path):
     one, two = Repo(tmp_path / "a" / "api"), Repo(tmp_path / "b" / "api")
-    start_one = one.commit({"one.py": lines("x = 1")}, "2026-01-01T09:00:00Z")
+    one.commit({"one.py": lines("x = 1")}, "2026-01-01T09:00:00Z")
     fix_one = one.commit({"one.py": lines("x = 2")}, "2026-02-10T09:00:00Z")
-    start_two = two.commit({"two.py": lines("y = 1")}, "2026-01-02T09:00:00Z")
+    two.commit({"two.py": lines("y = 1")}, "2026-01-02T09:00:00Z")
     fix_two = two.commit({"two.py": lines("y = 2")}, "2026-02-10T09:00:00Z")
     result = szz.trace(
         links_for(
@@ -234,8 +230,8 @@ def test_two_repos_with_the_same_last_name_are_kept_apart(tmp_path):
         {"team-a/api": one.path, "team-b/api": two.path},
     )
     assert candidates(result) == [
-        ("team-a/api", "one.py", start_one),
-        ("team-b/api", "two.py", start_two),
+        ("team-a/api", "one.py"),
+        ("team-b/api", "two.py"),
     ]
 
 
@@ -301,7 +297,7 @@ def test_a_renamed_file_whose_old_path_is_not_listed_is_counted_not_published(re
 
 
 def test_a_renamed_file_is_blamed_under_its_old_path_when_it_is_listed(repo):
-    start = repo.commit(
+    repo.commit(
         {"old/name.py": lines("a = 1", "b = 2", "c = 3", "d = 4")},
         "2026-01-01T09:00:00Z",
     )
@@ -316,32 +312,32 @@ def test_a_renamed_file_is_blamed_under_its_old_path_when_it_is_listed(repo):
         {"ABC-1": REPORTED},
         {name: repo.path},
     )
-    assert candidates(result) == [(name, "old/name.py", start)]
+    assert candidates(result) == [(name, "old/name.py")]
 
 
 def test_a_removed_sql_comment_does_not_hide_the_lines_after_it(repo):
-    start = repo.commit(
+    repo.commit(
         {"q.sql": lines("-- note", "select 1;", "select 2;")}, "2026-01-01T09:00:00Z"
     )
     fix = repo.commit({"q.sql": lines("select 3;")}, "2026-02-10T09:00:00Z")
-    assert candidates(trace_one(repo, fix)) == [("group/checkout", "q.sql", start)]
+    assert candidates(trace_one(repo, fix)) == [("group/checkout", "q.sql")]
 
 
 def test_a_file_that_is_not_utf8_is_traced_without_crashing(repo):
     target = repo.path / "legacy.txt"
     target.write_bytes("caf\xe9 = 1\nb = 2\n".encode("latin-1"))
-    start = repo.commit({}, "2026-01-01T09:00:00Z")
+    repo.commit({}, "2026-01-01T09:00:00Z")
     target.write_bytes("caf\xe9 = 2\nb = 2\n".encode("latin-1"))
     fix = repo.commit({}, "2026-02-10T09:00:00Z")
-    assert candidates(trace_one(repo, fix)) == [("group/checkout", "legacy.txt", start)]
+    assert candidates(trace_one(repo, fix)) == [("group/checkout", "legacy.txt")]
 
 
 @pytest.mark.parametrize("name", ["my dir/a b.py", 'we"ird/a.py', "back\\slash/a.py"])
 def test_paths_git_quotes_or_pads_are_still_traced(repo, name):
-    start = repo.commit({name: lines("a = 1")}, "2026-01-01T09:00:00Z")
+    repo.commit({name: lines("a = 1")}, "2026-01-01T09:00:00Z")
     fix = repo.commit({name: lines("a = 2")}, "2026-02-10T09:00:00Z")
     result = trace_one(repo, fix)
-    assert candidates(result) == [("group/checkout", name, start)]
+    assert candidates(result) == [("group/checkout", name)]
     assert result["coverage"]["blame_failures"] == 0
 
 
@@ -372,10 +368,14 @@ def test_only_paths_already_cleaned_by_anonymise_are_published(tmp_path):
 
 
 def test_no_commit_id_is_kept_so_no_defect_points_at_a_commit(repo):
-    start = repo.commit({"app.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
+    start = repo.commit({"app.py": lines("a = 1")}, "2026-01-07T13:21:08Z")
     fix = repo.commit({"app.py": lines("a = 2")}, "2026-02-10T09:00:00Z")
-    text = json.dumps(trace_one(repo, fix))
+    result = trace_one(repo, fix)
+    text = json.dumps(result)
     assert start not in text and start[:7] not in text and fix[:7] not in text
+    # An exact commit time, or a lag next to its defect, would find the commit too.
+    assert "2026-01-07" not in text and "13:21" not in text
+    assert set(result["defects"]["ABC-1"]) == {"traced", "candidates"}
 
 
 def test_git_settings_in_the_environment_cannot_point_it_at_another_repo(
@@ -383,10 +383,10 @@ def test_git_settings_in_the_environment_cannot_point_it_at_another_repo(
 ):
     other = Repo(tmp_path / "other")
     other.commit({"elsewhere.py": lines("z = 1")}, "2026-01-03T09:00:00Z")
-    start = repo.commit({"app.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
+    repo.commit({"app.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
     fix = repo.commit({"app.py": lines("a = 2")}, "2026-02-10T09:00:00Z")
     monkeypatch.setenv("GIT_DIR", str(other.path / ".git"))
-    assert candidates(trace_one(repo, fix)) == [("group/checkout", "app.py", start)]
+    assert candidates(trace_one(repo, fix)) == [("group/checkout", "app.py")]
 
 
 def test_a_defect_with_no_report_date_is_counted_apart(repo):
