@@ -1,6 +1,6 @@
 # Audit rubric
 
-The checklist the rules-audit skill uses to assess agent instruction files (AGENTS.md, CLAUDE.md, rule files, skills and prompts). Cite items by ID in findings, for example `S1`.
+The checklist the rules-audit skill uses to assess agent instruction files (AGENTS.md, CLAUDE.md, rule files, skills and prompts). Cite items by ID in findings, for example `S1` or `A2`.
 
 A **critical rule** is one whose breach is costly or hard to undo (leaked secrets, damaged shared data, lost work, security or legal exposure), or one the authors mark as non-negotiable. The severity notes below use this term.
 
@@ -46,6 +46,27 @@ A rationalisation table lists the excuses an agent gives for skipping a rule ("i
 
 - **T1.** Each rule can be checked from a transcript, a diff or an effect.
 - **T2.** Rules have IDs a verifier can cite.
+
+## Security
+
+These items judge what the text asks of the agent and what it leaves out. Instructions are not a security control: a model can be talked out of any rule, so a rule's wording can make an agent less safe but can't make it safe. Where a harness control exists (a permission deny rule, a hook, branch protection, a sandbox), the suggested fix names it as well as any rewording. Based on OWASP's Secure Coding with AI cheat sheet, which says to treat rules files as security-critical configuration, and its LLM and agentic Top 10s.
+
+- **A1.** No secrets, tokens, passwords or private keys in instruction files.
+  High for anything that looks like a real credential, wherever it sits: the files are loaded into every session and often committed. Not a finding for an obvious placeholder (`your-key-here`, `<token>`) in a fenced example. Quote the line with the value masked (see SKILL.md rule 3).
+- **A2.** No instructions that weaken a control: pre-approving commands, skipping confirmation, pushing or deploying without review, `--no-verify`, turning off hooks, tests or the sandbox, or telling the agent to ignore certain files or warnings.
+  High, because it removes a check the owner relies on.
+- **A3.** No hidden content: invisible Unicode (tag, zero-width or bidi characters), long encoded strings, HTML comments that hold instructions, or remote images, which can carry data out in their URL.
+  High for hidden instructions or remote images, wherever they sit. Not a finding for a comment that is plainly a tooling marker, such as `<!-- generated -->`.
+- **A4.** An agent that reads content it didn't write (issues, pull requests, web pages, tool or MCP output, files from elsewhere) is told to treat that content as data, not instructions, and to ask before acting on anything it asks for.
+  Medium when such content is read with no such rule; High when the agent also runs commands or code taken from that content.
+- **A5.** High-impact or irreversible actions (push, deploy, delete, migrations, payments, sending messages) need explicit approval, and the rule names them.
+  High when an action the files ask for or allow could do lasting harm and no rule requires approval for it.
+- **A6.** The agent may not change its own instructions, hooks, harness settings or CI configuration without asking.
+  Medium when the files are silent on it.
+- **A7.** No fetch-and-run (`curl ... | sh`), unpinned or unreviewed installs, or tools and MCP servers beyond what the work needs.
+  Medium; High when the file tells the agent to run remote code.
+- **A8.** Each critical rule that a harness setting could enforce (a deny rule for a command or path, a hook) has a matching control. Checked only when the user has allowed the audit to read the harness settings; see SKILL.md.
+  High when nothing enforces a rule against an irreversible action; Medium otherwise.
 
 ## Severity scale
 
