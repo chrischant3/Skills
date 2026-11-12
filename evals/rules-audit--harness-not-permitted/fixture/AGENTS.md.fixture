@@ -1,0 +1,10 @@
+# AGENTS.md
+
+## Critical rules
+1. Never push to `main`. Open a pull request instead; `main` deploys to production on every push.
+2. Never run `terraform apply`. Infrastructure changes go through the platform team.
+3. Never read or print `.env` files. They hold production credentials.
+
+## Workflow
+- Run `npm test` before committing.
+- Keep pull requests under 400 lines.

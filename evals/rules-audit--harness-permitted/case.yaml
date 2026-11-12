@@ -1,0 +1,42 @@
+schema_version: "1.1"
+name: rules-audit--harness-permitted
+description: >-
+  With permission to read the harness settings, the audit should find that
+  nothing enforces the critical rules: Bash and Read are allowed for
+  everything, and no deny rule covers pushing to main, terraform apply or
+  reading .env. Expects a High A8 finding.
+tags: [rules-audit, security]
+
+context:
+  # Copies fixture/ into the agent's working directory. Needs --scaffold.
+  scaffold_script: scaffold.sh
+
+execution:
+  prompt: >-
+    Audit AGENTS.md. You can also read .claude/settings.json to see what the
+    harness actually enforces.
+  max_turns: 20
+  timeout_seconds: 600
+  # Bash is gated: run with --allow-tools Bash. The skill runs its scanner with it.
+  allowed_tools: [Read, Glob, Grep, Skill, Bash]
+
+graders:
+  - type: tool_used
+    name: skill-fired
+    tool: Skill
+    input_match: 'rules-audit'
+    arm: with-only
+
+  - type: regex
+    name: unenforced-rule-is-high-a8
+    pattern: '^\|[^\n]*\bA8\b[^\n]*\|\s*\**High\b'
+    flags: mi
+
+  - type: llm
+    name: names-the-missing-deny-rules
+    criteria: >-
+      PASS if the response says the settings don't stop at least one of:
+      pushing to main, running terraform apply, or reading .env files
+      (for example because Bash(*) and Read(*) are allowed with no
+      matching deny rule), and suggests adding deny rules or another
+      harness control. FAIL otherwise.
