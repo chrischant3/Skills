@@ -145,6 +145,45 @@ def test_low_link_coverage_and_gaps_are_findings_at_the_top(tmp_path):
     assert "Low link coverage" in coverage and "0.3" in coverage
 
 
+def with_summary(out: Path, **changes) -> Path:
+    path = out / "aggregate.json"
+    doc = json.loads(path.read_text())
+    doc["summary"].update(changes)
+    path.write_text(json.dumps(doc))
+    return out
+
+
+def test_a_high_unclassified_rate_and_data_gaps_are_findings(tmp_path):
+    out = with_summary(
+        make_out(tmp_path),
+        unclassified=6,
+        defects_analysed=36,
+        comments_incomplete_defects=7,
+    )
+    coverage = report.render(report.build(out)).split("## 2.", 1)[0]
+    assert "High unclassified rate: 6 of 36" in coverage
+    assert "Gaps in the data: comments_incomplete_defects is 7" in coverage
+
+
+def test_a_low_unclassified_rate_is_not_a_finding(tmp_path):
+    out = with_summary(make_out(tmp_path), unclassified=0, defects_analysed=36)
+    assert "High unclassified rate" not in report.render(report.build(out))
+
+
+def test_headings_go_down_one_level_at_a_time(tmp_path):
+    text = report.render(report.build(make_out(tmp_path)))
+    levels = [len(m) for m in re.findall(r"^(#+) ", text, re.M)]
+    assert all(b <= a + 1 for a, b in zip(levels, levels[1:]))
+
+
+def test_the_estimate_needs_both_its_files_to_appear_anywhere(tmp_path):
+    out = make_out(tmp_path)
+    (out / "szz.md").unlink()
+    text = report.render(report.build(out))
+    assert "commits_not_in_clone" not in text
+    assert "didn't run" in text.split("## 4.", 1)[1].split("## 5.", 1)[0]
+
+
 def test_good_link_coverage_is_not_called_low(tmp_path):
     out = make_out(tmp_path, links=coverage_links(linked=18, total=20))
     assert "Low link coverage" not in report.render(report.build(out))
@@ -221,16 +260,41 @@ def test_a_section_number_does_not_make_a_small_number_quotable(tmp_path):
 
 def test_list_numbering_in_written_text_is_not_a_number(tmp_path):
     def edit(text):
-        return fill(text, "1. What lets these through?\n12. Who reviews it?")
+        return fill(text, "1. What lets these through?\n2. What would catch it sooner?")
 
-    problems = checked(tmp_path, edit)
-    assert problems == [] or all("12" not in p for p in problems)
+    assert checked(tmp_path, edit) == []
 
 
-def test_a_ticket_key_or_email_in_written_text_fails(tmp_path):
-    for n, words in enumerate(("See ABC-123 for detail.", "Ask robin@example.com.")):
-        problems = checked(tmp_path / str(n), lambda t, w=words: fill(t, w))
-        assert any("ticket key" in p or "email" in p for p in problems), words
+def test_a_number_at_the_start_of_a_line_that_is_not_a_list_still_counts(tmp_path):
+    def edit(text):
+        return fill(text, "Unclassified count:\n3. that is how many there were")
+
+    assert any("number 3 " in p for p in checked(tmp_path, edit))
+
+
+@pytest.mark.parametrize(
+    "words",
+    ["Exactly 4 defects were unclassified.", "About 3 were unclassified."],
+)
+def test_a_small_number_from_prose_in_the_report_cannot_fill_a_suppressed_value(
+    tmp_path, words
+):
+    # "3 groups suppressed", "0 to 4" and "fewer than 5" are in the generated prose,
+    # but only numbers in table cells and key: value lines may be quoted.
+    problems = checked(tmp_path, lambda t: fill(t, words))
+    assert any("isn't in the generated" in p for p in problems)
+
+
+def test_a_standard_name_with_a_number_is_not_a_ticket_key(tmp_path):
+    assert checked(tmp_path, lambda t: fill(t, "Text is read as UTF-8.")) == []
+
+
+@pytest.mark.parametrize(
+    "words, problem",
+    [("See ABC-123 for detail.", "ticket key"), ("Ask robin@example.com.", "email")],
+)
+def test_a_ticket_key_or_email_in_written_text_fails(tmp_path, words, problem):
+    assert any(problem in p for p in checked(tmp_path, lambda t: fill(t, words)))
 
 
 def test_text_added_outside_a_slot_fails(tmp_path):
@@ -247,7 +311,8 @@ def test_a_report_out_of_date_with_out_fails(tmp_path):
     text = fill(report.render(report.build(out)))
     (out / "hotspots.md").unlink()
     (out / "hotspots.json").unlink()
-    assert report.check(text, out)
+    problems = report.check(text, out)
+    assert any("out/ has changed since: ## 3. Where fixes land" in p for p in problems)
 
 
 # --- Command line ------------------------------------------------------------------

@@ -29,7 +29,7 @@ A section whose step didn't run says so in one line instead.
 
 - every generated block matches what `out/` produces now, in order;
 - every write slot has been replaced with text, and no other text was added outside the slots;
-- every number in the written text appears in the generated blocks (so no suppressed value is filled in and no new figure is worked out), ignoring list numbering;
+- every number in the written text appears in a table row or a one-value `key: value` line of the generated blocks (so no suppressed value is filled in and no new figure is worked out), ignoring list numbering that runs 1, 2, 3;
 - the written text holds no ticket keys or email addresses.
 
 Otherwise it lists each problem and exits 1. Missing `aggregate.json` or `tables.md` exits 2.
@@ -38,6 +38,8 @@ Otherwise it lists each problem and exits 1. Missing `aggregate.json` or `tables
 
 - Always: read only `out/`; show suppressed values as the scripts wrote them.
 - Never: name a suppressed group, add a per-person view, or depend on a particular model or vendor.
+
+`--check` is a practical guard, not a proof. It takes quotable numbers only from table rows and one-value `key: value` lines, so prose such as "3 groups suppressed" can't stand in for a suppressed value. It can't catch numbers written as words, a suppressed group named in the text, details spelled out to dodge it, or a shown number put next to the wrong group. `SKILL.md` says so and keeps those rules as instructions.
 
 ## Testing
 

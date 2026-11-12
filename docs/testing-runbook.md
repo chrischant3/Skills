@@ -32,7 +32,7 @@ SCM linking in defect-pattern-analysis is covered by its unit tests (`test_link_
 
 **Prerequisites:** a Python 3.10 virtual environment, activated (`python3.10 -m venv .venv && . .venv/bin/activate`), then `pip install -r requirements-dev.txt`, and poppler's `pdftotext` on PATH (`brew install poppler` or `apt-get install poppler-utils`). Without `pdftotext` or `fpdf2` the PDF tests are skipped, not failed.
 
-**Unit tests:** `python -m pytest` — expected: about 1315 passed, exit 0.
+**Unit tests:** `python -m pytest` — expected: about 1325 passed, exit 0.
 
 **Coverage:** `python -m pytest --cov=defect-pattern-analysis/scripts --cov=requirements-to-tests/scripts --cov=requirements-to-tests/evals --cov=verifier/scripts --cov-report=term-missing --cov-fail-under=85` — expected: 85.77% or more, exit 0.
 

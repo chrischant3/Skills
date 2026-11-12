@@ -15,8 +15,9 @@ The interpretation is left to whoever runs the skill, person or AI model: each
 <!-- write: ... --> comment is replaced with text. --check then confirms that:
 - every generated block is unchanged and matches out/ as it is now;
 - every write slot was filled, and nothing was added anywhere else;
-- every number in the written text appears in the generated blocks, so no suppressed
-  value was filled in and no new figure was worked out (list numbering is ignored);
+- every number in the written text appears in a table row or a one-value key: value
+  line of the generated blocks, so no suppressed value was filled in and no new figure
+  was worked out (list numbering that runs 1, 2, 3 is ignored);
 - the written text holds no ticket keys or email addresses.
 
 It reads out/ only, never raw/, clean/ or work/, so the report can't hold anything the
@@ -29,13 +30,23 @@ import re
 import sys
 from pathlib import Path
 
+from suppress import DEFAULT_MIN_GROUP_SIZE
+
 GENERATED = "<!-- report.py:generated -->"
 END = "<!-- report.py:end -->"
 BLOCK = re.compile(re.escape(GENERATED) + r"\n(.*?)\n" + re.escape(END), re.S)
 SLOT = re.compile(r"<!-- write: .*? -->", re.S)
 NUMBER = re.compile(r"(?<![\w.])\d+(?:[.,]\d+)*")
-LIST_NUMBER = re.compile(r"^\s*\d+[.)]\s", re.M)
-TICKET_KEY = re.compile(r"\b[A-Z][A-Z0-9]+-\d+\b")
+LIST_NUMBER = re.compile(r"^\s*(\d+)[.)]\s", re.M)
+TICKET_KEY = re.compile(r"\b([A-Z][A-Z0-9]+)-\d+\b")
+# Names of standards that look like ticket keys (UTF-8, ISO-8601).
+NOT_TICKET_KEYS = {"UTF", "ISO", "IEC", "RFC", "SHA", "TLS", "HTTP", "MD"}
+# Lines whose numbers are data: table rows and "- key: value" summary lines. Numbers in
+# other prose (such as "3 groups suppressed" or "fewer than 5") are not quotable, so
+# they can't stand in for a suppressed value.
+# A summary line has one value ("- defects_linked: 6"); a legend line has prose
+# ("- rubric_score: median rubric score, 0 to 4") and doesn't count.
+DATA_LINE = re.compile(r"^(?:\|.*\||- \w+: \S+)$", re.M)
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 
 LOW_LINK_RATE = 0.5
@@ -82,7 +93,8 @@ def _demote(text: str, levels: int = 1) -> str:
 
 
 def _sub(title: str, body: str) -> str:
-    return f"### {title}\n\n{_demote(body, 2)}"
+    """A script's ## section as a ### subsection, its own headings one level lower."""
+    return f"### {title}\n\n{_demote(body, 1)}"
 
 
 def _not_run(step: str, what: str) -> str:
@@ -91,7 +103,7 @@ def _not_run(step: str, what: str) -> str:
 
 def _coverage(out: Path, aggregate: dict, scm: dict | None, scm_md: str | None) -> str:
     settings, summary = aggregate.get("settings", {}), aggregate.get("summary", {})
-    k = settings.get("min_group_size")
+    k = settings.get("min_group_size", DEFAULT_MIN_GROUP_SIZE)
     lines = ["## 1. Coverage", ""]
     lines += [f"- {key}: {value}" for key, value in summary.items()]
     lines += [
@@ -153,14 +165,14 @@ def build(out_dir) -> list[tuple[str, str]]:
         )
     _, tables = sections(tables_md)
     scm, scm_md = _json(out, "scm_coverage.json"), _read(out, "scm_coverage.md")
-    hot_md, szz_md, szz_doc = (
-        _read(out, "hotspots.md"),
-        _read(out, "szz.md"),
-        _json(out, "szz.json"),
-    )
+    hot_md = _read(out, "hotspots.md")
+    # The estimate's section and its caveat come from two files; use them only together.
+    szz_md, szz_doc = _read(out, "szz.md"), _json(out, "szz.json")
+    if not (szz_md and szz_doc):
+        szz_md = szz_doc = None
     sig_md = _read(out, "signals.md")
     sig_intro, sig = sections(sig_md) if sig_md else ("", {})
-    k = aggregate.get("settings", {}).get("min_group_size")
+    k = aggregate.get("settings", {}).get("min_group_size", DEFAULT_MIN_GROUP_SIZE)
 
     parts: list[tuple[str, str]] = []
 
@@ -204,11 +216,11 @@ def build(out_dir) -> list[tuple[str, str]]:
         gen("## 3. Where fixes land\n\n" + _not_run("Step 5", "source control linking"))
 
     if szz_md:
-        intro, intro_parts = sections(szz_md)
+        intro, estimate = sections(szz_md)
         gen(
             "## 4. Where defects were probably introduced\n\nThis section is an "
             "estimate.\n\n"
-            + "\n\n".join([intro] + [_sub(t, b) for t, b in intro_parts.items()])
+            + "\n\n".join([intro] + [_sub(t, b) for t, b in estimate.items()])
         )
         write(
             "Say which directories stand out, treating them as an estimate and a prompt "
@@ -238,7 +250,12 @@ def build(out_dir) -> list[tuple[str, str]]:
         if not sig_md:
             gen(f"## {title}\n\n" + _not_run("Step 6", "ticket signals"))
             continue
-        body = "\n\n".join(_sub(n, sig[n]) for n in names if n in sig)
+        main, *extra = names
+        if main not in sig:
+            gen(f"## {title}\n\nsignals.md has no {main} section.")
+            continue
+        # The main section's text sits directly under the report heading of the same name.
+        body = "\n\n".join([sig[main]] + [_sub(n, sig[n]) for n in extra if n in sig])
         lead = f"{sig_intro}\n\n" if title.startswith("6.") else ""
         gen(f"## {title}\n\n{lead}{body}")
         write(
@@ -311,10 +328,18 @@ def _gaps(text: str) -> tuple[list[str], list[str]]:
 
 
 def allowed_numbers(blocks: list[str]) -> set[str]:
-    """Numbers the written text may quote: those in the generated blocks, not counting
-    section numbers, which would otherwise let any small number through."""
-    text = re.sub(r"^#+ \d+\. ", "", "\n".join(blocks), flags=re.M)
-    return set(NUMBER.findall(text))
+    """Numbers the written text may quote: those in the generated blocks' table rows and
+    key: value lines. Numbers in headings and other prose don't count, or a small one
+    such as the 3 in "3 groups suppressed" could stand in for a suppressed value."""
+    return set(NUMBER.findall("\n".join(DATA_LINE.findall("\n".join(blocks)))))
+
+
+def _without_list_numbering(text: str) -> str:
+    """Drop numbering only when the line-start numbers run 1, 2, 3...: a real list."""
+    numbers = [int(n) for n in LIST_NUMBER.findall(text)]
+    if numbers and numbers == list(range(1, len(numbers) + 1)):
+        return LIST_NUMBER.sub("", text)
+    return text
 
 
 def check(text: str, out_dir) -> list[str]:
@@ -353,13 +378,13 @@ def check(text: str, out_dir) -> list[str]:
             problems.append(f"the write slot after {where} is not written yet")
             continue
         for number in sorted(
-            set(NUMBER.findall(LIST_NUMBER.sub("", written))) - allowed
+            set(NUMBER.findall(_without_list_numbering(written))) - allowed
         ):
             problems.append(
                 f"the number {number} after {where} isn't in the generated blocks; quote "
                 "numbers only as shown, and never fill in a suppressed value"
             )
-        if TICKET_KEY.search(written):
+        if any(m[1] not in NOT_TICKET_KEYS for m in TICKET_KEY.finditer(written)):
             problems.append(f"the text after {where} holds a ticket key")
         if EMAIL.search(written):
             problems.append(f"the text after {where} holds an email address")
