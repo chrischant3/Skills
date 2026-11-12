@@ -15,7 +15,12 @@ own total is hidden is left out entirely, so a suppressed group is never named; 
 output says how many groups were suppressed instead. min_group_size below 5 is refused.
 
 This is a practical guard against the obvious ways of recovering small counts. It is
-not a formal statistical disclosure control method.
+not a formal statistical disclosure control method. In particular, it protects each
+publication on its own terms: subtracting one published population from another can
+still reveal a small count. For example, defects done minus defects with a cycle time
+gives the number done without ever being started, and link coverage has the same
+property. Those are counts of defects with a property, never of people, so they are
+accepted. A grouping by person must never be added, because there this gap would matter.
 """
 
 import csv
