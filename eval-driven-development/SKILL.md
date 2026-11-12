@@ -52,6 +52,7 @@ Before touching the skill, write the eval cases that describe the behaviour you 
 - Start with 5 to 15 cases for a skill. Add one for each real failure you meet later.
 - Write each case by hand. Never bulk-generate cases: a few hundred generated prompts cost a lot to run, mostly repeat each other, and bury the cases that matter.
 - Include **safety cases**: anything the skill must refuse or must never do. Mark them, because they are held to a stricter pass mark.
+- For each must-never rule, list every way the protected thing can get out: the reply, files the skill writes, and what any script it runs prints. Give each way its own check. What the model writes gets a case or grader; what a script prints gets a unit test. Checking only the reply leaves the other ways untested.
 - Don't lead the witness. A prompt that names the answer ("…and remember to decline") tests nothing.
 
 See [references/writing-cases.md](references/writing-cases.md) for how to choose cases.
