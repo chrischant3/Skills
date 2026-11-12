@@ -53,6 +53,7 @@ jobs:
           --cov=requirements-to-tests/scripts
           --cov=requirements-to-tests/evals
           --cov=verifier/scripts
+          --cov=rules-audit/scripts
           --cov-report=term-missing
           --cov-fail-under=85
 
@@ -65,3 +66,4 @@ jobs:
           requirements-to-tests/tests/test_extract.py
           requirements-to-tests/tests/test_build_outputs.py
           verifier/tests/test_check_verdict.py
+          rules-audit/tests/test_scan_instructions.py
