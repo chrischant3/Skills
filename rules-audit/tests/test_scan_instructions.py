@@ -281,13 +281,24 @@ def test_a_token_in_a_url_is_reported_once():
     assert kinds(line) == ["secret"]
 
 
+def _fastest_scan(text):
+    timings = []
+    for _ in range(3):
+        started = time.perf_counter()
+        scan_instructions.scan_text(text)
+        timings.append(time.perf_counter() - started)
+    return min(timings)
+
+
 @pytest.mark.parametrize(
-    "text",
-    ["token" * 10000 + "\n", "<!-- a -->\n" * 20000],
+    "unit",
+    ["token", "<!-- a -->\n"],
     ids=["long-keyword-run", "many-comments"],
 )
-def test_hostile_input_is_scanned_quickly(text):
-    # A planted file shouldn't be able to stall the audit.
-    started = time.monotonic()
-    scan_instructions.scan_text(text)
-    assert time.monotonic() - started < 0.5
+def test_hostile_input_scan_time_grows_linearly(unit):
+    # A planted file shouldn't be able to stall the audit. A ratio, not a
+    # wall-clock limit, so the check holds on slow CI runners: 4x the input
+    # takes about 4x as long when the scan is linear, 16x when quadratic.
+    small = _fastest_scan(unit * 5000 + "\n")
+    large = _fastest_scan(unit * 20000 + "\n")
+    assert large / small < 8
