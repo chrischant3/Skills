@@ -218,3 +218,31 @@ Plan: [plan.md](plan.md) · Spec: [SPEC-change-scope.md](../SPEC-change-scope.md
 - [ ] All SPEC-change-scope.md success criteria met
 - [ ] CI green
 - [ ] Human review before `impact-analysis` consumes the contract
+
+---
+
+# Task List: defect-pattern-analysis
+
+Skill: [SKILL.md](../defect-pattern-analysis/SKILL.md) · Runbook: [testing-runbook.md](../docs/testing-runbook.md)
+
+## Task 1: Manual test against a real Jira project
+
+**Description:** Every phase is built and covered by automated tests on synthetic data. This task is the first run by hand against real defects, to find what the tests can't: unclear steps, error messages that don't help, wrong classifications and a report that reads badly. Keep the run's `raw/`, `clean/`, `work/` and `out/` folders outside this repository, and describe any problem in general terms, without ticket text or names.
+
+**Acceptance criteria:**
+- [ ] Steps 1 to 4 run on a small date range or one team: fetch into `raw/`, anonymise into `clean/`, classify, and count into `out/`
+- [ ] Spot-check `clean/`: no names, emails, account ids or @handles remain
+- [ ] Spot-check about ten classifications against the tickets: the type and theme are right, and anything unclear is left unclassified rather than guessed
+- [ ] The coverage numbers in `out/` make sense for the query (defects matched, analysed and unclassified, ingest gaps)
+- [ ] Step 5 runs against at least one GitLab or Azure DevOps repo: link coverage, fix hotspots and the introduction estimate (`szz.py`, with a local clone)
+- [ ] Step 6 runs: clarity, complexity and flow come out as separate sections, with nothing grouped by person
+- [ ] Step 7: `report.py --out out/` writes the report, the write slots are filled, and `report.py --out out/ --check out/report.md` passes
+- [ ] The report reads well to someone who didn't run it, and its questions for the team are about the system, not people
+
+**Verification:**
+- [ ] Manual: each step above completed, or the failure noted with the command and error message
+- [ ] Manual: a list of what went wrong or felt awkward, turned into issues or follow-up tasks
+
+**Dependencies:** None
+**Files likely touched:** none (findings become follow-up tasks)
+**Estimated scope:** Medium
