@@ -8,8 +8,7 @@ Departures from the quality rules in the engineering standards. An undocumented 
 
 | Rule | Where | Why | What covers the risk instead | Revisit |
 | --- | --- | --- | --- | --- |
-| 10 (90% coverage) | The whole repo: 82.95% measured on 2026-11-11, gated at 82% in CI | CI arrived after the code | Every script not listed in the next rows is at 80% or more | Raise `--cov-fail-under` each time a file below gains tests; aim for 90 |
-| 10 | `defect-pattern-analysis/scripts/szz.py` (0%) | No tests exist; it shells out to `git blame` on cloned repos | Nothing automated. Its output is labelled an estimate in the report. Accepted | Before the next behaviour change to `szz.py` |
+| 10 (90% coverage) | The whole repo: 85.77% measured on 2026-11-12, gated at 82% in CI | CI arrived after the code | Every script not listed in the next rows is at 80% or more | Raise `--cov-fail-under` each time a file below gains tests; aim for 90 |
 | 10 | `requirements-to-tests/evals/grade.py` (0%), `requirements-to-tests/evals/make_fixtures.py` (54%) | Eval tooling, run by hand, not shipped to users | Nothing automated for `grade.py`; `make_fixtures.py` is partly covered by `tests/test_make_fixtures.py`. Accepted | When the evals run in CI |
 | 10 | `verifier/scripts/check_verdict.py` (0% measured) | Its tests run it as a subprocess, which coverage doesn't follow by default | `verifier/tests/test_check_verdict.py` exercises it end to end | Turn on coverage's subprocess patching, then raise the floor |
 | 10 | `defect-pattern-analysis/scripts/rest_transport.py` (56%) | Thin HTTP wrapper; the untested lines are the live network calls | Callers are tested with fake transports. Accepted | When the wrapper grows logic of its own |
@@ -27,7 +26,7 @@ Each skill's deterministic pipeline, run on synthetic fixtures. No test calls a 
 | Requirements to tests: extract a PDF, DOCX, XLSX or text document, then build the traceable outputs | `requirements-to-tests/tests/test_extract.py`, `requirements-to-tests/tests/test_build_outputs.py` | Yes, `Core journey tests` step |
 | Verifier: check a verdict file against the format | `verifier/tests/test_check_verdict.py` | Yes, `Core journey tests` step |
 
-SCM linking in defect-pattern-analysis is covered by its unit tests (`test_link_scm.py`, `test_scm_*.py`), not by a journey. `rules-audit` is Markdown only. `rules-audit/tests/test_skill_package.py` checks in CI that the files an agent loads are well formed: links resolve, code fences close, rubric IDs exist, tables are not ragged. Its behaviour is covered by its model evals (see Exceptions).
+SCM linking in defect-pattern-analysis is covered by its unit tests (`test_link_scm.py`, `test_scm_*.py`), not by a journey, and so is the SZZ introduction estimate (`test_szz.py`, which builds throwaway git repos with known commit dates; it needs `git` on the path). `rules-audit` is Markdown only. `rules-audit/tests/test_skill_package.py` checks in CI that the files an agent loads are well formed: links resolve, code fences close, rubric IDs exist, tables are not ragged. Its behaviour is covered by its model evals (see Exceptions).
 
 ## Running the suite
 
