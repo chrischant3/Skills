@@ -74,6 +74,7 @@ Fixtures use invented, non-provider credential formats, so nothing in the repo l
 
 - Read Kilo's and other harnesses' permission formats in detail, once their schemas are confirmed.
 - MCP server configs: flag servers and tool descriptions that ask for broad access.
+- Scanner limits found in review and left for later: code fences are tracked without matching the closing fence to the opening one, and indented code blocks don't count as code, so `in_code_fence` can be wrong; neither changes a severity on its own.
 
 ## Decisions
 
@@ -81,6 +82,8 @@ Fixtures use invented, non-provider credential formats, so nothing in the repo l
 2. **rules-audit ships a script**, its first.
 3. **Harness settings with permission only**, never blocking the audit of the files asked for.
 4. **Built with `eval-driven-development`**, using `claude plugin eval`.
+5. **Nothing the scanner prints may hold a secret**, including text it quotes from the file (comment bodies, decoded hidden text), because its output goes straight into a model's context and from there into a report. Added after code review found three fields that leaked.
+6. **The scanner's run time is attack surface**, since it reads files an attacker may have planted. Its patterns are bounded and timing tests guard them.
 
 ## Results
 
