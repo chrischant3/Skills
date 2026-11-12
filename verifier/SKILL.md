@@ -44,7 +44,8 @@ A team can make "never the builder's provider" a hard rule in its own harness. T
 
 | Input | What it is | If missing |
 | --- | --- | --- |
-| Task | What was supposed to happen, in the requester's words | Stop and ask. There is nothing to verify against. |
+| Task | What was supposed to happen, in the requester's words | Stop and ask. There is nothing to verify against. A commit message, PR description or the builder's summary is not the task: it says what the builder did, not what was asked. |
+| Builder model | Which model built the work, as `<provider>/<model>` | Stop and ask. The verdict file must record it, and `same_provider` can't be set without it. Never guess it or write a placeholder. |
 | Claims | The specific statements to verify | Derive them from the task and list them before checking anything. |
 | Artefacts | The diff, output, files, document or system state under review | Stop and ask. |
 | Criteria | Acceptance criteria, rules or standards that define success | Use the task alone, and note in `observations` that no criteria were given. |
@@ -54,6 +55,7 @@ The rule-compliance profile adds two inputs: the rules, instructions and skills 
 
 ## Process
 
+0. **Check the inputs before anything else.** If the task, the builder model or the artefacts are missing, ask for all the missing ones in one message and stop. Don't run anything, verify anything or write a verdict file until they arrive.
 1. **Restate the intent** in one or two sentences and list the claims to check. Where the task or a claim can be read more than one way, flag it rather than picking a reading.
 2. **Rank claims by risk:** impact if wrong multiplied by likelihood of being wrong. Mark each `high`, `medium` or `low`.
 3. **Gather evidence for each claim.** Observe directly where you can: run the tests, execute the code, read the actual files, query the system. Fall back to inspection only when execution isn't possible or isn't allowed, and record which you used (`executed` or `inspected`).
