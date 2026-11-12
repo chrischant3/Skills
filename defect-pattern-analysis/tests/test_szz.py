@@ -18,6 +18,16 @@ import szz
 
 AUTHOR = ("Alice Example", "alice@example.com")
 REPORTED = datetime(2026, 2, 1, 9, tzinfo=timezone.utc)
+# Commit dates seen in the current test, so a candidate (which keeps no commit id) can be
+# matched back to the commit the test expects. Each test gives its commits distinct days.
+DAYS: dict[str, str] = {}
+
+
+@pytest.fixture(autouse=True)
+def _fresh_days_and_folder(tmp_path, monkeypatch):
+    DAYS.clear()
+    # Default output paths are relative, so run in a temporary folder: nothing lands in the repo.
+    monkeypatch.chdir(tmp_path)
 
 
 class Repo:
@@ -60,15 +70,47 @@ class Repo:
             target.write_text(text, encoding="utf-8")
         self.git("add", "-A")
         self.git("commit", "-q", "--no-gpg-sign", "-m", message, date=date)
-        return self.git("rev-parse", "HEAD")
+        sha = self.git("rev-parse", "HEAD")
+        DAYS[date[:10]] = sha
+        return sha
 
 
 def lines(*items) -> str:
     return "".join(f"{item}\n" for item in items)
 
 
-def links_for(fixes: dict) -> dict:
-    """Synthetic work/scm_links.json: defect key -> list of (repo, [commit ids])."""
+def files_changed(clone: Path, sha: str) -> list[str]:
+    """The paths a commit changed, as a platform's change list gives them (new paths)."""
+    if not szz.COMMIT_ID.fullmatch(sha):
+        return []
+    done = subprocess.run(
+        ["git", "-C", str(clone), "show", "--format=", "--name-only", "-z", "-M", sha],
+        capture_output=True,
+        text=True,
+        env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
+    )
+    return [path for path in done.stdout.split("\0") if path.strip()]
+
+
+def links_for(fixes: dict, clones=None, files=None) -> dict:
+    """Synthetic work/scm_links.json: defect key -> list of (repo, [commit ids]).
+
+    Each defect's files are the clean paths link_scm.py would list: given in files
+    (key -> [(repo, path)]), or else read from the fix commits in clones (name -> path).
+    """
+    clones, files = clones or {}, files or {}
+
+    def listed(key, changes):
+        if key in files:
+            return [{"repo": r, "path": path} for r, path in files[key]]
+        return [
+            {"repo": repo, "path": path}
+            for repo, shas in changes
+            if repo in clones
+            for sha in shas
+            for path in files_changed(clones[repo], sha)
+        ]
+
     return {
         "since": "2026-01-01",
         "repos": {
@@ -88,6 +130,7 @@ def links_for(fixes: dict) -> dict:
                     }
                     for n, (repo, shas) in enumerate(changes, 1)
                 ],
+                "files": listed(key, changes),
             }
             for key, changes in fixes.items()
         },
@@ -101,14 +144,16 @@ def repo(tmp_path) -> Repo:
 
 def trace_one(repo: Repo, fix: str, reported=REPORTED, name="group/checkout") -> dict:
     result = szz.trace(
-        links_for({"ABC-1": [(name, [fix])]}), {"ABC-1": reported}, {name: repo.path}
+        links_for({"ABC-1": [(name, [fix])]}, {name: repo.path}),
+        {"ABC-1": reported},
+        {name: repo.path},
     )
     return result
 
 
 def candidates(result, key="ABC-1") -> list[tuple]:
     return sorted(
-        (c["repo"], c["path"], c["commit"])
+        (c["repo"], c["path"], DAYS[c["committed_at"][:10]])
         for c in result["defects"][key]["candidates"]
     )
 
@@ -181,7 +226,10 @@ def test_two_repos_with_the_same_last_name_are_kept_apart(tmp_path):
     start_two = two.commit({"two.py": lines("y = 1")}, "2026-01-02T09:00:00Z")
     fix_two = two.commit({"two.py": lines("y = 2")}, "2026-02-10T09:00:00Z")
     result = szz.trace(
-        links_for({"ABC-1": [("team-a/api", [fix_one]), ("team-b/api", [fix_two])]}),
+        links_for(
+            {"ABC-1": [("team-a/api", [fix_one]), ("team-b/api", [fix_two])]},
+            {"team-a/api": one.path, "team-b/api": two.path},
+        ),
         {"ABC-1": REPORTED},
         {"team-a/api": one.path, "team-b/api": two.path},
     )
@@ -238,7 +286,21 @@ def test_a_linked_repo_with_no_clone_is_listed(repo):
     assert result["defects"]["ABC-1"]["traced"] is False
 
 
-def test_a_renamed_file_is_blamed_under_its_old_path(repo):
+def test_a_renamed_file_whose_old_path_is_not_listed_is_counted_not_published(repo):
+    repo.commit(
+        {"old/name.py": lines("a = 1", "b = 2", "c = 3", "d = 4")},
+        "2026-01-01T09:00:00Z",
+    )
+    fix = repo.commit(
+        {"old/name.py": None, "new/name.py": lines("a = 1", "b = 9", "c = 3", "d = 4")},
+        "2026-02-10T09:00:00Z",
+    )
+    result = trace_one(repo, fix)
+    assert candidates(result) == []
+    assert result["coverage"]["paths_not_in_linked_changes"] == 1
+
+
+def test_a_renamed_file_is_blamed_under_its_old_path_when_it_is_listed(repo):
     start = repo.commit(
         {"old/name.py": lines("a = 1", "b = 2", "c = 3", "d = 4")},
         "2026-01-01T09:00:00Z",
@@ -247,9 +309,14 @@ def test_a_renamed_file_is_blamed_under_its_old_path(repo):
         {"old/name.py": None, "new/name.py": lines("a = 1", "b = 9", "c = 3", "d = 4")},
         "2026-02-10T09:00:00Z",
     )
-    assert candidates(trace_one(repo, fix)) == [
-        ("group/checkout", "old/name.py", start)
-    ]
+    name = "group/checkout"
+    files = {"ABC-1": [(name, "new/name.py"), (name, "old/name.py")]}
+    result = szz.trace(
+        links_for({"ABC-1": [(name, [fix])]}, files=files),
+        {"ABC-1": REPORTED},
+        {name: repo.path},
+    )
+    assert candidates(result) == [(name, "old/name.py", start)]
 
 
 def test_a_removed_sql_comment_does_not_hide_the_lines_after_it(repo):
@@ -278,44 +345,57 @@ def test_paths_git_quotes_or_pads_are_still_traced(repo, name):
     assert result["coverage"]["blame_failures"] == 0
 
 
-def test_people_named_in_paths_are_masked_like_the_rest_of_the_run(tmp_path):
+def test_only_paths_already_cleaned_by_anonymise_are_published(tmp_path):
     clone = Repo(tmp_path / "clones" / "tool")
-    clone.commit(
-        {
-            "notes/robin.q/plan.py": lines("a = 1"),
-            "docs/alice-example/x.py": lines("b = 1"),
-            "src/checkout/y.py": lines("c = 1"),
-        },
-        "2026-01-01T09:00:00Z",
-    )
+    before = {
+        "notes/robin.q/plan.py": lines("a = 1"),
+        "docs/j.smith/x.py": lines("b = 1"),
+        "src/checkout/y.py": lines("c = 1"),
+    }
+    clone.commit(before, "2026-01-01T09:00:00Z")
     fix = clone.commit(
-        {
-            "notes/robin.q/plan.py": lines("a = 2"),
-            "docs/alice-example/x.py": lines("b = 2"),
-            "src/checkout/y.py": lines("c = 2"),
-        },
+        {path: text.replace("1", "2") for path, text in before.items()},
         "2026-02-10T09:00:00Z",
     )
     name = "[person]/checkout-tool"
+    # As anonymise.py writes them: the owner is masked; j.smith was never listed.
+    files = {"ABC-1": [(name, "notes/[person]/plan.py"), (name, "src/checkout/y.py")]}
     result = szz.trace(
-        links_for({"ABC-1": [(name, [fix])]}),
+        links_for({"ABC-1": [(name, [fix])]}, files=files),
         {"ABC-1": REPORTED},
         {name: clone.path},
-        people=["robin.q"],
     )
     paths = sorted(c["path"] for c in result["defects"]["ABC-1"]["candidates"])
-    assert paths == [
-        "docs/[person]/x.py",
-        "notes/[person]/plan.py",
-        "src/checkout/y.py",
-    ]
+    assert paths == ["notes/[person]/plan.py", "src/checkout/y.py"]
+    assert result["coverage"]["paths_not_in_linked_changes"] == 1
+    assert "smith" not in json.dumps(result) and "robin" not in json.dumps(result)
+
+
+def test_no_commit_id_is_kept_so_no_defect_points_at_a_commit(repo):
+    start = repo.commit({"app.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
+    fix = repo.commit({"app.py": lines("a = 2")}, "2026-02-10T09:00:00Z")
+    text = json.dumps(trace_one(repo, fix))
+    assert start not in text and start[:7] not in text and fix[:7] not in text
+
+
+def test_git_settings_in_the_environment_cannot_point_it_at_another_repo(
+    repo, tmp_path, monkeypatch
+):
+    other = Repo(tmp_path / "other")
+    other.commit({"elsewhere.py": lines("z = 1")}, "2026-01-03T09:00:00Z")
+    start = repo.commit({"app.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
+    fix = repo.commit({"app.py": lines("a = 2")}, "2026-02-10T09:00:00Z")
+    monkeypatch.setenv("GIT_DIR", str(other.path / ".git"))
+    assert candidates(trace_one(repo, fix)) == [("group/checkout", "app.py", start)]
 
 
 def test_a_defect_with_no_report_date_is_counted_apart(repo):
     repo.commit({"app.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
     fix = repo.commit({"app.py": lines("a = 2")}, "2026-02-10T09:00:00Z")
     result = szz.trace(
-        links_for({"ABC-1": [("group/checkout", [fix])]}),
+        links_for(
+            {"ABC-1": [("group/checkout", [fix])]}, {"group/checkout": repo.path}
+        ),
         {},
         {"group/checkout": repo.path},
     )
@@ -338,7 +418,9 @@ def five_defects(repo: Repo, directory="src/checkout", count=5) -> tuple[dict, d
             f"2026-02-{10 + n}T09:00:00Z",
         )
         fixes[f"ABC-{n + 1}"] = [("group/checkout", [sha])]
-    return links_for(fixes), {key: REPORTED for key in fixes}
+    return links_for(fixes, {"group/checkout": repo.path}), {
+        key: REPORTED for key in fixes
+    }
 
 
 def test_directories_count_distinct_defects_and_are_labelled_an_estimate(
@@ -471,29 +553,24 @@ def test_the_command_line_refuses_a_bad_clone_mapping(repo, tmp_path, capsys, cl
             str(tmp_path / "out"),
         ]
     )
-    assert code == 2 and "error:" in capsys.readouterr().err
+    err = capsys.readouterr().err
+    assert code == 2 and "error:" in err
+    assert str(tmp_path) not in err, "a local path can hold the user's name"
     assert not (tmp_path / "out").exists()
 
 
-def test_the_command_line_needs_the_config_to_mask_a_personal_repo(tmp_path, capsys):
-    clone = Repo(tmp_path / "clones" / "tool")
-    fix = clone.commit({"a.py": lines("a = 1")}, "2026-01-01T09:00:00Z")
-    links = links_for({"ABC-1": [("[person]/checkout-tool", [fix])]})
-    (tmp_path / "links.json").write_text(json.dumps(links))
-    clean = write_clean(tmp_path, links["defects"])
-    code = szz.main(
-        [
-            "--links",
-            str(tmp_path / "links.json"),
-            "--issues",
-            str(clean),
-            "--clone",
-            f"[person]/checkout-tool={clone.path}",
-            "--out",
-            str(tmp_path / "out"),
-        ]
+def test_the_published_summary_counts_repos_without_a_clone_but_never_names_them(
+    repo, tmp_path
+):
+    links, reported = five_defects(repo)
+    links["defects"]["ABC-1"]["changes"].append(
+        {"repo": "group/elsewhere", "kind": "merge_request", "id": "9", "commits": []}
     )
-    assert code == 2 and "--config" in capsys.readouterr().err
+    szz.write_szz(
+        szz.trace(links, reported, {"group/checkout": repo.path}), tmp_path / "out"
+    )
+    for path in (tmp_path / "out").iterdir():
+        assert "elsewhere" not in path.read_text()
 
 
 def test_the_command_line_refuses_links_it_cannot_read(tmp_path, capsys):

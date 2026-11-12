@@ -24,15 +24,17 @@ Outputs:
   with a candidate introducer there, every count through suppress.py, and the median
   days from the newest candidate to the report. Every output says it is an estimate.
 
-No output holds an author. Blame's author and committer fields are discarded as they are
-parsed. The names and emails in each clone's history are read only to mask them in file
-paths, along with the owners of personal-namespace repos from --config, the way
-anonymise.py masks paths in clean/. A personal repo's clone is refused without --config.
+No output holds an author or a commit id. Blame's author and committer fields are
+discarded as they are parsed. Paths in a clone are raw data (a folder can be named after
+a person), so a path is used only when link_scm.py already listed it for that repo, from
+data anonymise.py cleaned, and is shown in that cleaned form. Other paths are counted as
+paths_not_in_linked_changes and never shown. Repo names come from work/scm_links.json.
 """
 
 import argparse
 import csv
 import json
+import os
 import re
 import statistics
 import subprocess
@@ -42,7 +44,6 @@ from pathlib import Path
 
 import clean_data
 import hotspots
-import scm_adapter
 import scm_config
 import suppress
 import ticket_signals
@@ -51,6 +52,7 @@ import ticket_signals
 COMMIT_ID = re.compile(r"[0-9a-f]{7,64}")
 BLAME_HEADER = re.compile(r"^([0-9a-f]{40}|[0-9a-f]{64}) \d+ \d+")
 PLACEHOLDER = "[person]"
+GIT_TIMEOUT_SECONDS = 300
 # A comment-only line: #, //, /*, a * continuing a block comment, or -- (SQL, Lua).
 COMMENT = re.compile(r"^\s*(#|//|/\*|\*(\s|/|$)|--(\s|$))")
 IGNORE_REVS = ".git-blame-ignore-revs"
@@ -74,19 +76,38 @@ COVERAGE_KEYS = [
     "blame_failures",
     "candidates_after_report_dropped",
     "defects_without_report_date",
+    "paths_not_in_linked_changes",
 ]
 
 
 def _git(repo: Path, *args) -> subprocess.CompletedProcess:
-    # -c settings pin the diff format, so a user's own git config can't change what is parsed.
-    return subprocess.run(
-        ["git", "-C", str(repo), "-c", "core.quotePath=false", *args],
-        capture_output=True,
-        # Source files needn't be UTF-8. surrogateescape keeps any byte, so a path read
-        # here can be passed back to git unchanged.
-        encoding="utf-8",
-        errors="surrogateescape",
-    )
+    """Run git in repo. A run that times out comes back as a failure (returncode -1)."""
+    # GIT_DIR, GIT_WORK_TREE and the like override -C, so none is passed on. The -c
+    # settings pin the output format, so a user's own git config can't change what is parsed.
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    command = [
+        "git",
+        "-C",
+        str(repo),
+        "-c",
+        "core.quotePath=false",
+        "-c",
+        "log.showSignature=false",
+        *args,
+    ]
+    try:
+        return subprocess.run(
+            command,
+            capture_output=True,
+            env=env,
+            timeout=GIT_TIMEOUT_SECONDS,
+            # Source files needn't be UTF-8. surrogateescape keeps any byte, so a path
+            # read here can be passed back to git unchanged.
+            encoding="utf-8",
+            errors="surrogateescape",
+        )
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(command, -1, "", "timed out")
 
 
 def _parents(repo: Path, sha: str) -> list[str] | None:
@@ -97,12 +118,13 @@ def _parents(repo: Path, sha: str) -> list[str] | None:
     return done.stdout.split()[1:]
 
 
-def changed_lines(repo: Path, sha: str) -> dict[str, list[int]]:
+def changed_lines(repo: Path, sha: str) -> dict[str, list[int]] | None:
     """Per old path, the old-side line numbers the commit removed or changed.
 
     Whitespace-only changes, blank lines and comment-only lines are left out.
+    Returns None if git show failed.
     """
-    diff = _git(
+    done = _git(
         repo,
         "show",
         "--format=",
@@ -116,7 +138,10 @@ def changed_lines(repo: Path, sha: str) -> dict[str, list[int]]:
         "-w",
         sha,
         "--",
-    ).stdout
+    )
+    if done.returncode != 0:
+        return None
+    diff = done.stdout
     out: dict[str, list[int]] = {}
     path, old_line, in_header = None, 0, False
     for line in diff.splitlines():
@@ -216,60 +241,55 @@ def blame(repo: Path, sha: str, path: str, numbers: list[int]) -> dict[str, int]
     return {c: t for c, t in times.items() if t is not None}
 
 
-def _people_in(repo: Path) -> set[str]:
-    """Every author and committer name and email in the clone, read only to mask paths."""
-    log = _git(repo, "log", "--all", "--format=%an%x00%ae%x00%cn%x00%ce").stdout
-    return {v for v in log.replace("\n", "\0").split("\0") if v.strip()}
+def clean_paths(links: dict) -> dict:
+    """Per repo, a function from a path in the clone to its anonymised form, or None.
 
-
-def path_mask(people) -> "re.Pattern | None":
-    """A pattern matching any of these people in a path, as a whole word.
-
-    For each name it also matches the email's local part, the name joined with . - _ or
-    nothing, and each part of three letters or more. That can mask a folder that only
-    happens to share a word with a name, which is the safe way to be wrong.
+    Paths from a clone are raw data: a folder can be named after a person. So a path is
+    used only when it is one link_scm.py already listed for that repo, from data
+    anonymise.py cleaned, and then in that cleaned form. A cleaned path's [person] stands
+    for any text within one folder name.
     """
-    forms = set()
-    for person in people:
-        person = person.strip()
-        local = person.split("@", 1)[0]
-        parts = re.split(r"[\s._-]+", local)
-        forms |= {person, local}
-        forms |= {sep.join(parts) for sep in (".", "-", "_", "")}
-        forms |= {part for part in parts if len(part) >= 3}
-    forms = sorted((f for f in forms if len(f) >= 2), key=len, reverse=True)
-    if not forms:
-        return None
-    alternatives = "|".join(re.escape(f) for f in forms)
-    return re.compile(rf"(?<![A-Za-z0-9])(?:{alternatives})(?![A-Za-z0-9])", re.I)
+    listed: dict[str, set[str]] = {}
+    for defect in links["defects"].values():
+        for item in defect.get("files") or []:
+            listed.setdefault(item["repo"], set()).add(item["path"])
+
+    def lookup_for(paths: set[str]):
+        patterns = [
+            (
+                re.compile(re.escape(p).replace(re.escape(PLACEHOLDER), r"[^/]+?")),
+                p,
+            )
+            for p in sorted(paths)
+            if PLACEHOLDER in p
+        ]
+
+        def lookup(path: str) -> str | None:
+            if path in paths and PLACEHOLDER not in path:
+                return path
+            return next((p for rx, p in patterns if rx.fullmatch(path)), None)
+
+        return lookup
+
+    return {repo: lookup_for(paths) for repo, paths in listed.items()}
 
 
-def _masked(path: str, mask) -> str:
-    """The path with people replaced by [person], and any undecodable byte shown as \ufffd."""
-    path = path.encode("utf-8", "surrogateescape").decode("utf-8", "replace")
-    return mask.sub(PLACEHOLDER, path) if mask else path
-
-
-def trace(links: dict, reported: dict, clones: dict, people=()) -> dict:
+def trace(links: dict, reported: dict, clones: dict) -> dict:
     """Find candidate introducers for every linked defect.
 
     Args:
         links: work/scm_links.json, as link_scm.link() returns it.
         reported: defect key -> aware datetime the defect was reported (created in Jira).
         clones: repo name (as in links) -> path of a local clone.
-        people: further names to mask in paths, such as the owners of personal repos.
-            Everyone who authored or committed in a clone is masked too.
     Returns:
-        {"defects": {key: {"traced", "candidates": [{"repo", "commit", "path",
-         "committed_at"}], "days_last_changed_to_reported"}}, "coverage": {...},
-         "since": links' since}
+        {"defects": {key: {"traced", "candidates": [{"repo", "path", "committed_at"}],
+         "days_last_changed_to_reported"}}, "coverage": {...}, "since": links' since}.
+        Paths are in their anonymised form. No commit id is kept, so nothing ties a
+        defect to the commit (and so the person) blamed for it.
     """
     coverage = dict.fromkeys(COVERAGE_KEYS, 0)
     without_clone: set[str] = set()
-    masks = {
-        name: path_mask(set(people) | _people_in(Path(path)))
-        for name, path in clones.items()
-    }
+    lookups = clean_paths(links)
     defects = {}
     for key, defect in links["defects"].items():
         coverage["defects_linked"] += 1
@@ -292,6 +312,7 @@ def trace(links: dict, reported: dict, clones: dict, people=()) -> dict:
                 without_clone.add(repo_name)
                 continue
             clone = Path(clone)
+            lookup = lookups.get(repo_name, lambda path: None)
             for sha in change.get("commits") or []:
                 parents = _parents(clone, sha) if COMMIT_ID.fullmatch(sha) else None
                 if parents is None:
@@ -305,11 +326,18 @@ def trace(links: dict, reported: dict, clones: dict, people=()) -> dict:
                     ] += 1
                     continue
                 changed = changed_lines(clone, sha)
+                if changed is None:
+                    coverage["blame_failures"] += 1
+                    continue
                 if not changed:
                     coverage["commits_with_nothing_to_blame"] += 1
                     continue
                 coverage["fix_commits_blamed"] += 1
                 for path, numbers in changed.items():
+                    shown = lookup(path)
+                    if shown is None:
+                        coverage["paths_not_in_linked_changes"] += 1
+                        continue
                     blamed = blame(clone, sha, path, numbers)
                     if blamed is None:
                         coverage["blame_failures"] += 1
@@ -318,16 +346,14 @@ def trace(links: dict, reported: dict, clones: dict, people=()) -> dict:
                         if at >= cutoff:
                             coverage["candidates_after_report_dropped"] += 1
                             continue
-                        shown = _masked(path, masks[repo_name])
                         found[(repo_name, commit, shown)] = at
         found_list = [
             {
                 "repo": repo_name,
-                "commit": commit,
                 "path": path,
                 "committed_at": datetime.fromtimestamp(at, timezone.utc).isoformat(),
             }
-            for (repo_name, commit, path), at in sorted(found.items())
+            for (repo_name, _commit, path), at in sorted(found.items())
         ]
         newest = max(found.values(), default=None)
         defects[key] = {
@@ -387,7 +413,8 @@ def write_szz(
             if len(lags) >= size
             else suppress.SUPPRESSED
         ),
-        "repos_without_clone": ", ".join(coverage["repos_without_clone"]) or "none",
+        # A count of repos, not of defects, and repo names stay in work/.
+        "repos_without_clone": len(coverage["repos_without_clone"]),
     }
     table = pub.table(("repo", "directory"))
     rows = sorted(
@@ -474,7 +501,7 @@ def parse_clones(values: list[str], links: dict) -> dict[str, Path]:
     for value in values:
         name, sep, path = value.partition("=")
         if not sep or not name or not path:
-            raise ValueError(f"--clone must be NAME=PATH, got {value!r}")
+            raise ValueError("each --clone must be NAME=PATH")
         if name not in known:
             raise ValueError(
                 f"--clone names {name!r}, which isn't a repo in the links; use the name "
@@ -482,7 +509,8 @@ def parse_clones(values: list[str], links: dict) -> dict[str, Path]:
             )
         folder = Path(path).expanduser()
         if not (folder / ".git").exists():
-            raise ValueError(f"--clone path {str(folder)!r} is not a git clone")
+            # The path isn't echoed: a local path can hold the user's name.
+            raise ValueError(f"the --clone path for {name} is not a git clone")
         clones[name] = folder
     return clones
 
@@ -524,18 +552,11 @@ def main(argv=None) -> int:
         if not isinstance(links, dict) or not isinstance(links.get("defects"), dict):
             raise ValueError(f"{a.links} has no defects; write it with link_scm.py")
         clones = parse_clones(a.clone, links)
-        personal = [n for n in clones if n.startswith(PLACEHOLDER + "/")]
-        if personal and not config:
-            raise ValueError(
-                f"{personal[0]} is in a personal namespace; pass --config scm.yaml so its "
-                "owner's name can be masked in paths"
-            )
-        owners = scm_adapter.personal_owners(config, {}) if config else []
         reported = reported_dates(a.issues)
     except (ValueError, OSError) as err:
         print(f"error: {err}", file=sys.stderr)
         return 2
-    result = trace(links, reported, clones, people=owners)
+    result = trace(links, reported, clones)
     work = Path(a.work)
     work.parent.mkdir(parents=True, exist_ok=True)
     work.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
