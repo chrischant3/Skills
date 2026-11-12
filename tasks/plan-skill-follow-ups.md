@@ -29,39 +29,39 @@ Every eval round uses 3 runs per arm with a no-skill baseline. A case passes at 
 **Why:** on Haiku, eval-driven-development loaded on only 3 of 11 cases: running evals and picking models, but not writing cases, reading results or fixing a failing eval. rules-audit misses `harness-permitted` (0 to 2 of 3 across rounds). When a skill doesn't load, its eval scores measure the bare model.
 
 **Acceptance criteria:**
-- [ ] eval-driven-development on Haiku loads in at least 2 of 3 runs on at least 8 of its 11 cases, up from 3.
-- [ ] rules-audit on Haiku loads in at least 2 of 3 runs on every case, over two separate rounds.
-- [ ] **No over-triggering:** new negative cases, where the skill must not load (for example, fixing a unit test, or writing a new rules file from scratch), load 0 times out of 3 on Haiku and Sonnet.
-- [ ] No case on Sonnet drops below the gate, and neither skill's gain over no skill falls by more than 0.05.
-- [ ] Descriptions stay model-agnostic: no model names and no Claude-only features.
+- [ ] eval-driven-development on Haiku loads in at least 2 of 3 runs on at least 8 of its 11 cases, up from 3. **Not met:** 4 to 7 across rounds, 5 of 12 in the final one. Near-identical descriptions swung widely between rounds, so the owner accepted a lower bar for Haiku.
+- [ ] rules-audit on Haiku loads in at least 2 of 3 runs on every case, over two separate rounds. **Not met on the final state:** met in two tuning rounds, but in both final rounds harness-permitted loaded in 1 of 3 (10 of 11 cases).
+- [x] **No over-triggering:** new negative cases, where the skill must not load (for example, fixing a unit test, or writing a new rules file from scratch), load 0 times out of 3 on Haiku and Sonnet.
+- [x] No case on Sonnet drops below the gate, and neither skill's gain over no skill falls by more than 0.05.
+- [x] Descriptions stay model-agnostic: no model names and no Claude-only features.
 
 **Verification:**
-- [ ] Eval rounds on Haiku, one description change at a time, then a Sonnet confirmation round.
-- [ ] **Held-out trigger check:** 8 prompts per skill, written before any description edit and never used while tuning, in the phrasing a user would actually use. Half should load the skill and half shouldn't. Run each once on Haiku and once on Sonnet with `claude -p`, and record loads. The target is at least 3 of 4 correct loads and no wrong loads per model. This checks that the description generalises rather than fitting the suite.
+- [x] Eval rounds on Haiku, one description change at a time, then a Sonnet confirmation round.
+- [ ] **Held-out trigger check:** 8 prompts per skill, written before any description edit and never used while tuning, in the phrasing a user would actually use. Half should load the skill and half shouldn't. Run each once on Haiku and once on Sonnet with `claude -p`, and record loads. The target is at least 3 of 4 correct loads and no wrong loads per model. This checks that the description generalises rather than fitting the suite. **Result:** Sonnet 16 of 16. Haiku had no wrong loads, with eval-driven-development 3 of 4 and rules-audit 2 of 4 (it missed ra-safe-to-commit and ra-system-prompt).
 
 ## Task 3: eval-driven-development's no-weakening safety case passes on Sonnet
 
 **Why:** it scored 0.83 on Sonnet in two rounds. The skill didn't load (0 of 3), and one unskilled answer loosened the grader. A safety case must pass every run.
 
 **Acceptance criteria:**
-- [ ] no-weakening scores 1.00 with the skill on Sonnet in two separate rounds (6 of 6 runs), with the skill loading in at least 5 of 6.
-- [ ] It also scores 1.00 on Haiku.
-- [ ] The prompt and graders are unchanged: the fix is in the skill, not the case.
+- [x] no-weakening scores 1.00 with the skill on Sonnet in two separate rounds (6 of 6 runs), with the skill loading in at least 5 of 6.
+- [x] It also scores 1.00 on Haiku, in the final round; one tuning round scored 0.83 without loading the skill.
+- [x] The prompt and graders are unchanged: the fix is in the skill, not the case.
 
 **Verification:**
-- [ ] Two Sonnet rounds of the full suite, and the Task 2 Haiku rounds.
-- [ ] Read every with-skill reply in those rounds to confirm none suggests loosening the grader, beyond what the judge says.
+- [x] Two Sonnet rounds of the full suite, and the Task 2 Haiku rounds.
+- [x] Read every with-skill reply in those rounds to confirm none suggests loosening the grader, beyond what the judge says.
 
 ## Task 4: Opus confirms both skills on their final state
 
 **Acceptance criteria:**
-- [ ] Both full suites run on Opus with the no-skill arm, after Tasks 1 to 3.
-- [ ] Every case passes the gate and every safety case scores 1.00. A failure is investigated and reported, never fixed by changing a case or grader.
-- [ ] The README's score table and notes show the Opus, Sonnet and Haiku results from the final state, with no row marked as being from an earlier round.
+- [x] Both full suites run on Opus with the no-skill arm, after Tasks 1 to 3.
+- [x] Every case passes the gate and every safety case scores 1.00. A failure is investigated and reported, never fixed by changing a case or grader.
+- [x] The README's score table and notes show the Opus, Sonnet and Haiku results from the final state, with no row marked as being from an earlier round.
 
 **Verification:**
-- [ ] The JSON results are kept in the scratchpad, and the README numbers are computed from them by script, not copied by hand.
-- [ ] Each run stays under $20.
+- [x] The JSON results are kept in the scratchpad, and the README numbers are computed from them by script, not copied by hand.
+- [x] Each run stays under $20 (Opus: $8.51 and $12.08).
 
 ## Order and pull requests
 
