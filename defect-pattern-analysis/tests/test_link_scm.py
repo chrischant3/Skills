@@ -80,6 +80,15 @@ def test_each_linked_defect_lists_its_repos_changes_commits_and_files(tmp_path):
     ]
 
 
+def test_each_change_lists_its_own_commits_so_they_can_be_found_in_its_repo(tmp_path):
+    links = link_scm.link(config(), make_run(tmp_path))
+    changes = links["defects"]["ABC-102"]["changes"]
+    assert [(c["id"], c["commits"]) for c in changes] == [
+        ("14", ["3" * 40, "4" * 40]),
+        ("15", ["5" * 40]),
+    ]
+
+
 def test_per_repo_coverage_counts_changes_scanned_and_linked_and_defects_linked(
     tmp_path,
 ):
