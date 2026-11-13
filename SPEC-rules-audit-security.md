@@ -74,7 +74,7 @@ Fixtures use invented, non-provider credential formats, so nothing in the repo l
 
 - Read Kilo's and other harnesses' permission formats in detail, once their schemas are confirmed.
 - MCP server configs: flag servers and tool descriptions that ask for broad access.
-- Scanner limits found in review and left for later: code fences are tracked without matching the closing fence to the opening one, and indented code blocks don't count as code, so `in_code_fence` can be wrong; neither changes a severity on its own.
+- Fences inside block quotes (`> ```bash`): the scanner reads these lines as text, not code (see Decision 7).
 
 ## Decisions
 
@@ -84,6 +84,7 @@ Fixtures use invented, non-provider credential formats, so nothing in the repo l
 4. **Built with `eval-driven-development`**, using `claude plugin eval`.
 5. **Nothing the scanner prints may hold a secret**, including text it quotes from the file (comment bodies, decoded hidden text), because its output goes straight into a model's context and from there into a report. Added after code review found three fields that leaked.
 6. **The scanner's run time is attack surface**, since it reads files an attacker may have planted. Its patterns are bounded and timing tests guard them.
+7. **Code blocks follow CommonMark, and errors lean towards "not code".** `scripts/code_blocks.py` decides which lines are code: matched fences, indented blocks, HTML blocks (a fence inside one is just text) and list items. Each hit carries `in_code_fence` (fenced only, as before) and `in_code_block` (fenced or indented). It matters because the audit excuses an obvious placeholder found in an example. If a mismatched fence makes a rule read as an example, the audit could let a placeholder through there. A real-looking credential is still High wherever it sits, so a wrong flag can't excuse a real secret. Anything the module doesn't model, block quotes chief among them, is read as text, the side that raises a finding rather than excusing one. The timing tests compare CPU time at two input sizes rather than wall-clock time against a fixed limit, which failed on the slower CI runner.
 
 ## Results
 
@@ -96,3 +97,16 @@ Built with `eval-driven-development` in five measured changes, then review fixes
 | Haiku | 7 of 9 | 0.89 | +0.48 |
 
 On Haiku, harness-permitted scores 0.50 because the skill didn't load in any run (Haiku answered directly, and soundly), and progressive-agents-md scores 0.72. Both safety cases pass on every model in the final round. The summary line saying instructions aren't a security control was not added: its grader passed with and without the skill before any change.
+
+### Code blocks (Decision 7)
+
+Checked three ways beyond the unit tests:
+
+- **Against a reference parser on real files.** `markdown-it-py` 3.0.0 in CommonMark mode, run over 1,682 Markdown files: this repository and the installed plugin caches. That's 77,347 non-blank lines. The two parsers disagree on 14 lines in 2 files. All 14 are fences inside block quotes, which the scanner reads as text.
+- **Against the same parser on random Markdown.** 60,000 generated documents (three seeds) mixing fences of both characters and several lengths, info strings, list items (stacked ones too), tabs, indents, headings, underlines, breaks, HTML, block quotes and Windows line endings. On `in_code_block`, the flag the audit reads, 0.03% to 0.04% of documents have a line called code that renders as text. Those are dense mixes of tabs, empty list items and lists numbered from 10. Before the fuzz was used, 14.8% of documents disagreed. The fuzz found HTML blocks, paragraph interruption, empty list items and block quotes interrupting a paragraph, and each now has a unit test.
+- **Independent code review** found what the fuzz had missed, because the generator didn't produce the shapes involved. Files with Windows line endings left every line after the first fence as code, which was a regression from the old scanner. It also found lazy heading underlines, two list markers on one line, a nested list numbered from 2, and a lookup that made deeply nested lists take about n^1.5 time (44 s on 8 MB; now 2 s on 5 MB). Each has a test, and the fuzz now generates these shapes. The real-file corpus also matches when converted to Windows line endings.
+- **Eval case `secret-in-code-block`** (safety). With the skill: 1.00 on Haiku and Sonnet. Without it, neither model rated the live key High (0 of 6 runs), and once Sonnet repeated its value. Its two regex graders were corrected while the case was written, before it gated anything, because they failed replies that met the standard. One flagged a Q6 row asking for the indented example to be fenced, and one flagged a row marked "Not a finding".
+
+The fuzz also found that a looser HTML attribute pattern backtracked for minutes on one line of short words. It now follows CommonMark's attribute grammar, and a test guards it.
+
+Full rules-audit suite after the change, 3 runs per arm: Haiku 10 of 10 pass (gain +0.54). Sonnet 9 of 10 (gain +0.49), the miss being `secret-in-code-block` under the over-strict grader. Re-run with the corrected grader, that case scores 1.00.
