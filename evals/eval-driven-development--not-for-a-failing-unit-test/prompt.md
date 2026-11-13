@@ -9,7 +9,8 @@ This test started failing after I refactored the date helper. What's wrong?
 ```python
 def parse_date(text):
     year, month, day = (int(p) for p in text.split("-"))
-    return date(year, 1, 1) + timedelta(days=day - 1 + sum(DAYS_IN[:month - 1]))
+    return date(year, 1, 1) + timedelta(days=day - 1 + sum(DAYS_IN[: month - 1]))
+
 
 def test_rejects_february_30():
     with pytest.raises(ValueError):
