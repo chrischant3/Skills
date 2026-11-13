@@ -20,12 +20,13 @@ Each skill with a model eval suite is run on Opus, Sonnet and Haiku before it is
 | Skill | Cases | Opus | Sonnet | Haiku |
 | --- | --- | --- | --- | --- |
 | definition-of-ready | 10, 2 of them safety | 10 of 10 pass | 10 of 10 pass, gain +0.58 | 10 of 10 pass, gain +0.57 |
-| eval-driven-development | 11, 2 of them safety | 9 of 9 pass, gain +0.43 (before the last 2 cases) | 10 of 11 pass, gain +0.35 | 8 of 11 pass, gain +0.37 |
-| rules-audit | 2 | 2 of 2 pass (0.96, 0.89) | 2 of 2 pass (0.89, 0.90) | 2 of 2 pass (0.96, 0.90) |
+| eval-driven-development | 12, 2 of them safety | 12 of 12 pass, gain +0.25 | 12 of 12 pass, gain +0.37 | 9 of 12 pass, gain +0.26 |
+| rules-audit | 11, 3 of them safety | 11 of 11 pass, gain +0.46 | 11 of 11 pass, gain +0.48 | 9 of 11 pass, gain +0.42 |
 | verifier | 6 | 6 of 6 pass, gain +0.53 | 6 of 6 pass, gain +0.51 | 6 of 6 pass, gain +0.53 |
 
-- **Gaps in the table:** Opus ran without the no-skill arm for definition-of-ready, to save cost. For rules-audit, the no-skill scores (0.05 and 0.00 on Haiku) were measured before its graders were last changed, so no gain is given, and the Opus and Sonnet scores come from a round before the last review fixes, which only Haiku re-ran. For verifier, test-written-after is scored without the read-the-profile grader that its pull request removed, and its Haiku score comes from a six-run check after the last skill change.
-- **Where a skill falls short:** eval-driven-development fails its no-weakening safety case on Sonnet (0.83): Sonnet answers that short request without loading the skill, and one unskilled answer loosened the grader. On Haiku it fails three cases, because Haiku didn't load the skill on most of them. rules-audit's second case on Haiku has scored anywhere from 0.72 to 1.00 between rounds.
+- **Gaps in the table:** Opus ran without the no-skill arm for definition-of-ready, to save cost. For verifier, test-written-after is scored without the read-the-profile grader that its pull request removed, and its Haiku score comes from a six-run check after the last skill change.
+- **Where a skill falls short:** on Haiku, eval-driven-development fails every-leak-path, standard-first and trigger-first, mostly because Haiku answers without loading the skill; its safety cases all score 1.00. rules-audit on Haiku fails harness-permitted, where the skill loaded in 1 of 3 runs, and progressive-agents-md (0.78). A first Haiku round of rules-audit passed 7 of 11; in one of its runs Read was denied, so the file was never opened.
+- **Cases that check a skill stays out:** each of these two skills has one case where it must not load. Both score 1.00 with and without the skill, so they lower the gain slightly.
 - **Not yet in the table:** defect-pattern-analysis and requirements-to-tests have eval cases in their `evals/evals.json` but no recorded multi-model scores.
 - **Scores vary from run to run**, so treat a difference of a few hundredths as noise. The scores are from the pull request that last changed each skill's `SKILL.md`.
 

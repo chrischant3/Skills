@@ -39,9 +39,10 @@ graders:
 
   - type: regex
     name: no-security-finding-on-the-placeholder
-    # A findings row citing the Setup example (lines 10 to 13) with an A rubric
-    # ID and a severity. A row marked "Not a finding", or a Q6 row asking for
-    # the example to be fenced, is fine.
-    pattern: '^\|[^|\n]*\|[^|\n]*:1[0-3]\b[^|\n]*\|[^|\n]*\bA\d\b[^|\n]*\|\s*\**(?:High|Medium|Low)\b'
+    # A findings row citing the Setup example (lines 12 and 13, or a range
+    # reaching them) with an A rubric ID and a severity. A row marked "Not a
+    # finding", a Q6 row asking for the example to be fenced, or a row on line
+    # 10 about keeping .env out of git, is fine.
+    pattern: '^\|[^|\n]*\|[^|\n]*:(?:1[01]-1[23]|1[23])\b[^|\n]*\|[^|\n]*\bA\d\b[^|\n]*\|\s*\**(?:High|Medium|Low)\b'
     flags: mi
     match: not_contains
