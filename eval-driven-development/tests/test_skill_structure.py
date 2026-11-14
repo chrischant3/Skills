@@ -46,7 +46,7 @@ def test_frontmatter_names_the_skill_after_its_folder():
 
 def test_description_says_when_to_use_it_and_when_not_to():
     front = " ".join(frontmatter(SKILL).split())
-    assert "description: >- Use this skill before" in front and "Not for" in front
+    assert "description: >- Load this skill for" in front and "Not for" in front
     assert len(front) < 1024
 
 

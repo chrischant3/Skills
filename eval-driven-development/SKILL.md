@@ -1,16 +1,17 @@
 ---
 name: eval-driven-development
 description: >-
-  Use this skill before writing, generating, reviewing or running eval cases,
-  and before creating, fixing or changing a skill, a prompt, a rules file or
-  agent instructions, including when a skill misbehaves and someone wants it
-  fixed, before the final eval run before merging or publishing a skill,
-  when choosing which models to run evals on, and when summarising eval
-  results. It drives changes to model
-  behaviour with evals: write a small set of cases first, see them fail,
-  make the change, then gate on the suite and a no-skill baseline. Not for
-  deterministic code such as scripts and parsers; use test-driven
-  development there.
+  Load this skill for any question about eval cases, graders, eval results
+  or creating, fixing or changing a skill, prompt or rules file, including
+  a skill that misbehaves and needs fixing, even one that needs only a
+  sentence or two: its rules often overturn the obvious answer. Typical
+  requests: "what do these scores tell us?", "which cases should this
+  skill have?", "is this check too strict?", "I'll edit the prompt and
+  then test it, OK?", "what's the last check before I publish?", "which
+  models should I test on?". It drives model-behaviour changes with evals: write
+  a few cases first, see them fail, make the change, then gate on the
+  suite and a no-skill baseline. Not for deterministic code such as
+  scripts and parsers; use test-driven development there.
 ---
 
 # Eval-Driven Development

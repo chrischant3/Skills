@@ -5,7 +5,8 @@ Usage: python3 scan_instructions.py FILE [FILE ...]
 
 Prints JSON: {"files": [...], "hits": [...]}. Each hit names the file, line,
 rubric check (A1 secrets, A3 hidden content), kind, a short detail, and
-whether the line is inside a fenced code block. The scanner never prints a
+whether the line is inside a code block (fenced, or indented as Markdown
+allows). The scanner never prints a
 secret's value, only a masked form and its length; text it quotes from the
 file (comment bodies, text hidden in tag characters) has secrets masked too.
 It reports what it finds; the audit decides what each hit means (a
@@ -21,6 +22,8 @@ import re
 import sys
 from urllib.parse import urlparse
 
+from code_blocks import code_lines
+
 ZERO_WIDTH = {"\u200b", "\u200c", "\u200d", "\u2060", "\ufeff", "\u00ad"}
 BIDI = {
     chr(c)
@@ -31,7 +34,6 @@ VARIATION_SELECTORS = {
 }
 TAG_START, TAG_END = 0xE0000, 0xE007F
 
-FENCE = re.compile(r"^ {0,3}(```|~~~)")
 HTML_COMMENT = re.compile(r"<!--(.*?)(?:-->|\Z)", re.DOTALL)
 REMOTE_IMAGE = re.compile(
     r"!\[[^\]]*\]\(\s*(https?://[^)\s]+)|<img\b[^>]*\bsrc\s*=\s*[\"']?(https?://[^\"'\s>]+)",
@@ -75,7 +77,8 @@ PLACEHOLDER_WORDS = (
 def scan_text(text):
     """Return the hits for one file's text, ordered by line.
 
-    Each hit is a dict with check, kind, line, detail and in_code_fence.
+    Each hit is a dict with check, kind, line, detail, in_code_fence (inside
+    a fenced code block) and in_code_block (inside a fenced or an indented one).
     Invisible-character hits add decoded (the text hidden in tag
     characters, or None); secret hits add looks_like_placeholder.
     """
@@ -83,7 +86,7 @@ def scan_text(text):
         # A byte order mark at the very start is an encoding marker, not hidden content.
         text = " " + text[1:]
     lines = text.split("\n")
-    fenced = _fenced_lines(lines)
+    fenced, code = code_lines(lines)
     hits = []
     for number, line in enumerate(lines, start=1):
         for hit in _line_hits(line):
@@ -92,6 +95,7 @@ def scan_text(text):
     hits.extend(_html_comments(text))
     for hit in hits:
         hit["in_code_fence"] = hit["line"] in fenced
+        hit["in_code_block"] = hit["line"] in code
     hits.sort(key=lambda h: h["line"])
     return [_ordered(h) for h in hits]
 
@@ -133,19 +137,8 @@ def _file_problem(kind, detail):
         "line": None,
         "detail": detail,
         "in_code_fence": False,
+        "in_code_block": False,
     }
-
-
-def _fenced_lines(lines):
-    """Return the numbers of lines inside (or delimiting) fenced code blocks."""
-    fenced, inside = set(), False
-    for number, line in enumerate(lines, start=1):
-        is_fence = bool(FENCE.match(line))
-        if inside or is_fence:
-            fenced.add(number)
-        if is_fence:
-            inside = not inside
-    return fenced
 
 
 def _line_hits(line):
@@ -362,7 +355,7 @@ def _html_comments(text):
 
 def _ordered(hit):
     """Put the common fields first so the JSON reads the same for every kind."""
-    keys = ["check", "kind", "line", "detail", "in_code_fence"]
+    keys = ["check", "kind", "line", "detail", "in_code_fence", "in_code_block"]
     return {
         **{k: hit[k] for k in keys},
         **{k: v for k, v in hit.items() if k not in keys},
