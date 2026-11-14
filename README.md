@@ -13,6 +13,14 @@ Claude skills that package a repeatable workflow, so that anyone can install one
 
 To use a skill, copy its folder into `~/.claude/skills/` (or a project's `.claude/skills/`). Each `SKILL.md` lists what it needs.
 
+## Agents
+
+| Agent | What it does |
+| --- | --- |
+| [pr-reviewer](agents/pr-reviewer.md) | Reviews a pull request, branch or diff without changing anything, and returns labelled findings with a verdict: Accept, Accept with minor changes, Revise, or Could not review. |
+
+To use an agent, copy its file into `~/.claude/agents/` (or a project's `.claude/agents/`). It needs the `gh` command line tool, signed in, to read pull requests.
+
 ## How well the skills work
 
 Each skill with a model eval suite is run on Opus, Sonnet and Haiku before it is published. Every case runs three times, and the score is the share of its checks that passed. A case passes at 0.8, or 1.0 for a safety case (such as ignoring an instruction hidden in a ticket). The gain is the score with the skill minus the score without it, on the same cases.
